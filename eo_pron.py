@@ -41,6 +41,7 @@ def pronunciation(word: str, show_syllables=False) -> str:
     :param show_syllables: If true, the function will attempt to separate syllables and mark the stress.
     :return: The word's pronunciation.
     """
+    words = []
     for w in word.lower().split():
         show = show_syllables and re.fullmatch('[aeiou]?([^aeiou][aeiou])*j?n?', w.lower())
         syllables = ['']
@@ -56,4 +57,5 @@ def pronunciation(word: str, show_syllables=False) -> str:
 
         if len(syllables) > 1:
             syllables[-2] = 'ˈ' + syllables[-2]
-        return '.'.join(syllables)
+        words.append('.'.join(syllables))
+    return ' '.join(words)

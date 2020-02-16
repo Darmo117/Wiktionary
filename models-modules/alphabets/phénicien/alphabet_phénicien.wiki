@@ -1,0 +1,27 @@
+{{(|[[alphabet|Alphabet]] [[phénicien]] (Unicode 12.1)|colonnes=1}}
+{| class="wikitable" style="clear:both; margin:0.5em auto 0.5em auto; width:100%; border-collapse:collapse; background:GhostWhite; padding:0.5em; text-align:center"
+|-
+| style="width:4.545%" |[[𐤀]]
+| style="width:4.545%" |[[𐤁]]
+| style="width:4.545%" |[[𐤂]]
+| style="width:4.545%" |[[𐤃]]
+| style="width:4.545%" |[[𐤄]]
+| style="width:4.545%" |[[𐤅]]
+| style="width:4.545%" |[[𐤆]]
+| style="width:4.545%" |[[𐤇]]
+| style="width:4.545%" |[[𐤈]]
+| style="width:4.545%" |[[𐤉]]
+| style="width:4.545%" |[[𐤊]]
+| style="width:4.545%" |[[𐤋]]
+| style="width:4.545%" |[[𐤌]]
+| style="width:4.545%" |[[𐤍]]
+| style="width:4.545%" |[[𐤎]]
+| style="width:4.545%" |[[𐤏]]
+| style="width:4.545%" |[[𐤐]]
+| style="width:4.545%" |[[𐤑]]
+| style="width:4.545%" |[[𐤒]]
+| style="width:4.545%" |[[𐤓]]
+| style="width:4.545%" |[[𐤔]]
+| style="width:4.545%" |[[𐤕]]
+|}
+{{)}}<includeonly>[[Catégorie:Alphabet phénicien|{{{1|{{PAGENAME}}}}}]]</includeonly><noinclude>[[Catégorie:Alphabet phénicien| ]]</noinclude>

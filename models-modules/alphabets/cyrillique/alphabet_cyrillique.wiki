@@ -1,0 +1,43 @@
+<includeonly>
+{{(|[[alphabet|Alphabet]] [[cyrillique]] russe ([[Unicode]])|colonnes=1}}
+{| class="wikitable" style="clear:both; margin:0.5em auto 0.5em auto; width:100%; border-collapse:collapse; background:GhostWhite; padding:0.5em; text-align:center"
+|-
+|style="width:3%"|[[а]] [[А]]
+|style="width:3%"|[[б]] [[Б]]
+|style="width:3%"|[[в]] [[В]]
+|style="width:3%"|[[г]] [[Г]]
+|style="width:3%"|[[д]] [[Д]]
+|style="width:3%"|[[е]] [[Е]]
+|style="width:3%"|[[ё]] [[Ё]]
+|style="width:3%"|[[ж]] [[Ж]]
+|style="width:3%"|[[з]] [[З]]
+|style="width:3%"|[[и]] [[И]]
+|style="width:3%"|[[й]] [[Й]]
+|style="width:3%"|[[к]] [[К]]
+|style="width:3%"|[[л]] [[Л]]
+|style="width:3%"|[[м]] [[М]]
+|style="width:3%"|[[н]] [[Н]]
+|style="width:3%"|[[о]] [[О]]
+|style="width:3%"|[[п]] [[П]]
+|style="width:3%"|[[р]] [[Р]]
+|style="width:3%"|[[с]] [[С]]
+|style="width:3%"|[[т]] [[Т]]
+|style="width:3%"|[[у]] [[У]]
+|style="width:3%"|[[ф]] [[Ф]]
+|style="width:3%"|[[х]] [[Х]]
+|style="width:3%"|[[ц]] [[Ц]]
+|style="width:3%"|[[ч]] [[Ч]]
+|style="width:3%"|[[ш]] [[Ш]]
+|style="width:3%"|[[щ]] [[Щ]]
+|style="width:3%"|[[ъ]] [[Ъ]]
+|style="width:3%"|[[ы]] [[Ы]]
+|style="width:3%"|[[ь]] [[Ь]]
+|style="width:3%"|[[э]] [[Э]]
+|style="width:3%"|[[ю]] [[Ю]]
+|style="width:3%"|[[я]] [[Я]]
+|-
+| colspan="26" class="Unicode" |
+{{alphabet cyrillique/étendu|{{{1|}}}|{{{2|}}}|{{{3|}}}|{{{4|}}}}}
+|}
+{{)}}
+{{#ifeq:{{NAMESPACE}}||[[Catégorie:Alphabet cyrillique]]}}</includeonly><noinclude>{{Documentation}}</noinclude>

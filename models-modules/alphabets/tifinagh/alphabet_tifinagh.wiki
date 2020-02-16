@@ -1,0 +1,60 @@
+{{(|[[alphabet|Alphabet]] [[tifinagh]] (Unicode 12.1)|colonnes=1}}
+{| class="wikitable" style="clear:both; margin:0.5em auto 0.5em auto; width:100%; border-collapse:collapse; background:GhostWhite; padding:0.5em; text-align:center"
+|-
+| style="width:4.167%" | [[ⴰ]]
+| style="width:4.167%" | [[ⴱ]]
+| style="width:4.167%" | [[ⴲ]]
+| style="width:4.167%" | [[ⴳ]]
+| style="width:4.167%" | [[ⴴ]]
+| style="width:4.167%" | [[ⴵ]]<br />[[ⴶ]]
+| style="width:4.167%" | [[ⴷ]]
+| style="width:4.167%" | [[ⴸ]]
+| style="width:4.167%" | [[ⴹ]]
+| style="width:4.167%" | [[ⴺ]]
+| style="width:4.167%" | [[ⴻ]]
+| style="width:4.167%" | [[ⴼ]]
+| style="width:4.167%" | [[ⴽ]]<br />[[ⴾ]]
+| style="width:4.167%" | [[ⴿ]]
+| style="width:4.167%" | [[ⵀ]]
+| style="width:4.167%" | [[ⵁ]]<br />[[ⵂ]]
+| style="width:4.167%" | [[ⵃ]]
+| style="width:4.167%" | [[ⵄ]]
+| style="width:4.167%" | [[ⵅ]]<br />[[ⵆ]]
+| style="width:4.167%" | [[ⵇ]]<br />[[ⵈ]]
+| style="width:4.167%" | [[ⵉ]]
+| style="width:4.167%" | [[ⵊ]]<br />[[ⵋ]]<br />[[ⵌ]]
+| style="width:4.167%" | [[ⵍ]]
+| style="width:4.167%" | [[ⵎ]]
+|-
+| [[ⵏ]]
+| [[ⵐ]]<br />[[ⵑ]]
+| [[ⵒ]]
+| [[ⵓ]]
+| [[ⵔ]]
+| [[ⵕ]]
+| [[ⵖ]]<br />[[ⵗ]]<br />[[ⵘ]]
+| [[ⵙ]]
+| [[ⵚ]]
+| [[ⵛ]]
+| [[ⵜ]]
+| [[ⵝ]]
+| [[ⵞ]]
+| [[ⵟ]]
+| [[ⵠ]]
+| [[ⵡ]]
+| [[ⵢ]]
+| [[ⵣ]]
+| [[ⵤ]]
+| [[ⵥ]]
+| [[ⵦ]]
+| [[ⵧ]]
+| [[ⵯ]]
+|}
+{| class="wikitable" style="clear:both; margin:0.5em auto 0.5em auto; border-collapse:collapse; background:GhostWhite; padding:0.5em; text-align:center"
+|-
+! colspan="2" | Ponctuation et diacritiques
+|-
+| style="width:50%" | [[⵰]]
+| style="width:50%" | [[◌⵿]]
+|}
+{{)}}<includeonly>[[Catégorie:Alphabet tifinagh|{{{1|{{PAGENAME}}}}}]]</includeonly><noinclude>[[Catégorie:Alphabet tifinagh| ]]</noinclude>

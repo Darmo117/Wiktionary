@@ -1,0 +1,10 @@
+certifi
+chardet
+idna
+lupa
+pycparser
+PyQt5
+PyQt5-sip
+pywikibot
+requests
+urllib3

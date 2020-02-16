@@ -1,0 +1,59 @@
+{{(|[[alphabet#fr|Alphabet]] [[glagolitique]] ([[Unicode]] 12.1)|colonnes=1}}
+{| class="wikitable" style="clear:both; margin:0.5em auto 0.5em auto; width:100%; border-collapse:collapse; background:GhostWhite; padding:0.5em; text-align:center"
+|-
+|style="width:4.76%"|[[Ⰰ]] [[ⰰ]]
+|style="width:4.76%"|[[Ⰱ]] [[ⰱ]]
+|style="width:4.76%"|[[Ⰲ]] [[ⰲ]]
+|style="width:4.76%"|[[Ⰳ]] [[ⰳ]]
+|style="width:4.76%"|[[Ⰴ]] [[ⰴ]]
+|style="width:4.76%"|[[Ⰵ]] [[ⰵ]]
+|style="width:4.76%"|[[Ⰶ]] [[ⰶ]]
+|style="width:4.76%"|[[Ⰷ]] [[ⰷ]]
+|style="width:4.76%"|[[Ⰸ]] [[ⰸ]]
+|style="width:4.76%"|[[Ⰹ]] [[ⰹ]]<br />[[Ⰺ]] [[ⰺ]]
+|style="width:4.76%"|[[Ⰻ]] [[ⰻ]]
+|style="width:4.76%"|[[Ⰼ]] [[ⰼ]]
+|style="width:4.76%"|[[Ⰽ]] [[ⰽ]]
+|style="width:4.76%"|[[Ⰾ]] [[ⰾ]]
+|style="width:4.76%"|[[Ⰿ]] [[ⰿ]]
+|style="width:4.76%"|[[Ⱀ]] [[ⱀ]]
+|style="width:4.76%"|[[Ⱁ]] [[ⱁ]]
+|style="width:4.76%"|[[Ⱂ]] [[ⱂ]]
+|style="width:4.76%"|[[Ⱃ]] [[ⱃ]]
+|style="width:4.76%"|[[Ⱄ]] [[ⱄ]]
+|style="width:4.76%"|[[Ⱅ]] [[ⱅ]]
+|-
+|style="width:4.76%"|[[Ⱆ]] [[ⱆ]]
+|style="width:4.76%"|[[Ⱇ]] [[ⱇ]]
+|style="width:4.76%"|[[Ⱈ]] [[ⱈ]]
+|style="width:4.76%"|[[Ⱉ]] [[ⱉ]]
+|style="width:4.76%"|[[Ⱋ]] [[ⱋ]]
+|style="width:4.76%"|[[Ⱌ]] [[ⱌ]]
+|style="width:4.76%"|[[Ⱍ]] [[ⱍ]]
+|style="width:4.76%"|[[Ⱎ]] [[ⱎ]]
+|style="width:4.76%"|[[Ⱏ]] [[ⱏ]]
+|style="width:4.76%"|[[ⰟⰉ]] [[ⱏⰹ]]
+|style="width:4.76%"|[[Ⱐ]] [[Ⱐ]]
+|style="width:4.76%"|[[Ⱑ]] [[ⱑ]]
+|style="width:4.76%"|[[Ⱖ]] [[ⱖ]]
+|style="width:4.76%"|[[Ⱓ]] [[ⱓ]]
+|style="width:4.76%"|[[Ⱔ]] [[ⱔ]]
+|style="width:4.76%"|[[Ⱗ]] [[ⱗ]]
+|style="width:4.76%"|[[Ⱘ]] [[ⱘ]]
+|style="width:4.76%"|[[Ⱙ]] [[ⱙ]]
+|style="width:4.76%"|[[Ⱚ]] [[ⱚ]]
+|style="width:4.76%"|[[Ⱛ]] [[ⱛ]]
+|}
+{| class="wikitable" style="clear:both; margin:0.5em auto 0.5em auto; width:100%; border-collapse:collapse; background:GhostWhite; padding:0.5em; text-align:center"
+|-
+! colspan="6" | Autres lettres
+|-
+|style="width:16.67%"|[[Ⱊ]] [[ⱊ]]
+|style="width:16.67%"|[[Ⱒ]] [[ⱒ]]
+|style="width:16.67%"|[[Ⱕ]] [[ⱕ]]
+|style="width:16.67%"|[[Ⱜ]] [[ⱜ]]
+|style="width:16.67%"|[[Ⱝ]] [[ⱝ]]
+|style="width:16.67%"|[[Ⱞ]] [[ⱞ]]
+|}
+{{)}}
+<includeonly>[[Catégorie:Alphabet glagolitique|{{{1|{{PAGENAME}}}}}]]</includeonly><noinclude>[[Catégorie:Alphabet glagolitique| ]]</noinclude>

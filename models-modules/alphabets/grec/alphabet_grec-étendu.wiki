@@ -1,0 +1,1 @@
+<includeonly>{{#invoke:alphabet étendu|table|grec|{{{1|}}}|{{{2|}}}|{{{3|}}}|{{{4|}}}}}</includeonly><noinclude>{{Documentation}}</noinclude>

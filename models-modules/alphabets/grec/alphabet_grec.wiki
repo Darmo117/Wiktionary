@@ -1,0 +1,52 @@
+<includeonly>{|class="wikitable" style="clear:both;margin:0.5em auto;width:100%;border-collapse:collapse;padding:0.5em;text-align:center"
+|-
+!scope="col" colspan="24"| [[alphabet#fr|Alphabet]] [[grec]] de base ([[Unicode]])
+|-
+|style="width:4.166%"|[[Α]] [[α]]
+|style="width:4.166%"|[[Β]] [[β]] [[ϐ]]
+|style="width:4.166%"|[[Γ]] [[γ]]
+|style="width:4.166%"|[[Δ]] [[δ]]
+|style="width:4.166%"|[[Ε]] [[ε]]
+|style="width:4.166%"|[[Ζ]] [[ζ]]
+|style="width:4.166%"|[[Η]] [[η]]
+|style="width:4.166%"|[[Θ]] [[θ]]<br />[[ϴ]] [[ϑ]]
+|style="width:4.166%"|[[Ι]] [[ι]]
+|style="width:4.166%"|[[Κ]] [[κ]] [[ϰ]]
+|style="width:4.166%"|[[Λ]] [[λ]]
+|style="width:4.166%"|[[Μ]] [[μ]]
+|style="width:4.166%"|[[Ν]] [[ν]]
+|style="width:4.166%"|[[Ξ]] [[ξ]]
+|style="width:4.166%"|[[Ο]] [[ο]]
+|style="width:4.166%"|[[Π]] [[π]] [[ϖ]]
+|style="width:4.166%"|[[Ρ]] [[ρ]] [[ϱ]]
+|style="width:4.166%"|[[Σ]] [[σ]] [[ς]]
+|style="width:4.166%"|[[Τ]] [[τ]]
+|style="width:4.166%"|[[Υ]] [[ϒ]] [[υ]]
+|style="width:4.166%"|[[Φ]] [[φ]] [[ϕ]]
+|style="width:4.166%"|[[Χ]] [[χ]]
+|style="width:4.166%"|[[Ψ]] [[ψ]]
+|style="width:4.166%"|[[Ω]] [[ω]]
+|}
+{|class="wikitable" style="clear:both;margin:0.5em auto;width:100%;border-collapse:collapse;padding:0.5em;text-align:center"
+|-
+!scope="row" colspan="2"| [[ligature#fr|Ligatures]] de l’alphabet grec
+|rowspan="2" style="background:transparent;padding:2px;border-top:hidden;border-bottom:hidden"|
+!scope="row" colspan="5"| Lettres [[désuet#fr|désuètes]] de l’alphabet grec
+|rowspan="2" style="background:transparent;padding:2px;border-top:hidden;border-bottom:hidden"|
+!scope="row" colspan="4"| Lettres [[archaïque]]s de l’alphabet [[grec ancien]]
+|-
+|style="width:9.09%"|[[Ϗ]] [[ϗ]]
+|style="width:9.09%"|[[Ϛ]] [[ϛ]]
+|style="width:9.09%"|[[ϵ]]<br />[[϶]]
+|style="width:9.09%"|[[Ϳ]] [[ϳ]]
+|style="width:9.09%"|[[Ϸ]] [[ϸ]]
+|style="width:9.09%"|[[Ͱ]] [[ͱ]]
+|style="width:9.09%"|[[Ϲ]] [[ϲ]]
+|style="width:9.09%"|[[Ϝ]] [[ϝ]]<br />[[Ͷ]] [[ͷ]]
+|style="width:9.09%"|[[Ϻ]] [[ϻ]]
+|style="width:9.09%"|[[Ϟ]] [[ϟ]]<br />[[Ϙ]] [[ϙ]]
+|style="width:9.09%"|[[Ϡ]] [[ϡ]]<br />[[Ͳ]] [[ͳ]]
+|-
+|scope="row" colspan="13" style="padding:0"|
+{{alphabet grec/étendu|{{{1|}}}|{{{2|}}}|{{{3|}}}|{{{4|}}}}}
+|}{{#ifeq:{{NAMESPACE}}||[[Catégorie:Alphabet grec]]}}</includeonly><noinclude>{{Documentation}}</noinclude>

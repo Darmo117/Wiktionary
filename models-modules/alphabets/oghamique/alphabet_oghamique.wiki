@@ -1,0 +1,46 @@
+{{(|[[alphabet|Alphabet]] [[oghamique]] (Unicode 12.1)|colonnes=1}}
+{| class="wikitable" style="clear:both; margin:0.5em auto 0.5em auto; width:100%; border-collapse:collapse; background:GhostWhite; padding:0.5em; text-align:center"
+|-
+! colspan="5" | Aicme B
+| rowspan="6" style="background:transparent; padding:2px; border-top:hidden; border-bottom:hidden; width: 0;" |
+! colspan="5" | Aicme H
+|-
+| style="width:9.99%" | [[ᚁ]]
+| style="width:9.99%" | [[ᚂ]]
+| style="width:9.99%" | [[ᚃ]]
+| style="width:9.99%" | [[ᚄ]]
+| style="width:9.99%" | [[ᚅ]]
+| style="width:9.99%" | [[ᚆ]]
+| style="width:9.99%" | [[ᚇ]]
+| style="width:9.99%" | [[ᚈ]]
+| style="width:9.99%" | [[ᚉ]]
+| style="width:9.99%" | [[ᚊ]]
+|-
+! colspan="5" | Aicme M
+! colspan="5" | Aicme A
+|-
+| [[ᚋ]]
+| [[ᚌ]]
+| [[ᚍ]]
+| [[ᚎ]]
+| [[ᚏ]]
+| [[ᚐ]]
+| [[ᚑ]]
+| [[ᚒ]]
+| [[ᚓ]]
+| [[ᚔ]]
+|-
+! colspan="5" | Aicme 5 (''Forfeda'')
+! colspan="4" | Autres symboles
+|-
+| [[ᚕ]]
+| [[ᚖ]]
+| [[ᚗ]]
+| [[ᚘ]]
+| [[ᚙ]]
+| [[ᚚ]]
+| [[᚛]]
+| [[᚜]]
+| [[Titres non pris en charge/Espace oghamique|<span style="background: lightblue">&#5760;</span>]]<br />''(espace)''
+|}
+{{)}}<includeonly>[[Catégorie:Alphabet oghamique|{{{1|{{PAGENAME}}}}}]]</includeonly><noinclude>[[Catégorie:Alphabet oghamique| ]]</noinclude>

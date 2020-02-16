@@ -1,0 +1,57 @@
+<includeonly>{{(|[[alphabet#fr|Alphabet]] [[géorgien]] de base ([[Unicode]] 12.1)|colonnes=1|fermer=1}}
+{| class="wikitable" style="clear:both;margin:0.5em auto;width:100%;border-collapse:collapse;padding:0.5em;text-align:center"
+|-
+| style="width:5.26%" | [[Ⴀ]] [[ⴀ]]<br />[[Ა]] [[ა]]
+| style="width:5.26%" | [[Ⴁ]] [[ⴁ]]<br />[[Ბ]] [[ბ]]
+| style="width:5.26%" | [[Ⴂ]] [[ⴂ]]<br />[[Გ]] [[გ]]
+| style="width:5.26%" | [[Ⴃ]] [[ⴃ]]<br />[[Დ]] [[დ]]
+| style="width:5.26%" | [[Ⴄ]] [[ⴄ]]<br />[[Ე]] [[ე]]
+| style="width:5.26%" | [[Ⴅ]] [[ⴅ]]<br />[[Ვ]] [[ვ]]
+| style="width:5.26%" | [[Ⴆ]] [[ⴆ]]<br />[[Ზ]] [[ზ]]
+| style="width:5.26%" | [[Ⴡ]] [[ⴡ]]<br />[[Ჱ]] [[ჱ]]
+| style="width:5.26%" | [[Ⴇ]] [[ⴇ]]<br />[[Თ]] [[თ]]
+| style="width:5.26%" | [[Ⴈ]] [[ⴈ]]<br />[[Ი]] [[ი]]
+| style="width:5.26%" | [[Ⴉ]] [[ⴉ]]<br />[[Კ]] [[კ]]
+| style="width:5.26%" | [[Ⴊ]] [[ⴊ]]<br />[[Ლ]] [[ლ]]
+| style="width:5.26%" | [[Ⴋ]] [[ⴋ]]<br />[[Მ]] [[მ]]
+| style="width:5.26%" | [[Ⴌ]] [[ⴌ]]<br />[[Ნ]] [[ნ]]
+| style="width:5.26%" | [[Ⴢ]] [[ⴢ]]<br />[[Ჲ]] [[ჲ]]
+| style="width:5.26%" | [[Ⴍ]] [[ⴍ]]<br />[[Ო]] [[ო]]
+| style="width:5.26%" | [[Ⴎ]] [[ⴎ]]<br />[[Პ]] [[პ]]
+| style="width:5.26%" | [[Ⴏ]] [[ⴏ]]<br />[[Ჟ]] [[ჟ]]
+| style="width:5.26%" | [[Ⴐ]] [[ⴐ]]<br />[[Რ]] [[რ]]
+|-
+| style="width:5.26%" | [[Ⴑ]] [[ⴑ]]<br />[[Ს]] [[ს]]
+| style="width:5.26%" | [[Ⴒ]] [[ⴒ]]<br />[[Ტ]] [[ტ]]
+| style="width:5.26%" | [[Ⴣ]] [[ⴣ]]<br />[[Ჳ]] [[ჳ]]
+| style="width:5.26%" | [[Ⴓ]] [[ⴓ]]<br />[[Უ]] [[უ]]
+| style="width:5.26%" | [[Ⴔ]] [[ⴔ]]<br />[[Ფ]] [[ფ]]
+| style="width:5.26%" | [[Ⴕ]] [[ⴕ]]<br />[[Ქ]] [[ქ]]
+| style="width:5.26%" | [[Ⴖ]] [[ⴖ]]<br />[[Ღ]] [[ღ]]
+| style="width:5.26%" | [[Ⴗ]] [[ⴗ]]<br />[[Ყ]] [[ყ]]
+| style="width:5.26%" | [[Ⴘ]] [[ⴘ]]<br />[[Შ]] [[შ]]
+| style="width:5.26%" | [[Ⴙ]] [[ⴙ]]<br />[[Ჩ]] [[ჩ]]
+| style="width:5.26%" | [[Ⴚ]] [[ⴚ]]<br />[[Ც]] [[ც]]
+| style="width:5.26%" | [[Ⴛ]] [[ⴛ]]<br />[[Ძ]] [[ძ]]
+| style="width:5.26%" | [[Ⴜ]] [[ⴜ]]<br />[[Წ]] [[წ]]
+| style="width:5.26%" | [[Ⴝ]] [[ⴝ]]<br />[[Ჭ]] [[ჭ]]
+| style="width:5.26%" | [[Ⴞ]] [[ⴞ]]<br />[[Ხ]] [[ხ]]
+| style="width:5.26%" | [[Ⴤ]] [[ⴤ]]<br />[[Ჴ]] [[ჴ]]
+| style="width:5.26%" | [[Ⴟ]] [[ⴟ]]<br />[[Ჯ]] [[ჯ]]
+| style="width:5.26%" | [[Ⴠ]] [[ⴠ]]<br />[[Ჰ]] [[ჰ]]
+| style="width:5.26%" | [[Ⴥ]] [[ⴥ]]<br />[[Ჵ]] [[ჵ]]
+|}
+{| class="wikitable" style="clear:both;margin:0.5em auto;width:100%;border-collapse:collapse;padding:0.5em;text-align:center"
+|-
+! colspan="12" | Lettres et signes additionnels
+|-
+| style="width:14.3%" | [[Ⴧ]] [[ⴧ]]<br />[[Ჷ]] [[ჷ]]
+| style="width:14.3%" | [[Ჸ]] [[ჸ]]
+| style="width:14.3%" | [[Ჶ]] [[ჶ]]
+| style="width:14.3%" | [[Ჺ]] [[ჺ]]
+| style="width:14.3%" | [[Ⴭ]] [[ⴭ]]<br />[[Ჽ]] [[ჽ]]
+| style="width:14.3%" | [[Ჾ]] [[ჾ]]
+| style="width:14.3%" | [[Ჿ]] [[ჿ]]
+|}
+{{alphabet géorgien/étendu|{{{1|}}}|{{{2|}}}|{{{3|}}}}}
+{{)}}{{#ifeq:{{NAMESPACE}}||[[Catégorie:Alphabet géorgien]]}}</includeonly><noinclude>{{Documentation}}</noinclude>

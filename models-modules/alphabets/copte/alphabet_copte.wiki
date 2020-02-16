@@ -1,0 +1,40 @@
+{{(|[[alphabet#fr|Alphabet]] [[copte]] (Unicode 12.1)|colonnes=1}}
+{| class="wikitable" style="clear:both; margin:0.5em auto 0.5em auto; width:100%; border-collapse:collapse; background:GhostWhite; padding:0.5em; text-align:center"
+|-
+| style="width:0.0909%" |[[Ⲁ]]<br/>[[ⲁ]]
+| style="width:0.0909%" |[[Ⲃ]]<br/>[[ⲃ]]
+| style="width:0.0909%" |[[Ⲅ]]<br/>[[ⲅ]]
+| style="width:0.0909%" |[[Ⲇ]]<br/>[[ⲇ]]
+| style="width:0.0909%" |[[Ⲉ]]<br/>[[ⲉ]]
+| style="width:0.0909%" |[[Ⲋ]]<br/>[[ⲋ]]
+| style="width:0.0909%" |[[Ⲍ]]<br/>[[ⲍ]]
+| style="width:0.0909%" |[[Ⲏ]]<br/>[[ⲏ]]
+| style="width:0.0909%" |[[Ⲑ]]<br/>[[ⲑ]]
+| style="width:0.0909%" |[[Ⲓ]]<br/>[[ⲓ]]
+| style="width:0.0909%" |[[Ⲕ]]<br/>[[ⲕ]]
+|-
+| style="width:0.0909%" |[[Ⲗ]]<br/>[[ⲗ]]
+| style="width:0.0909%" |[[Ⲙ]]<br/>[[ⲙ]]
+| style="width:0.0909%" |[[Ⲛ]]<br/>[[ⲛ]]
+| style="width:0.0909%" |[[Ⲝ]]<br/>[[ⲝ]]
+| style="width:0.0909%" |[[Ⲟ]]<br/>[[ⲟ]]
+| style="width:0.0909%" |[[Ⲡ]]<br/>[[ⲡ]]
+| style="width:0.0909%" |[[Ⲣ]]<br/>[[ⲣ]]
+| style="width:0.0909%" |[[Ⲥ]]<br/>[[ⲥ]]
+| style="width:0.0909%" |[[Ⲧ]]<br/>[[ⲧ]]
+| style="width:0.0909%" |[[Ⲩ]]<br/>[[ⲩ]]
+| style="width:0.0909%" |[[Ⲫ]]<br/>[[ⲫ]]
+|-
+| style="width:0.0909%" |[[Ⲭ]]<br/>[[ⲭ]]
+| style="width:0.0909%" |[[Ⲯ]]<br/>[[ⲯ]]
+| style="width:0.0909%" |[[Ⲱ]]<br/>[[ⲱ]]
+| style="width:0.0909%" |[[Ϣ]]<br/>[[ϣ]]
+| style="width:0.0909%" |[[Ϥ]]<br/>[[ϥ]]
+| style="width:0.0909%" |[[Ϧ]]<br/>[[ϧ]]
+| style="width:0.0909%" |[[Ϩ]]<br/>[[ϩ]]
+| style="width:0.0909%" |[[Ϫ]]<br/>[[ϫ]]
+| style="width:0.0909%" |[[Ϭ]]<br/>[[ϭ]]
+| style="width:0.0909%" |[[Ϯ]]<br/>[[ϯ]]
+| style="width:0.0909%" |[[Ⳁ]]<br/>[[ⳁ]]
+|}
+{{)}}<includeonly>[[Catégorie:Alphabet copte|{{{1|{{PAGENAME}}}}}]]</includeonly><noinclude>[[Catégorie:Alphabet copte|*]]</noinclude>

@@ -1,3 +1,6 @@
 pywikibot.lwp
 throttle.ctrl
-user-config.py
+user-*.py
+apicache-py3/
+test/
+venv/

@@ -1,0 +1,9 @@
+<includeonly>{| class="flextable"
+|+ {{{titre|}}}
+! Mtavruli !! Mkhedruli !! Asomtavruli !! Nuskhuri
+|-
+| [[{{{1|}}}]]
+| [[{{{2|}}}]]
+| {{#if: {{{3|}}} | [[{{{3|}}}]] | <span style="color: gray;">&mdash;</span> }}
+| {{#if: {{{4|}}} | [[{{{4|}}}]] | <span style="color: gray;">&mdash;</span> }}
+|}</includeonly><noinclude>{{Documentation|Modèle:casse/géorgien/Documentation}}</noinclude>

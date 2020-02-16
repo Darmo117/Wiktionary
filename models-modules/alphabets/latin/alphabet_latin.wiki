@@ -1,0 +1,36 @@
+<includeonly>
+{{(|[[alphabet|Alphabet]] [[latin]] de base (ISO/IEC 646)|colonnes=1}}
+{| class="wikitable" style="clear:both; margin:0.5em auto 0.5em auto; width:100%; border-collapse:collapse; background:GhostWhite; padding:0.5em; text-align:center"
+|-
+| style="width:3.846%" |[[a]] [[A]]
+| style="width:3.846%" |[[b]] [[B]]
+| style="width:3.846%" |[[c]] [[C]]
+| style="width:3.846%" |[[d]] [[D]]
+| style="width:3.846%" |[[e]] [[E]]
+| style="width:3.846%" |[[f]] [[F]]
+| style="width:3.846%" |[[g]] [[G]]
+| style="width:3.846%" |[[h]] [[H]]
+| style="width:3.846%" |[[i|<small>&nbsp;</small>i<small>&nbsp;</small>]] [[I|<small>&nbsp;</small>I<small>&nbsp;</small>]]
+| style="width:3.846%" |[[j|<small>&nbsp;</small>j<small>&nbsp;</small>]] [[J]]
+| style="width:3.846%" |[[k]] [[K]]
+| style="width:3.846%" |[[l|<small>&nbsp;</small>l<small>&nbsp;</small>]] [[L]]
+| style="width:3.846%" |[[m]] [[M]]
+| style="width:3.846%" |[[n]] [[N]]
+| style="width:3.846%" |[[o]] [[O]]
+| style="width:3.846%" |[[p]] [[P]]
+| style="width:3.846%" |[[q]] [[Q]]
+| style="width:3.846%" |[[r]] [[R]]
+| style="width:3.846%" |[[s]] [[S]]
+| style="width:3.846%" |[[t]] [[T]]
+| style="width:3.846%" |[[u]] [[U]]
+| style="width:3.846%" |[[v]] [[V]]
+| style="width:3.846%" |[[w]] [[W]]
+| style="width:3.846%" |[[x]] [[X]]
+| style="width:3.846%" |[[y]] [[Y]]
+| style="width:3.846%" |[[z]] [[Z]]
+|-
+| colspan="26" class="Unicode" |
+{{alphabet latin/étendu|{{{1|}}}|{{{2|}}}|{{{3|}}}|{{{4|}}}}}
+|}
+{{)}}
+{{#ifeq:{{NAMESPACE}}||[[Catégorie:Alphabet latin]]}}</includeonly><noinclude>{{Documentation}}</noinclude>

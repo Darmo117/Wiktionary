@@ -1,0 +1,47 @@
+{{(|Alphabet géorgien|colonnes=1|fermer=1}}
+{| class="wikitable" style="clear:both; margin:0.5em auto 0.5em auto; border-collapse:collapse; background:GhostWhite; padding:0.5em; text-align:center"
+| style="width: 5.882%;" | [[Ⴀ]] [[ⴀ]]<br/>[[Ა]] [[ა]]
+| style="width: 5.882%;" | [[Ⴁ]] [[ⴁ]]<br/>[[Ბ]] [[ბ]]
+| style="width: 5.882%;" | [[Ⴂ]] [[ⴂ]]<br/>[[Გ]] [[გ]]
+| style="width: 5.882%;" | [[Ⴃ]] [[ⴃ]]<br/>[[Დ]] [[დ]]
+| style="width: 5.882%;" | [[Ⴄ]] [[ⴄ]]<br/>[[Ე]] [[ე]]
+| style="width: 5.882%;" | [[Ⴅ]] [[ⴅ]]<br/>[[Ვ]] [[ვ]]
+| style="width: 5.882%;" | [[Ⴆ]] [[ⴆ]]<br/>[[Ზ]] [[ზ]]
+| style="width: 5.882%;" | [[Ⴇ]] [[ⴇ]]<br/>[[Თ]] [[თ]]
+| style="width: 5.882%;" | [[Ⴈ]] [[ⴈ]]<br/>[[Ი]] [[ი]]
+| style="width: 5.882%;" | [[Ⴉ]] [[ⴉ]]<br/>[[Კ]] [[კ]]
+| style="width: 5.882%;" | [[Ⴊ]] [[ⴊ]]<br/>[[Ლ]] [[ლ]]
+| style="width: 5.882%;" | [[Ⴋ]] [[ⴋ]]<br/>[[Მ]] [[მ]]
+| style="width: 5.882%;" | [[Ⴌ]] [[ⴌ]]<br/>[[Ნ]] [[ნ]]
+| style="width: 5.882%;" | [[Ⴍ]] [[ⴍ]]<br/>[[Ო]] [[ო]]
+| style="width: 5.882%;" | [[Ⴎ]] [[ⴎ]]<br/>[[Პ]] [[პ]]
+| style="width: 5.882%;" | [[Ⴏ]] [[ⴏ]]<br/>[[Ჟ]] [[ჟ]]
+| style="width: 5.882%;" | [[Ⴐ]] [[ⴐ]]<br/>[[Რ]] [[რ]]
+|-
+| [[Ⴑ]] [[ⴑ]]<br/>[[Ს]] [[ს]]
+| [[Ⴒ]] [[ⴒ]]<br/>[[Ტ]] [[ტ]]
+| [[Ⴓ]] [[ⴓ]]<br/>[[Უ]] [[უ]]
+| [[Ⴔ]] [[ⴔ]]<br/>[[Ფ]] [[ფ]]
+| [[Ⴕ]] [[ⴕ]]<br/>[[Ქ]] [[ქ]]
+| [[Ⴖ]] [[ⴖ]]<br/>[[Ღ]] [[ღ]]
+| [[Ⴗ]] [[ⴗ]]<br/>[[Ყ]] [[ყ]]
+| [[Ⴘ]] [[ⴘ]]<br/>[[Შ]] [[შ]]
+| [[Ⴙ]] [[ⴙ]]<br/>[[Ჩ]] [[ჩ]]
+| [[Ⴚ]] [[ⴚ]]<br/>[[Ც]] [[ც]]
+| [[Ⴛ]] [[ⴛ]]<br/>[[Ძ]] [[ძ]]
+| [[Ⴜ]] [[ⴜ]]<br/>[[Წ]] [[წ]]
+| [[Ⴝ]] [[ⴝ]]<br/>[[Ჭ]] [[ჭ]]
+| [[Ⴞ]] [[ⴞ]]<br/>[[Ხ]] [[ხ]]
+| [[Ⴟ]] [[ⴟ]]<br/>[[Ჯ]] [[ჯ]]
+| [[Ⴠ]] [[ⴠ]]<br/>[[Ჰ]] [[ჰ]]
+|}
+{| class="wikitable" style="clear:both; margin:0.5em auto 0.5em auto; border-collapse:collapse; background:GhostWhite; padding:0.5em; text-align:center"
+! colspan="5" | Lettres obsolètes ou archaïques
+|-
+| style="width: 20%;" | [[Ⴡ]] [[ⴡ]]<br/>[[Ჱ]] [[ჱ]]
+| style="width: 20%;" | [[Ⴢ]] [[ⴢ]]<br/>[[Ჲ]] [[ჲ]]
+| style="width: 20%;" | [[Ⴣ]] [[ⴣ]]<br/>[[Ჳ]] [[ჳ]]
+| style="width: 20%;" | [[Ⴤ]] [[ⴤ]]<br/>[[Ჴ]] [[ჴ]]
+| style="width: 20%;" | [[Ⴥ]] [[ⴥ]]<br/>[[Ჵ]] [[ჵ]]
+|}
+{{)}}

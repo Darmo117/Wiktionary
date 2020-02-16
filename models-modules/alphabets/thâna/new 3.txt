@@ -1,0 +1,88 @@
+{{(|[[alphabet|Alphabet]] [[thâna]] (Unicode 12.1)|colonnes=1}}
+{| class="wikitable" style="clear:both; margin:0.5em auto 0.5em auto; width:100%; border-collapse:collapse; background:GhostWhite; padding:0.5em; text-align:center"
+|-
+! a
+! â
+! i
+! î
+! ou
+! oû
+! é
+! ê
+! o
+! ô
+! '
+ABA
+U+07A6	AABAA
+07A7	IBI
+07A8	EEBEE
+07A9	UBU
+07AA	OOBOO
+07AB	EBE
+07AC	EYBEY
+07AD	OBO
+07AE	OABOA
+07AF	SUKEN
+07B0
+ަ	ާ	ި	ީ	ު	ޫ	ެ	ޭ	ޮ	ޯ	ް
+basic
+consonants	ABA
+U+07A6	AABAA
+07A7	IBI
+07A8	EEBEE
+07A9	UBU
+07AA	OOBOO
+07AB	EBE
+07AC	EYBEY
+07AD	OBO
+07AE	OABOA
+07AF	SUKEN
+07B0
+HAA
+U+0780	ހ	ހަ	ހާ	ހި	ހީ	ހު	ހޫ	ހެ	ހޭ	ހޮ	ހޯ	ހް
+SHAVIYANI
+U+0781	ށ	ށަ	ށާ	ށި	ށީ	ށު	ށޫ	ށެ	ށޭ	ށޮ	ށޯ	ށް
+NOONU
+U+0782	ނ	ނަ	ނާ	ނި	ނީ	ނު	ނޫ	ނެ	ނޭ	ނޮ	ނޯ	ން
+RAA
+U+0783	ރ	ރަ	ރާ	ރި	ރީ	ރު	ރޫ	ރެ	ރޭ	ރޮ	ރޯ	ރް
+BAA
+U+0784	ބ	ބަ	ބާ	ބި	ބީ	ބު	ބޫ	ބެ	ބޭ	ބޮ	ބޯ	ބް
+LHAVIYANI
+U+0785	ޅ	ޅަ	ޅާ	ޅި	ޅީ	ޅު	ޅޫ	ޅެ	ޅޭ	ޅޮ	ޅޯ	ޅް
+KAAFU
+U+0786	ކ	ކަ	ކާ	ކި	ކީ	ކު	ކޫ	ކެ	ކޭ	ކޮ	ކޯ	ކް
+ALIFU
+U+0787	އ	އަ	އާ	އި	އީ	އު	އޫ	އެ	އޭ	އޮ	އޯ	އް
+VAAVU
+U+0788	ވ	ވަ	ވާ	ވި	ވީ	ވު	ވޫ	ވެ	ވޭ	ވޮ	ވޯ	ވް
+MEEMU
+U+0789	މ	މަ	މާ	މި	މީ	މު	މޫ	މެ	މޭ	މޮ	މޯ	މް
+FAAFU
+U+078A	ފ	ފަ	ފާ	ފި	ފީ	ފު	ފޫ	ފެ	ފޭ	ފޮ	ފޯ	ފް
+DHAALU
+U+078B	ދ	ދަ	ދާ	ދި	ދީ	ދު	ދޫ	ދެ	ދޭ	ދޮ	ދޯ	ދް
+THAA
+U+078C	ތ	ތަ	ތާ	ތި	ތީ	ތު	ތޫ	ތެ	ތޭ	ތޮ	ތޯ	ތް
+LAAMU
+U+078D	ލ	ލަ	ލާ	ލި	ލީ	ލު	ލޫ	ލެ	ލޭ	ލޮ	ލޯ	ލް
+GAAFU
+U+078E	ގ	ގަ	ގާ	ގި	ގީ	ގު	ގޫ	ގެ	ގޭ	ގޮ	ގޯ	ގް
+GNAVIYANI
+U+078F	ޏ	ޏަ	ޏާ	ޏި	ޏީ	ޏު	ޏޫ	ޏެ	ޏޭ	ޏޮ	ޏޯ	ޏް
+SEENU
+U+0790	ސ	ސަ	ސާ	ސި	ސީ	ސު	ސޫ	ސެ	ސޭ	ސޮ	ސޯ	ސް
+DAVIYANI
+U+0791	ޑ	ޑަ	ޑާ	ޑި	ޑީ	ޑު	ޑޫ	ޑެ	ޑޭ	ޑޮ	ޑޯ	ޑް
+ZAVIYANI
+U+0792	ޒ	ޒަ	ޒާ	ޒި	ޒީ	ޒު	ޒޫ	ޒެ	ޒޭ	ޒޮ	ޒޯ	ޒް
+TAVIYANI
+U+0793	ޓ	ޓަ	ޓާ	ޓި	ޓީ	ޓު	ޓޫ	ޓެ	ޓޭ	ޓޮ	ޓޯ	ޓް
+YAA
+U+0794	ޔ	ޔަ	ޔާ	ޔި	ޔީ	ޔު	ޔޫ	ޔެ	ޔޭ	ޔޮ	ޔޯ	ޔް
+PAVIYANI
+U+0795	ޕ	ޕަ	ޕާ	ޕި	ޕީ	ޕު	ޕޫ	ޕެ	ޕޭ	ޕޮ	ޕޯ	ޕް
+JAVIYANI
+U+0796	ޖ	ޖަ	ޖާ	ޖި	ޖީ	ޖު	ޖޫ	ޖެ	ޖޭ	ޖޮ	ޖޯ	ޖް
+CHAVIYANI
+U+0797	ޗ	ޗަ	ޗާ	ޗި	ޗީ	ޗު	ޗޫ	ޗެ	ޗޭ	ޗޮ	ޗޯ	ޗް

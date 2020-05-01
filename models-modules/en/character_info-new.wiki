@@ -1,1 +1,0 @@
-{{#invoke:character info|show<noinclude>|0xfffd</noinclude>}}<noinclude>{{documentation}}</noinclude>

@@ -116,9 +116,9 @@ Range lower,Range upper,Name EN,Name FR,PDF URL,Unicode version,Year
 31F0,31FF,Katakana Phonetic Extensions,Extensions phonétiques Katakana,https://web.archive.org/web/20190613203105/https://www.unicode.org/charts/PDF/U31F0.pdf,12.1,2019
 3200,32FF,Enclosed CJK Letters and Months,Lettres et mois CJC entourés,https://web.archive.org/web/20190613203205/https://www.unicode.org/charts/PDF/U3200.pdf,12.1,2019
 3300,33FF,CJK Compatibility,Caractères de compatibilité CJC,https://web.archive.org/web/20190613203209/https://www.unicode.org/charts/PDF/U3300.pdf,12.1,2019
-3400,4DBF,CJK Unified Ideographs Extension A,Sinogrammes unifiés CJC supplément A,https://web.archive.org/web/20190613203004/https://www.unicode.org/charts/PDF/U3400.pdf,12.1,2019
+3400,4DBF,CJK Unified Ideographs Extension A,Idéogrammes unifiés CJC supplément A,https://web.archive.org/web/20190613203004/https://www.unicode.org/charts/PDF/U3400.pdf,12.1,2019
 4DC0,4DFF,Yijing Hexagram Symbols,Hexagrammes du Yi-king,https://web.archive.org/web/20190613203318/https://www.unicode.org/charts/PDF/U4DC0.pdf,12.1,2019
-4E00,9FFF,CJK Unified Ideographs,Sinogrammes unifiés CJC,https://web.archive.org/web/20190613202956/https://www.unicode.org/charts/PDF/U4E00.pdf,12.1,2019
+4E00,9FFF,CJK Unified Ideographs,Idéogrammes unifiés CJC,https://web.archive.org/web/20190613202956/https://www.unicode.org/charts/PDF/U4E00.pdf,12.1,2019
 A000,A48F,Yi Syllables,Syllabaire yi des Monts frais,https://web.archive.org/web/20190613203118/https://www.unicode.org/charts/PDF/UA000.pdf,12.1,2019
 A490,A4CF,Yi Radicals,Clés yi,https://web.archive.org/web/20190613203121/https://www.unicode.org/charts/PDF/UA490.pdf,12.1,2019
 A4D0,A4FF,Lisu,Lissou,https://web.archive.org/web/20190613203106/https://www.unicode.org/charts/PDF/UA4D0.pdf,12.1,2019
@@ -150,7 +150,7 @@ D7B0,D7FF,Hangul Jamo Extended-B,Jamos hangûl étendus B,https://web.archive.or
 D800,DBFF,High Surrogates,Zone haute d’indirection,https://web.archive.org/web/20190613203335/https://www.unicode.org/charts/PDF/UD800.pdf,12.1,2019
 DC00,DFFF,Low Surrogates,Zone basse d’indirection,https://web.archive.org/web/20190613203337/https://www.unicode.org/charts/PDF/UDC00.pdf,12.1,2019
 E000,F8FF,Private Use Area,Zone à usage privé,https://web.archive.org/web/20190613203327/https://www.unicode.org/charts/PDF/UE000.pdf,12.1,2019
-F900,FAFF,CJK Compatibility Ideographs,Sinogrammes de compatibilité CJC,https://web.archive.org/web/20190613203032/https://www.unicode.org/charts/PDF/UF900.pdf,12.1,2019
+F900,FAFF,CJK Compatibility Ideographs,Idéogrammes de compatibilité CJC,https://web.archive.org/web/20190613203032/https://www.unicode.org/charts/PDF/UF900.pdf,12.1,2019
 FB00,FB4F,Alphabetic Presentation Forms,Formes de présentation alphabétiques,https://web.archive.org/web/20190613202446/https://www.unicode.org/charts/PDF/UFB00.pdf,12.1,2019
 FB50,FDFF,Arabic Presentation Forms-A,Formes de présentation arabes A,https://web.archive.org/web/20190613202659/https://www.unicode.org/charts/PDF/UFB50.pdf,12.1,2019
 FE00,FE0F,Variation Selectors,Sélecteurs de variante,https://web.archive.org/web/20190613203323/https://www.unicode.org/charts/PDF/UFE00.pdf,12.1,2019
@@ -203,7 +203,9 @@ FFF0,FFFF,Specials,Caractères spéciaux,https://web.archive.org/web/20190613203
 10C80,10CFF,Old Hungarian,Ancien hongrois,https://web.archive.org/web/20190613202552/https://www.unicode.org/charts/PDF/U10C80.pdf,12.1,2019
 10D00,10D3F,Hanifi Rohingya,Hanifi,https://web.archive.org/web/20190613202909/https://www.unicode.org/charts/PDF/U10D00.pdf,12.1,2019
 10E60,10E7F,Rumi Numeral Symbols,Symboles numériques rumi,https://web.archive.org/web/20190613203226/https://www.unicode.org/charts/PDF/U10E60.pdf,12.1,2019
+10E80,10EBF,Yezidi,Yézidi (trad),https://www.unicode.org/charts/PDF/U10E80.pdf,13.0,2020
 10F00,10F2F,Old Sogdian,Vieux sogdien,https://web.archive.org/web/20190613202742/https://www.unicode.org/charts/PDF/U10F00.pdf,12.1,2019
+10FB0,10FDF,Chorasmian,Chorasmien,https://www.unicode.org/charts/PDF/U10FB0.pdf,13.0,2020
 10F30,10F6F,Sogdian,Sogdien,https://web.archive.org/web/20190613202747/https://www.unicode.org/charts/PDF/U10F30.pdf,12.1,2019
 10FE0,10FFF,Elymaic,Élymaïque,https://web.archive.org/web/20190613202715/https://www.unicode.org/charts/PDF/U10FE0.pdf,12.1,2019
 11000,1107F,Brahmi,Brahmî,https://web.archive.org/web/20190613202758/https://www.unicode.org/charts/PDF/U11000.pdf,12.1,2019
@@ -226,6 +228,7 @@ FFF0,FFFF,Specials,Caractères spéciaux,https://web.archive.org/web/20190613203
 11700,1173F,Ahom,Âhom,https://web.archive.org/web/20190613202752/https://www.unicode.org/charts/PDF/U11700.pdf,12.1,2019
 11800,1184F,Dogra,Dogri,https://web.archive.org/web/20190613202805/https://www.unicode.org/charts/PDF/U11800.pdf,12.1,2019
 118A0,118FF,Warang Citi,Warang Citi,https://web.archive.org/web/20190613202905/https://www.unicode.org/charts/PDF/U118A0.pdf,12.1,2019
+11900,1195F,Dives Akuru,Dives Akuru (trad),https://www.unicode.org/charts/PDF/U11900.pdf,13.0,2020
 119A0,119FF,Nandinagari,Nandinagari,https://web.archive.org/web/20190613202833/https://www.unicode.org/charts/PDF/U119A0.pdf,12.1,2019
 11A00,11A4F,Zanabazar Square,Zanabazar Quadratique,https://web.archive.org/web/20190613202751/https://www.unicode.org/charts/PDF/U11A00.pdf,12.1,2019
 11A50,11AAF,Soyombo,Soyombo,https://web.archive.org/web/20190613202748/https://www.unicode.org/charts/PDF/U11A50.pdf,12.1,2019
@@ -235,6 +238,7 @@ FFF0,FFFF,Specials,Caractères spéciaux,https://web.archive.org/web/20190613203
 11D00,11D5F,Masaram Gondi,Masaram Gondi,https://web.archive.org/web/20190613202825/https://www.unicode.org/charts/PDF/U11D00.pdf,12.1,2019
 11D60,11DAF,Gunjala Gondi,Gunjala Gondi,https://web.archive.org/web/20190613202809/https://www.unicode.org/charts/PDF/U11D60.pdf,12.1,2019
 11EE0,11EFF,Makasar,Makassar,https://web.archive.org/web/20190613202943/https://www.unicode.org/charts/PDF/U11EE0.pdf,12.1,2019
+11FB0,11FBF,Lisu Supplement,Supplément Lissou,https://www.unicode.org/charts/PDF/U11FB0.pdf,13.0,2020
 11FC0,11FFF,Tamil Supplement,Supplément Tamoul,https://web.archive.org/web/20190613202856/https://www.unicode.org/charts/PDF/U11FC0.pdf,12.1,2019
 12000,123FF,Cuneiform,Cunéiforme,https://web.archive.org/web/20190613202704/https://www.unicode.org/charts/PDF/U12000.pdf,12.1,2019
 12400,1247F,Cuneiform Numbers and Punctuation,Ponctuation et nombres cunéiformes,https://web.archive.org/web/20190613202707/https://www.unicode.org/charts/PDF/U12400.pdf,12.1,2019
@@ -251,6 +255,8 @@ FFF0,FFFF,Specials,Caractères spéciaux,https://web.archive.org/web/20190613203
 16FE0,16FFF,Ideographic Symbols and Punctuation,Symboles et ponctuation idéographiques,https://web.archive.org/web/20190613203147/https://www.unicode.org/charts/PDF/U16FE0.pdf,12.1,2019
 17000,187FF,Tangut,Tangoute,https://web.archive.org/web/20190613203112/https://www.unicode.org/charts/PDF/U17000.pdf,12.1,2019
 18800,18AFF,Tangut Components,Composants tangoutes,https://web.archive.org/web/20190613203116/https://www.unicode.org/charts/PDF/U18800.pdf,12.1,2019
+18B00,18CFF,Khitan Small Script,Petits caractères khitans (trad),https://www.unicode.org/charts/PDF/U18B00.pdf,13.0,2020
+18D00,18D8F,Tangut Supplement,Supplément Tangoute,https://www.unicode.org/charts/PDF/U18D00.pdf,13.0,2020
 1B000,1B0FF,Kana Supplement,Supplément kana,https://web.archive.org/web/20190613203058/https://www.unicode.org/charts/PDF/U1B000.pdf,12.1,2019
 1B100,1B12F,Kana Extended-A,Kana étendu A,https://web.archive.org/web/20190613203055/https://www.unicode.org/charts/PDF/U1B100.pdf,12.1,2019
 1B130,1B16F,Small Kana Extension,Extension petits kanas,https://web.archive.org/web/20190613203059/https://www.unicode.org/charts/PDF/U1B130.pdf,12.1,2019
@@ -276,8 +282,8 @@ FFF0,FFFF,Specials,Caractères spéciaux,https://web.archive.org/web/20190613203
 1F000,1F02F,Mahjong Tiles,Pièces de mah-jong,https://web.archive.org/web/20190613203314/https://www.unicode.org/charts/PDF/U1F000.pdf,12.1,2019
 1F030,1F09F,Domino Tiles,Dominos,https://web.archive.org/web/20190613203313/https://www.unicode.org/charts/PDF/U1F030.pdf,12.1,2019
 1F0A0,1F0FF,Playing Cards,Cartes à jouer,https://web.archive.org/web/20190613203316/https://www.unicode.org/charts/PDF/U1F0A0.pdf,12.1,2019
-1F100,1F1FF,Enclosed Alphanumeric Supplement,Alphanumériques entourés – supplément,https://web.archive.org/web/20190613203204/https://www.unicode.org/charts/PDF/U1F100.pdf,12.1,2019
-1F200,1F2FF,Enclosed Ideographic Supplement,Sinogrammes entourés – supplément,https://web.archive.org/web/20190613203207/https://www.unicode.org/charts/PDF/U1F200.pdf,12.1,2019
+1F100,1F1FF,Enclosed Alphanumeric Supplement,Alphanumériques entourés - supplément,https://web.archive.org/web/20190613203204/https://www.unicode.org/charts/PDF/U1F100.pdf,12.1,2019
+1F200,1F2FF,Enclosed Ideographic Supplement,Idéogrammes entourés - supplément,https://web.archive.org/web/20190613203207/https://www.unicode.org/charts/PDF/U1F200.pdf,12.1,2019
 1F300,1F5FF,Miscellaneous Symbols and Pictographs,Divers symboles et pictogrammes,https://web.archive.org/web/20190613203300/https://www.unicode.org/charts/PDF/U1F300.pdf,12.1,2019
 1F600,1F64F,Emoticons,Émoticônes,https://web.archive.org/web/20190613203255/https://www.unicode.org/charts/PDF/U1F600.pdf,12.1,2019
 1F650,1F67F,Ornamental Dingbats,Casseau ornemental,https://web.archive.org/web/20190613203254/https://www.unicode.org/charts/PDF/U1F650.pdf,12.1,2019
@@ -288,13 +294,15 @@ FFF0,FFFF,Specials,Caractères spéciaux,https://web.archive.org/web/20190613203
 1F900,1F9FF,Supplemental Symbols and Pictographs,Supplément de symboles et pictogrammes,https://web.archive.org/web/20190613203302/https://www.unicode.org/charts/PDF/U1F900.pdf,12.1,2019
 1FA00,1FA6F,Chess Symbols,Symboles des échecs,https://web.archive.org/web/20190613203311/https://www.unicode.org/charts/PDF/U1FA00.pdf,12.1,2019
 1FA70,1FAFF,Symbols and Pictographs Extended-A,Symboles et pictogrammes étendu A,https://web.archive.org/web/20190613203305/https://www.unicode.org/charts/PDF/U1FA70.pdf,12.1,2019
-20000,2A6DF,CJK Unified Ideographs Extension B,Idéographes unifiés CJC - extension B,https://web.archive.org/web/20190613203009/https://www.unicode.org/charts/PDF/U20000.pdf,12.1,2019
-2A700,2B73F,CJK Unified Ideographs Extension C,Idéographes unifiés CJC - extension C,https://web.archive.org/web/20190613203018/https://www.unicode.org/charts/PDF/U2A700.pdf,12.1,2019
-2B740,2B81F,CJK Unified Ideographs Extension D,Sinogrammes unifiés CJC – supplément D,https://web.archive.org/web/20190613203021/https://www.unicode.org/charts/PDF/U2B740.pdf,12.1,2019
-2B820,2CEAF,CJK Unified Ideographs Extension E,Sinogrammes unifiés CJC – supplément E,https://web.archive.org/web/20190613203024/https://www.unicode.org/charts/PDF/U2B820.pdf,12.1,2019
-2CEB0,2EBEF,CJK Unified Ideographs Extension F,Sinogrammes unifiés CJC – supplément F,https://web.archive.org/web/20190613203027/https://www.unicode.org/charts/PDF/U2CEB0.pdf,12.1,2019
+1FB00,1FBFF,Symbols for Legacy Computing,Symboles pour les anciens systèmes (trad),https://web.archive.org/web/20200312062023/https://www.unicode.org/charts/PDF/U1FB00.pdf,13.0,2020
+20000,2A6DF,CJK Unified Ideographs Extension B,Idéogrammes unifiés CJC - supplément B,https://web.archive.org/web/20190613203009/https://www.unicode.org/charts/PDF/U20000.pdf,12.1,2019
+2A700,2B73F,CJK Unified Ideographs Extension C,Idéogrammes unifiés CJC - supplément C,https://web.archive.org/web/20190613203018/https://www.unicode.org/charts/PDF/U2A700.pdf,12.1,2019
+2B740,2B81F,CJK Unified Ideographs Extension D,Idéogrammes unifiés CJC - supplément D,https://web.archive.org/web/20190613203021/https://www.unicode.org/charts/PDF/U2B740.pdf,12.1,2019
+2B820,2CEAF,CJK Unified Ideographs Extension E,Idéogrammes unifiés CJC - supplément E,https://web.archive.org/web/20190613203024/https://www.unicode.org/charts/PDF/U2B820.pdf,12.1,2019
+2CEB0,2EBEF,CJK Unified Ideographs Extension F,Idéogrammes unifiés CJC - supplément F,https://web.archive.org/web/20190613203027/https://www.unicode.org/charts/PDF/U2CEB0.pdf,12.1,2019
 2F800,2FA1F,CJK Compatibility Ideographs Supplement,Supplément aux idéogrammes de compatibilité CJC,https://web.archive.org/web/20190613203036/https://www.unicode.org/charts/PDF/U2F800.pdf,12.1,2019
+30000,3134F,CJK Unified Ideographs Extension G,Idéogrammes unifiés CJC - supplément G,https://web.archive.org/web/20200324114853/https://www.unicode.org/charts/PDF/U30000.pdf,13.0,2020
 E0000,E007F,Tags,Étiquettes,https://web.archive.org/web/20190613203322/https://www.unicode.org/charts/PDF/UE0000.pdf,12.1,2019
-E0100,E01EF,Variation Selectors Supplement,Sélecteurs de variante – supplément,https://web.archive.org/web/20190613203326/https://www.unicode.org/charts/PDF/UE0100.pdf,12.1,2019
+E0100,E01EF,Variation Selectors Supplement,Sélecteurs de variante - supplément,https://web.archive.org/web/20190613203326/https://www.unicode.org/charts/PDF/UE0100.pdf,12.1,2019
 F0000,FFFFF,Supplementary Private Use Area-A,Zone à usage privé - extension A,https://web.archive.org/web/20190613203330/https://www.unicode.org/charts/PDF/UF0000.pdf,12.1,2019
 100000,10FFFF,Supplementary Private Use Area-B,Zone à usage privé - extension B,https://web.archive.org/web/20190613203334/https://www.unicode.org/charts/PDF/U100000.pdf,12.1,2019

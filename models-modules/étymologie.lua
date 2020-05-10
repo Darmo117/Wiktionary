@@ -174,11 +174,11 @@ function p.modele_etymologie_langue(frame)
     [5] = { alias_of = 'sens' },
     ['dif'] = {},
     ['type'] = {},
-    ['num'] = { type = 'int', checker = function(n)
+    ['num'] = { type = m_params.INT, checker = function(n)
       return n > 0
     end },
-    ['nocat'] = { type = 'boolean', default = false },
-    ['lien'] = { type = 'boolean', default = false },
+    ['nocat'] = { type = m_params.BOOLEAN, default = false },
+    ['lien'] = { type = m_params.BOOLEAN, default = false },
   })
 
   local originLang = args[1]
@@ -206,13 +206,13 @@ function p.modele_etymologie_langue(frame)
 
   if word then
     if anchorSection then
-      anchor = anchorSection .. '-' .. anchorSection
+      anchor = anchorSection
     end
     if anchorNum then
-      anchor = anchorSection .. '-' .. tostring(anchorNum)
+      anchor = anchor .. '-' .. tostring(anchorNum)
     end
 
-    content = italicIfLatinScript(m_bases.lien_modele(word, originLang, anchor, alternativeText))
+    content = italicIfLatinScript(m_bases.lien_modele(word, originLang, anchor, alternativeText, true))
 
     if transcription then
       content = mw.ustring.format("%s, ''%s''", content, transcription)

@@ -13,7 +13,7 @@ local FLAGS = {
   ['z'] = 'absolute of string',
   ['b'] = 'word boundary',
   ['B'] = 'non-word boundary',
-  ['G'] = 'non-word boundary', -- TODO garder ?
+  ['G'] = 'last match', -- TODO garder ?
 }
 
 local OR = 'or'
@@ -25,42 +25,73 @@ local SYMBOL = 'symbol'
 local NON_GREEDY = 'non-greedy'
 
 local PREDEFINED_CLASSES = {
-  ['w'] = function(c)
-    return nil -- TODO
+  -- Whitespace (space, new lines and tabulations)
+  ['s'] = function(c)
+    local cp = mw.ustring.codepoint(c)
+    return c == ' ' or c == '\n' or c == '\r' or c == '\t' or cp == 11
   end,
+  -- Digits [0-9]
   ['d'] = function(c)
     return tonumber(c) ~= nil
   end,
-  ['s'] = function(c)
-    return nil -- TODO
+  -- Alphanum [_0-9A-Za-z]
+  ['w'] = function(c)
+    local cp = mw.ustring.codepoint(c)
+    return c == '_' or (48 <= cp and cp <= 57) or (65 <= cp and cp <= 90) or (97 <= cp and cp <= 122)
+  end,
+  -- Vertical whitespace (new line, carriage return and vertical tabulation)
+  ['v'] = function(c)
+    -- CP 11 = vertical tabulation
+    return c == '\n' or c == '\r' or mw.ustring.codepoint(c) == 11
+  end,
+  -- Horizontal whitespace (space and horizontal tabulation)
+  ['h'] = function(c)
+    return c == ' ' or c == '\t'
   end,
 }
 
+-- Generate negations of preceding character classes.
 for class, predicate in pairs(PREDEFINED_CLASSES) do
   PREDEFINED_CLASSES[mw.ustring.upper(class)] = function(c)
     return not predicate(c)
   end
 end
 
+-- Others classes
+-- \X: any valid Unicode character.
+-- \C: 1 data unit (?).
+-- \R: Unicode new lines (\n, \r, \r\n).
+-- \K: sets the given position in the regex as the new "start" of the match.
+--    This means that nothing preceding the K will be captured in the overall match.
+-- \#: #-th sub-pattern.
+-- \p#: Unicode property (negation = \P#).
+-- \p{…}: Unicode property or script category (negation = \P{…}).
+-- \Q…\E: all metacharacter between these bounds are treated as literals.
+
+-- New line
 PREDEFINED_CLASSES['n'] = function(c)
   return c == '\n'
 end
+-- Carriage return
 PREDEFINED_CLASSES['r'] = function(c)
   return c == '\r'
 end
+-- Horizontal tabulation
 PREDEFINED_CLASSES['t'] = function(c)
   return c == '\t'
 end
+-- Form feed
 PREDEFINED_CLASSES['f'] = function(c)
   return c == '\f'
 end
+-- Null character
+PREDEFINED_CLASSES['0'] = function(c)
+  return c == '\0'
+end
+-- Any character
 PREDEFINED_CLASSES['.'] = function(_)
   return true
 end
-
--- TODO :
--- \1, etc.
--- \x##, \x{####}
 
 -- Utility functions
 

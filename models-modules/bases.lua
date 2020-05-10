@@ -399,14 +399,20 @@ end
 --- @param langCode string Le code langue.
 --- @param anchor string L’ancre, typiquement l’ID de la section dans la page.
 --- @param text string Le texte à afficher (optionnel).
+--- @param addLangAnchor boolean Si vrai, le code langue est ajouté au lien,
+---                              seulement si anchor n’est pas renseigné.
 --- @return string Le lien.
-function p.lien_modele(word, langCode, anchor, text)
+function p.lien_modele(word, langCode, anchor, text, addLangAnchor)
   if text and text == '' then
     text = nil
   end
 
   if word == currentTitle.prefixedText then
-    return p.balise_langue(mw.ustring.format('[[%s#%s|%s]]', word, langCode, text or word), langCode)
+    if addLangAnchor then
+      return p.balise_langue(mw.ustring.format('[[%s#%s|%s]]', word, langCode, text or word), langCode)
+    else
+      return p.balise_langue(mw.ustring.format('[[%s|%s]]', word, text or word), langCode)
+    end
   else
     if anchor and anchor ~= '' then
       anchor = langCode .. '-' .. anchor

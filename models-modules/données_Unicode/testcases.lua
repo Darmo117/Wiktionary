@@ -3,86 +3,86 @@ local m_unicode = require("Module:données Unicode")
 
 -- Tests --
 
-function tests:test_get_block()
-  self:equals("Bloc", m_unicode.get_block(0).name.en, "Basic Latin")
+function tests:testGetBlock()
+  self:equals("Bloc", m_unicode.getBlock(0).name.en, "Basic Latin")
 end
 
-function tests:test_get_block_for_char()
-  self:equals("Caractère", m_unicode.get_block_for_char("A").name.en, "Basic Latin")
+function tests:testGetBlockForChar()
+  self:equals("Caractère", m_unicode.getBlockForChar("A").name.en, "Basic Latin")
 end
 
-function tests:test_get_script()
-  self:equals("Script", m_unicode.get_script("Latin").code, "Latin")
+function tests:testGetScript()
+  self:equals("Script", m_unicode.getScript("Latin").code, "Latin")
 end
 
-function tests:test_get_script_for_char()
-  self:equals("Caractère", m_unicode.get_script_for_char("A").code, "Latin")
+function tests:testGetScriptForChar()
+  self:equals("Caractère", m_unicode.getScriptForChar("A").code, "Latin")
 end
 
-function tests:test_get_script_for_unknown_char()
-  self:equals("Caractère inconnu", m_unicode.get_script_for_char(mw.ustring.char(0x100000)).code, "Unknown")
+function tests:testGetScriptForUnknownChar()
+  self:equals("Caractère inconnu", m_unicode.getScriptForChar(mw.ustring.char(0x100000)).code, "Unknown")
 end
 
-function tests:test_get_script_for_text_one_script()
-  self:equals("Un seul script", m_unicode.get_script_for_text("ABCDE").code, "Latin")
+function tests:testGetScriptForTextOneScript()
+  self:equals("Un seul script", m_unicode.getScriptForText("ABCDE").code, "Latin")
 end
 
-function tests:test_get_script_for_text_script_and_common()
-  self:equals("Un script et Common", m_unicode.get_script_for_text("Texte principalement en Latin").code, "Latin")
+function tests:testGetScriptForTextScriptAndCommon()
+  self:equals("Un script et Common", m_unicode.getScriptForText("Texte principalement en Latin").code, "Latin")
 end
 
-function tests:test_get_script_for_text_inherited_majority()
-  self:equals("Inherited majoritaire", m_unicode.get_script_for_text("T̀ ̀").code, "Latin")
+function tests:testGetScriptForTextInheritedMajority()
+  self:equals("Inherited majoritaire", m_unicode.getScriptForText("T̀ ̀").code, "Latin")
 end
 
-function tests:test_get_script_for_text_only_common()
-  self:equals("Common uniquement", m_unicode.get_script_for_text(" ").code, "Common")
+function tests:testGetScriptForTextOnlyCommon()
+  self:equals("Common uniquement", m_unicode.getScriptForText(" ").code, "Common")
 end
 
-function tests:test_get_script_for_text_only_inherited()
-  self:equals("Inherited uniquement", m_unicode.get_script_for_text("̀").code, "Inherited")
+function tests:testGetScriptForTextOnlyInherited()
+  self:equals("Inherited uniquement", m_unicode.getScriptForText("̀").code, "Inherited")
 end
 
-function tests:test_get_script_for_text_only_common_and_inherited()
-  self:equals("Inherited, Common majoritaire", m_unicode.get_script_for_text("̀ ").code, "Inherited")
+function tests:testGetScriptForTextOnlyCommonAndInherited()
+  self:equals("Inherited, Common majoritaire", m_unicode.getScriptForText("̀ ").code, "Inherited")
 end
 
-function tests:test_get_script_for_text_script_and_unknown_char()
-  self:equals("Script et caractère inconnu à la fin", m_unicode.get_script_for_text("A" .. mw.ustring.char(0x100000)).code, "Latin")
-  self:equals("Script et caractère inconnu au début", m_unicode.get_script_for_text(mw.ustring.char(0x100000) .. "A").code, "Latin")
+function tests:testGetScriptForTextScriptAndUnknownChar()
+  self:equals("Script et caractère inconnu à la fin", m_unicode.getScriptForText("A" .. mw.ustring.char(0x100000)).code, "Latin")
+  self:equals("Script et caractère inconnu au début", m_unicode.getScriptForText(mw.ustring.char(0x100000) .. "A").code, "Latin")
 end
 
-function tests:test_get_script_for_text_common_and_unknown_char()
-  self:equals("Script et caractère inconnu", m_unicode.get_script_for_text(" " .. mw.ustring.char(0x100000)).code, "Unknown")
+function tests:testGetScriptForText_commonAndUnknownChar()
+  self:equals("Script et caractère inconnu", m_unicode.getScriptForText(" " .. mw.ustring.char(0x100000)).code, "Unknown")
 end
 
-function tests:test_get_script_for_text_inherited_and_unknown_char()
-  self:equals("Script et caractère inconnu", m_unicode.get_script_for_text("̀" .. mw.ustring.char(0x100000)).code, "Unknown")
+function tests:testGetScriptForTextInheritedAndUnknownChar()
+  self:equals("Script et caractère inconnu", m_unicode.getScriptForText("̀" .. mw.ustring.char(0x100000)).code, "Unknown")
 end
 
-function tests:test_get_script_for_text_several()
-  self:equals("Plusieurs scripts", m_unicode.get_script_for_text("Texte en Latin et en ελληνικά").code, "Common")
+function tests:testGetScriptForTextSeveral()
+  self:equals("Plusieurs scripts", m_unicode.getScriptForText("Texte en Latin et en ελληνικά").code, "Common")
 end
 
--- Tests d’erreurs --
+-- Error tests --
 
-function tests:test_get_unknown_block()
-  self:equals("Bloc invalide (négatif)", m_unicode.get_block(-1), nil)
-  self:equals("Bloc invalide (trop grand)", m_unicode.get_block(0x1000000), nil)
+function tests:testGetUnknownBlock()
+  self:equals("Bloc invalide (négatif)", m_unicode.getBlock(-1), nil)
+  self:equals("Bloc invalide (trop grand)", m_unicode.getBlock(0x1000000), nil)
 end
 
-function tests:test_get_block_for_invalid_char()
-  self:expect_error("Chaine vide", m_unicode.get_block_for_char, { "" }, "Un seul caractère attendu, 0 donnés")
-  self:expect_error("Trop de caractères", m_unicode.get_block_for_char, { "AA" }, "Un seul caractère attendu, 2 donnés")
+function tests:testGetBlockForInvalidChar()
+  self:expect_error("Chaine vide", m_unicode.getBlockForChar, { "" }, 'Un seul caractère attendu, 0 donnés ("")')
+  self:expect_error("Trop de caractères", m_unicode.getBlockForChar, { "AA" }, 'Un seul caractère attendu, 2 donnés ("AA")')
 end
 
-function tests:test_get_unknown_script()
-  self:equals("Script inconnu", m_unicode.get_script("script invalide"), nil)
+function tests:testGetUnknownScript()
+  self:equals("Script inconnu", m_unicode.getScript("script invalide"), nil)
 end
 
-function tests:test_get_script_for_invalid_char()
-  self:expect_error("Chaine vide", m_unicode.get_script_for_char, { "" }, "Un seul caractère attendu, 0 donnés")
-  self:expect_error("Trop de caractères", m_unicode.get_script_for_char, { "AA" }, "Un seul caractère attendu, 2 donnés")
+function tests:testGetScriptForInvalidChar()
+  self:expect_error("Chaine vide", m_unicode.getScriptForChar, { "" }, "Un seul caractère attendu, 0 donnés")
+  self:expect_error("Trop de caractères", m_unicode.getScriptForChar, { "AA" }, "Un seul caractère attendu, 2 donnés")
 end
 
 return tests

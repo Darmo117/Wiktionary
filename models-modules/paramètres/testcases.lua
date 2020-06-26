@@ -1,45 +1,43 @@
 local tests = require("Module:UnitTests")
 local m_params = require("Module:paramètres")
 
--- Fonctions utilitaires --
+-- Utility functions --
 
---- Fonction permettant de tester si la méthode
---- process retourne la bonne valeur pour les valeurs
---- données.
---- @param args table les arguments passés à la fonction process
---- @param p table les paramètres définis
---- @param expected_value table la valeur attendue
---- @param testName string le nom du test
-local function test(self, args, p, expected_value, testName)
-  self:equals_deep(testName or "", m_params.process(args, p), expected_value)
+--- Tests wether the "process" method returns the right value
+--- for the given arguments.
+--- @param args table The arguments passed to the "process" function.
+--- @param p table The defined parameters.
+--- @param expectedValue table The expected value.
+--- @param testName string The test’s name.
+local function test(self, args, p, expectedValue, testName)
+  self:equals_deep(testName or "", m_params.process(args, p), expectedValue)
 end
 
---- Fonction permettant de tester si la méthode
---- process lance une erreur pour les paramètres
---- donnés. Si ce n’est pas le cas, une erreur
---- est lancée et le test échoue. Elle teste aussi que
---- le mode silencieux retourne le bon argument.
---- @param args table les arguments passés à la fonction process
---- @param p table les paramètres définis
---- @param expected_error_message string le message d’erreur attendu
---- @param expected_param table|nil les valeurs attendues en mode silencieux ; passer nil désactive ce test
-local function handle_error(self, testName, args, p, expected_error_message, expected_param)
-  self:expect_error(testName, m_params.process, { args, p }, expected_error_message)
+--- Tests wether the "process" method raise a given error for the given
+--- set of arguments. If this is not the case, the test fails. It also
+--- tests wether the quiet mode returns the right values.
+--- @param args table The arguments passed to the "process" function.
+--- @param p table The defined parameters.
+--- @param expectedErrorMessage string The expected error message.
+--- @param expectedParam table|nil The expected values for quiet mode;
+---                                omitting it or passing nil will deactivate the test.
+local function handleError(self, testName, args, p, expectedErrorMessage, expectedParam)
+  self:expect_error(testName, m_params.process, { args, p }, expectedErrorMessage)
 
-  if expected_param then
+  if expectedParam then
     local result, success = m_params.process(args, p, true)
-    table.insert(expected_param, expected_error_message)
+    table.insert(expectedParam, expectedErrorMessage)
     self:equals_deep(
-        "''(Test d’erreur silencieuse)'' Paramètre erroné « " .. expected_param[1] .. " »",
+        "''(Test d’erreur silencieuse)'' Paramètre erroné « " .. expectedParam[1] .. " »",
         { result, success },
-        { expected_param, false }
+        { expectedParam, false }
     )
   end
 end
 
 -- Tests --
 
-function tests:test_empty_value()
+function tests:testEmptyValue()
   local p = {
     [1] = {},
   }
@@ -53,7 +51,7 @@ function tests:test_empty_value()
   test(self, args, p, e, 'Arg = ""')
 end
 
-function tests:test_whitespace_only_value()
+function tests:testWhitespaceOnlyValue()
   local p = {
     [1] = {},
   }
@@ -67,7 +65,7 @@ function tests:test_whitespace_only_value()
   test(self, args, p, e, 'Arg = " "')
 end
 
-function tests:test_no_arg()
+function tests:testNoArg()
   local p = {
     [1] = {},
   }
@@ -77,7 +75,7 @@ function tests:test_no_arg()
   test(self, args, p, e, "Argument absent")
 end
 
-function tests:test_alias()
+function tests:testAlias()
   local p = {
     [1] = {},
     ["lang"] = { alias_of = 1 }
@@ -92,7 +90,7 @@ function tests:test_alias()
   test(self, args, p, e, "Alias défini uniquement")
 end
 
-function tests:test_alias_to_required()
+function tests:testAliasToRequired()
   local p = {
     [1] = { required = true },
     ["test"] = { alias_of = 1 }
@@ -107,7 +105,7 @@ function tests:test_alias_to_required()
   test(self, args, p, e, "Alias vers requis, alias renseigné")
 end
 
-function tests:test_alias_no_override()
+function tests:testAliasNoOverride()
   local p = {
     [1] = {},
     ["lang"] = { alias_of = 1 }
@@ -123,7 +121,7 @@ function tests:test_alias_no_override()
   test(self, args, p, e, "Alias et argument de base définis")
 end
 
-function tests:test_default()
+function tests:testDefault()
   local p = {
     [1] = { default = "test" }
   }
@@ -135,7 +133,7 @@ function tests:test_default()
   test(self, args, p, e, "Valeur par défaut")
 end
 
-function tests:test_required_on_alias_no_arg()
+function tests:testRequiredOnAliasNoArg()
   local p = {
     [1] = { },
     ["test"] = { required = true, alias_of = 1 }
@@ -146,7 +144,7 @@ function tests:test_required_on_alias_no_arg()
   test(self, args, p, e, "Requis et alias, arg de base manquant")
 end
 
-function tests:test_type()
+function tests:testType()
   local cases = {
     ["number"] = {
       { [1] = { type = m_params.NUMBER } },
@@ -236,7 +234,7 @@ function tests:test_type()
   end
 end
 
-function tests:test_required_allow_empty()
+function tests:testRequiredAllowEmpty()
   local p = {
     [1] = { required = true, allow_empty = true }
   }
@@ -248,7 +246,7 @@ function tests:test_required_allow_empty()
   test(self, args, p, e, "Requis et allow_empty, arg de base manquant")
 end
 
-function tests:test_list_positional()
+function tests:testListPositional()
   tests:ignore()
   local p = {
     [1] = { list = true }
@@ -264,7 +262,7 @@ function tests:test_list_positional()
   test(self, args, p, e, "Liste positionnelle")
 end
 
-function tests:test_list_named()
+function tests:testListNamed()
   tests:ignore()
   local p = {
     ["e"] = { list = true }
@@ -280,7 +278,7 @@ function tests:test_list_named()
   test(self, args, p, e, "Liste nommée")
 end
 
-function tests:test_list_positional_max_length()
+function tests:testListPositionalMaxLength()
   tests:ignore()
   local p = {
     [1] = { list = true, max_length = 3 }
@@ -296,7 +294,7 @@ function tests:test_list_positional_max_length()
   test(self, args, p, e, "Liste positionnelle")
 end
 
-function tests:test_list_named()
+function tests:testListNamed()
   tests:ignore()
   local p = {
     ["e"] = { list = true, max_length = 3 }
@@ -312,7 +310,7 @@ function tests:test_list_named()
   test(self, args, p, e, "Liste nommée")
 end
 
-function tests:test_list_positional_last()
+function tests:testListPositionalLast()
   tests:ignore()
   local p = {
     [1] = { list = true },
@@ -329,7 +327,7 @@ function tests:test_list_positional_last()
   test(self, args, p, e, "Liste positionnelle, dernier élément")
 end
 
-function tests:test_list_positional_last_is_alias()
+function tests:testListPositionalLastIsAlias()
   tests:ignore()
   local p = {
     [1] = { list = true },
@@ -349,7 +347,7 @@ function tests:test_list_positional_last_is_alias()
   test(self, args, p, e, "Liste positionnelle, dernier élément est un alias")
 end
 
-function tests:test_list_positional_last_is_alias2()
+function tests:testListPositionalLastIsAlias2()
   tests:ignore()
   local p = {
     [1] = { list = true },
@@ -369,7 +367,7 @@ function tests:test_list_positional_last_is_alias2()
   test(self, args, p, e, "Liste positionnelle, dernier élément est un alias")
 end
 
-function tests:test_list_named_last()
+function tests:testListNamedLast()
   tests:ignore()
   local p = {
     ["e"] = { list = true },
@@ -386,7 +384,7 @@ function tests:test_list_named_last()
   test(self, args, p, e, "Liste nommée, dernier élément")
 end
 
-function tests:test_list_named_last_is_alias()
+function tests:testListNamedLastIsAlias()
   tests:ignore()
   local p = {
     ["e"] = { list = true },
@@ -406,7 +404,7 @@ function tests:test_list_named_last_is_alias()
   test(self, args, p, e, "Liste nommée, dernier élément est un alias")
 end
 
-function tests:test_list_named_last_is_alias2()
+function tests:testListNamedLastIsAlias2()
   tests:ignore()
   local p = {
     ["e"] = { list = true },
@@ -426,7 +424,7 @@ function tests:test_list_named_last_is_alias2()
   test(self, args, p, e, "Liste nommée, dernier élément est un alias")
 end
 
-function tests:test_list_positional_start_not_1()
+function tests:testListPositionalStartNot1()
   tests:ignore()
   local p = {
     [1] = {},
@@ -445,7 +443,7 @@ function tests:test_list_positional_start_not_1()
   test(self, args, p, e, "Liste positionnelle, indice début > 1")
 end
 
-function tests:test_enum()
+function tests:testEnum()
   local p = {
     [1] = { enum = { "a", "b" } }
   }
@@ -459,7 +457,7 @@ function tests:test_enum()
   test(self, args, p, e, "Énumération")
 end
 
-function tests:test_enum_number()
+function tests:testEnumNumber()
   local p = {
     [1] = { enum = { 1, 2 }, type = m_params.NUMBER }
   }
@@ -473,7 +471,35 @@ function tests:test_enum_number()
   test(self, args, p, e, "Énumération de nombres")
 end
 
-function tests:test_checker_string()
+function tests:testEnumEmptyString()
+  local p = {
+    [1] = { enum = { "a", nil } }
+  }
+  local args = {
+    [1] = ""
+  }
+  local e = {
+    [1] = nil
+  }
+
+  test(self, args, p, e, "Énumération chaine vide")
+end
+
+function tests:testEnumNil()
+  local p = {
+    [1] = { enum = { "a", nil } }
+  }
+  local args = {
+    [1] = nil
+  }
+  local e = {
+    [1] = nil
+  }
+
+  test(self, args, p, e, "Énumération nil")
+end
+
+function tests:testCheckerString()
   local p = {
     [1] = { checker = function(s)
       return s == "a"
@@ -489,7 +515,7 @@ function tests:test_checker_string()
   test(self, args, p, e, "Prédicat sur chaine")
 end
 
-function tests:test_checker_number()
+function tests:testCheckerNumber()
   local p = {
     [1] = { type = m_params.NUMBER, checker = function(n)
       return 0 <= n and n < 10
@@ -505,7 +531,7 @@ function tests:test_checker_number()
   test(self, args, p, e, "Prédicat sur nombre")
 end
 
-function tests:test_checker_no_value()
+function tests:testCheckerNoValue()
   local p = {
     [1] = { checker = function(s)
       return s == "a"
@@ -519,18 +545,18 @@ function tests:test_checker_no_value()
   test(self, args, p, e, "Prédicat sur paramètre non renseigné")
 end
 
--- Tests d’erreurs --
+-- Error tests --
 
-function tests:test_missing_required()
+function tests:testMissingRequired()
   local p = {
     [1] = { required = true }
   }
   local args = {}
 
-  handle_error(self, "Paramètre requis manquant", args, p, "Paramètre requis « 1 » absent", { 1, m_params.MISSING_PARAM })
+  handleError(self, "Paramètre requis manquant", args, p, "Paramètre requis « 1 » absent", { 1, m_params.MISSING_PARAM })
 end
 
-function tests:test_required_empty()
+function tests:testRequiredEmpty()
   local p = {
     [1] = { required = true }
   }
@@ -538,10 +564,10 @@ function tests:test_required_empty()
     [1] = ""
   }
 
-  handle_error(self, "Paramètre requis vide", args, p, "Paramètre requis « 1 » vide", { 1, m_params.EMPTY_PARAM })
+  handleError(self, "Paramètre requis vide", args, p, "Paramètre requis « 1 » vide", { 1, m_params.EMPTY_PARAM })
 end
 
-function tests:test_unknown()
+function tests:testUnknown()
   local p = {
     [1] = {}
   }
@@ -549,10 +575,10 @@ function tests:test_unknown()
     [2] = "test"
   }
 
-  handle_error(self, "Paramètre inconnu", args, p, "Paramètre « 2 » inconnu", { 2, m_params.UNKNOWN_PARAM })
+  handleError(self, "Paramètre inconnu", args, p, "Paramètre « 2 » inconnu", { 2, m_params.UNKNOWN_PARAM })
 end
 
-function tests:test_invalid_type_number()
+function tests:testInvalidTypeNumber()
   local p = {
     [1] = { type = m_params.NUMBER }
   }
@@ -560,10 +586,10 @@ function tests:test_invalid_type_number()
     [1] = "test"
   }
 
-  handle_error(self, "Type invalide, nombre", args, p, 'Valeur invalide pour le paramètre « 1 » ("test") de type nombre', { 1, m_params.INVALID_VALUE })
+  handleError(self, "Type invalide, nombre", args, p, 'Valeur invalide pour le paramètre « 1 » ("test") de type nombre', { 1, m_params.INVALID_VALUE })
 end
 
-function tests:test_invalid_type_int()
+function tests:testInvalidTypeInt()
   local p = {
     [1] = { type = m_params.INT }
   }
@@ -571,10 +597,10 @@ function tests:test_invalid_type_int()
     [1] = "42.5"
   }
 
-  handle_error(self, "Type invalide, entier", args, p, 'Valeur invalide pour le paramètre « 1 » ("42.5") de type entier', { 1, m_params.INVALID_VALUE })
+  handleError(self, "Type invalide, entier", args, p, 'Valeur invalide pour le paramètre « 1 » ("42.5") de type entier', { 1, m_params.INVALID_VALUE })
 end
 
-function tests:test_invalid_type_float()
+function tests:testInvalidTypeFloat()
   local p = {
     [1] = { type = m_params.FLOAT }
   }
@@ -582,10 +608,10 @@ function tests:test_invalid_type_float()
     [1] = "test"
   }
 
-  handle_error(self, "Type invalide, flottant", args, p, 'Valeur invalide pour le paramètre « 1 » ("test") de type flottant', { 1, m_params.INVALID_VALUE })
+  handleError(self, "Type invalide, flottant", args, p, 'Valeur invalide pour le paramètre « 1 » ("test") de type flottant', { 1, m_params.INVALID_VALUE })
 end
 
-function tests:test_invalid_type_boolean()
+function tests:testInvalidTypeBoolean()
   local p = {
     [1] = { type = m_params.BOOLEAN }
   }
@@ -593,10 +619,10 @@ function tests:test_invalid_type_boolean()
     [1] = "test"
   }
 
-  handle_error(self, "Type invalide, booléen", args, p, 'Valeur invalide pour le paramètre « 1 » ("test") de type booléen', { 1, m_params.INVALID_VALUE })
+  handleError(self, "Type invalide, booléen", args, p, 'Valeur invalide pour le paramètre « 1 » ("test") de type booléen', { 1, m_params.INVALID_VALUE })
 end
 
-function tests:test_checker_string_invalid()
+function tests:testCheckerStringInvalid()
   local p = {
     [1] = { checker = function(s)
       return s == "a"
@@ -606,10 +632,10 @@ function tests:test_checker_string_invalid()
     [1] = "b"
   }
 
-  handle_error(self, "Checker, valeur invalide, chaine", args, p, 'Valeur invalide pour le paramètre « 1 » ("b") de type chaine', { 1, m_params.INVALID_VALUE })
+  handleError(self, "Checker, valeur invalide, chaine", args, p, 'Valeur invalide pour le paramètre « 1 » ("b") de type chaine', { 1, m_params.INVALID_VALUE })
 end
 
-function tests:test_checker_number_invalid()
+function tests:testCheckerNumberInvalid()
   local p = {
     [1] = { type = m_params.NUMBER, checker = function(n)
       return 0 <= n and n < 10
@@ -619,10 +645,10 @@ function tests:test_checker_number_invalid()
     [1] = -1
   }
 
-  handle_error(self, "Checker, valeur invalide, nombre", args, p, 'Valeur invalide pour le paramètre « 1 » ("-1") de type nombre', { 1, m_params.INVALID_VALUE })
+  handleError(self, "Checker, valeur invalide, nombre", args, p, 'Valeur invalide pour le paramètre « 1 » ("-1") de type nombre', { 1, m_params.INVALID_VALUE })
 end
 
-function tests:test_list_positional_last_missing()
+function tests:testListPositionalLastMissing()
   tests:ignore()
   local p = {
     [1] = { list = true },
@@ -630,10 +656,10 @@ function tests:test_list_positional_last_missing()
   }
   local args = {}
 
-  handle_error(self, "Liste positionnelle, dernier requis manquant", args, p, 'Paramètre requis « -1 » absent', { -1, m_params.MISSING_PARAM })
+  handleError(self, "Liste positionnelle, dernier requis manquant", args, p, 'Paramètre requis « -1 » absent', { -1, m_params.MISSING_PARAM })
 end
 
-function tests:test_list_named_last_missing()
+function tests:testListNamedLastMissing()
   tests:ignore()
   local p = {
     ["e"] = { list = true },
@@ -641,10 +667,10 @@ function tests:test_list_named_last_missing()
   }
   local args = {}
 
-  handle_error(self, "Liste nommée, dernier requis manquant", args, p, 'Paramètre requis « e-1 » absent', { "e-1", m_params.MISSING_PARAM })
+  handleError(self, "Liste nommée, dernier requis manquant", args, p, 'Paramètre requis « e-1 » absent', { "e-1", m_params.MISSING_PARAM })
 end
 
-function tests:test_list_positional_max_length_exceeded()
+function tests:testListPositionalMaxLengthExceeded()
   tests:ignore()
   local p = {
     [1] = { list = true, max_length = 3 }
@@ -656,10 +682,10 @@ function tests:test_list_positional_max_length_exceeded()
     [4] = "test4",
   }
 
-  handle_error(self, "Liste positionnelle, taille max dépassée", args, p, 'Taille de la liste « 1 » dépassée (4 > 3)', { "1", m_params.LIST_SIZE_EXCEEDED })
+  handleError(self, "Liste positionnelle, taille max dépassée", args, p, 'Taille de la liste « 1 » dépassée (4 > 3)', { "1", m_params.LIST_SIZE_EXCEEDED })
 end
 
-function tests:test_list_named_max_length_exceeded()
+function tests:testListNamedMaxLengthExceeded()
   tests:ignore()
   local p = {
     ["e"] = { list = true, max_length = 3 }
@@ -671,10 +697,10 @@ function tests:test_list_named_max_length_exceeded()
     ["e4"] = "test4",
   }
 
-  handle_error(self, "Liste nommée, taille max dépassée", args, p, 'Taille de la liste « e » dépassée (4 > 3)', { "e", m_params.LIST_SIZE_EXCEEDED })
+  handleError(self, "Liste nommée, taille max dépassée", args, p, 'Taille de la liste « e » dépassée (4 > 3)', { "e", m_params.LIST_SIZE_EXCEEDED })
 end
 
-function tests:test_list_positional_duplicates()
+function tests:testListPositionalDuplicates()
   tests:ignore()
   local p = {
     [1] = { list = true, no_duplicates = true }
@@ -684,10 +710,10 @@ function tests:test_list_positional_duplicates()
     [2] = "test1",
   }
 
-  handle_error(self, "Liste positionnelle, pas de doublons", args, p, 'Valeur en double dans la liste « 1 »', { "e", m_params.DUPLICATE_VALUE })
+  handleError(self, "Liste positionnelle, pas de doublons", args, p, 'Valeur en double dans la liste « 1 »', { "e", m_params.DUPLICATE_VALUE })
 end
 
-function tests:test_list_named_duplicates()
+function tests:testListNamedDuplicates()
   tests:ignore()
   local p = {
     ["e"] = { list = true, no_duplicates = true }
@@ -697,10 +723,10 @@ function tests:test_list_named_duplicates()
     ["e2"] = "test1",
   }
 
-  handle_error(self, "Liste nommée, pas de doublons", args, p, 'Valeur en double dans la liste « e »', { "e", m_params.DUPLICATE_VALUE })
+  handleError(self, "Liste nommée, pas de doublons", args, p, 'Valeur en double dans la liste « e »', { "e", m_params.DUPLICATE_VALUE })
 end
 
-function tests:test_enum_invalid_value()
+function tests:testEnumInvalidValue()
   local p = {
     [1] = { enum = { "a", "b" } }
   }
@@ -708,10 +734,10 @@ function tests:test_enum_invalid_value()
     [1] = "c"
   }
 
-  handle_error(self, "Énumération, valeur invalide", args, p, 'Valeur invalide pour le paramètre « 1 » ("c")', { 1, m_params.VALUE_NOT_IN_ENUM })
+  handleError(self, "Énumération, valeur invalide", args, p, 'Valeur invalide pour le paramètre « 1 » ("c")', { 1, m_params.VALUE_NOT_IN_ENUM })
 end
 
-function tests:test_enum_invalid_type_number()
+function tests:testEnumInvalidTypeNumber()
   local p = {
     [1] = { enum = { 1, 2 }, type = m_params.NUMBER }
   }
@@ -719,14 +745,12 @@ function tests:test_enum_invalid_type_number()
     [1] = "a"
   }
 
-  handle_error(self, "Énumération, valeur invalide, nombre", args, p, 'Valeur invalide pour le paramètre « 1 » ("a") de type nombre', { 1, m_params.INVALID_VALUE })
+  handleError(self, "Énumération, valeur invalide, nombre", args, p, 'Valeur invalide pour le paramètre « 1 » ("a") de type nombre', { 1, m_params.INVALID_VALUE })
 end
 
---
--- Erreurs internes
---
+-- Internal errors --
 
-function tests:test_list_positional_arg_overlap()
+function tests:testListPositionalArgOverlap()
   tests:ignore()
   local p = {
     [1] = { list = true },
@@ -736,10 +760,10 @@ function tests:test_list_positional_arg_overlap()
     [1] = "test1"
   }
 
-  handle_error(self, "Conflit paramètre et liste positionnelle", args, p, "Erreur interne : Paramètre « 2 » déjà défini par la liste « 1 »", { "e1", m_params.LIST_PARAM_OVERLAP })
+  handleError(self, "Conflit paramètre et liste positionnelle", args, p, "Erreur interne : Paramètre « 2 » déjà défini par la liste « 1 »", { "e1", m_params.LIST_PARAM_OVERLAP })
 end
 
-function tests:test_list_named_arg_overlap()
+function tests:testListNamedArgOverlap()
   tests:ignore()
   local p = {
     ["e"] = { list = true },
@@ -749,10 +773,10 @@ function tests:test_list_named_arg_overlap()
     ["e1"] = "test1"
   }
 
-  handle_error(self, "Conflit paramètre et liste nommée", args, p, "Erreur interne : Paramètre « e1 » déjà défini par la liste « e »", { "e1", m_params.LIST_PARAM_OVERLAP })
+  handleError(self, "Conflit paramètre et liste nommée", args, p, "Erreur interne : Paramètre « e1 » déjà défini par la liste « e »", { "e1", m_params.LIST_PARAM_OVERLAP })
 end
 
-function tests:test_unknown_type()
+function tests:testUnknownType()
   local p = {
     [1] = { type = "test" }
   }
@@ -760,11 +784,11 @@ function tests:test_unknown_type()
     [1] = "test"
   }
 
-  handle_error(self, "Type inconnu", args, p, 'Erreur interne : Type inconnu pour le paramètre « 1 » ("test")')
-  handle_error(self, "Type inconnu, pas args", {}, p, 'Erreur interne : Type inconnu pour le paramètre « 1 » ("test")')
+  handleError(self, "Type inconnu", args, p, 'Erreur interne : Type inconnu pour le paramètre « 1 » ("test")')
+  handleError(self, "Type inconnu, pas args", {}, p, 'Erreur interne : Type inconnu pour le paramètre « 1 » ("test")')
 end
 
-function tests:test_alias_to_nonexistant()
+function tests:testAliasToNonexistant()
   local p = {
     [1] = { alias_of = 2 }
   }
@@ -772,11 +796,11 @@ function tests:test_alias_to_nonexistant()
     [1] = "test"
   }
 
-  handle_error(self, "Alias vers non défini", args, p, "Erreur interne : Paramètre « 1 », alias vers un paramètre non défini « 2 »")
-  handle_error(self, "Alias vers non défini, pas args", {}, p, "Erreur interne : Paramètre « 1 », alias vers un paramètre non défini « 2 »")
+  handleError(self, "Alias vers non défini", args, p, "Erreur interne : Paramètre « 1 », alias vers un paramètre non défini « 2 »")
+  handleError(self, "Alias vers non défini, pas args", {}, p, "Erreur interne : Paramètre « 1 », alias vers un paramètre non défini « 2 »")
 end
 
-function tests:test_alias_to_alias()
+function tests:testAliasToAlias()
   local p = {
     [1] = {},
     [2] = { alias_of = 1 },
@@ -786,11 +810,11 @@ function tests:test_alias_to_alias()
     [1] = "test"
   }
 
-  handle_error(self, "Alias vers alias", args, p, "Erreur interne : Paramètre « 3 », alias vers un autre alias (« 2 »)")
-  handle_error(self, "Alias vers alias, pas args", {}, p, "Erreur interne : Paramètre « 3 », alias vers un autre alias (« 2 »)")
+  handleError(self, "Alias vers alias", args, p, "Erreur interne : Paramètre « 3 », alias vers un autre alias (« 2 »)")
+  handleError(self, "Alias vers alias, pas args", {}, p, "Erreur interne : Paramètre « 3 », alias vers un autre alias (« 2 »)")
 end
 
-function tests:test_alias_to_itself()
+function tests:testAliasToItself()
   local p = {
     [1] = { alias_of = 1 }
   }
@@ -798,11 +822,11 @@ function tests:test_alias_to_itself()
     [1] = "test"
   }
 
-  handle_error(self, "Alias vers lui-même", args, p, "Erreur interne : Paramètre « 1 », alias vers lui-même")
-  handle_error(self, "Alias vers lui-même, pas args", {}, p, "Erreur interne : Paramètre « 1 », alias vers lui-même")
+  handleError(self, "Alias vers lui-même", args, p, "Erreur interne : Paramètre « 1 », alias vers lui-même")
+  handleError(self, "Alias vers lui-même, pas args", {}, p, "Erreur interne : Paramètre « 1 », alias vers lui-même")
 end
 
-function tests:test_enum_and_checker()
+function tests:testEnumAndChecker()
   local p = {
     [1] = { enum = { "a", "b" }, checker = function(_)
       return true
@@ -812,11 +836,11 @@ function tests:test_enum_and_checker()
     [1] = "a"
   }
 
-  handle_error(self, "Énumération et checker", args, p, "Erreur interne : Le paramètre « 1 » est une énumération avec une précondition")
-  handle_error(self, "Énumération et checker, pas args", {}, p, "Erreur interne : Le paramètre « 1 » est une énumération avec une précondition")
+  handleError(self, "Énumération et checker", args, p, "Erreur interne : Le paramètre « 1 » est une énumération avec une précondition")
+  handleError(self, "Énumération et checker, pas args", {}, p, "Erreur interne : Le paramètre « 1 » est une énumération avec une précondition")
 end
 
-function tests:test_enum_invalid_values()
+function tests:testEnumInvalidValues()
   local p = {
     [1] = { enum = { 1, 2 } }
   }
@@ -824,10 +848,10 @@ function tests:test_enum_invalid_values()
     [1] = "a"
   }
 
-  handle_error(self, "Énumération, valeur invalide", args, p, 'Erreur interne : Valeur énumérée invalide pour le paramètre « 1 » ("1") de type chaine')
+  handleError(self, "Énumération, valeur invalide", args, p, 'Erreur interne : Valeur énumérée invalide pour le paramètre « 1 » ("1") de type chaine')
 end
 
-function tests:test_enum_invalid_values_number()
+function tests:testEnumInvalidValuesNumber()
   local p = {
     [1] = { enum = { "a", "b" }, type = m_params.NUMBER }
   }
@@ -835,10 +859,10 @@ function tests:test_enum_invalid_values_number()
     [1] = "1"
   }
 
-  handle_error(self, "Énumération, valeur invalide, nombre", args, p, 'Erreur interne : Valeur énumérée invalide pour le paramètre « 1 » ("a") de type nombre')
+  handleError(self, "Énumération, valeur invalide, nombre", args, p, 'Erreur interne : Valeur énumérée invalide pour le paramètre « 1 » ("a") de type nombre')
 end
 
-function tests:test_enum_invalid_values_int()
+function tests:testEnumInvalidValuesInt()
   local p = {
     [1] = { enum = { "a", "b" }, type = m_params.INT }
   }
@@ -846,10 +870,10 @@ function tests:test_enum_invalid_values_int()
     [1] = "1"
   }
 
-  handle_error(self, "Énumération, valeur invalide, entier", args, p, 'Erreur interne : Valeur énumérée invalide pour le paramètre « 1 » ("a") de type entier')
+  handleError(self, "Énumération, valeur invalide, entier", args, p, 'Erreur interne : Valeur énumérée invalide pour le paramètre « 1 » ("a") de type entier')
 end
 
-function tests:test_enum_invalid_values_float()
+function tests:testEnumInvalidValuesFloat()
   local p = {
     [1] = { enum = { "a", "b" }, type = m_params.FLOAT }
   }
@@ -857,10 +881,10 @@ function tests:test_enum_invalid_values_float()
     [1] = "1.0"
   }
 
-  handle_error(self, "Énumération, valeur invalide, flottant", args, p, 'Erreur interne : Valeur énumérée invalide pour le paramètre « 1 » ("a") de type flottant')
+  handleError(self, "Énumération, valeur invalide, flottant", args, p, 'Erreur interne : Valeur énumérée invalide pour le paramètre « 1 » ("a") de type flottant')
 end
 
-function tests:test_enum_invalid_values_boolean()
+function tests:testEnumInvalidValuesBoolean()
   local p = {
     [1] = { enum = { "a", "b" }, type = m_params.BOOLEAN }
   }
@@ -868,7 +892,7 @@ function tests:test_enum_invalid_values_boolean()
     [1] = "vrai"
   }
 
-  handle_error(self, "Énumération, valeur invalide, booléen", args, p, 'Erreur interne : Valeur énumérée invalide pour le paramètre « 1 » ("a") de type booléen')
+  handleError(self, "Énumération, valeur invalide, booléen", args, p, 'Erreur interne : Valeur énumérée invalide pour le paramètre « 1 » ("a") de type booléen')
 end
 
 return tests

@@ -212,7 +212,7 @@ function UnitTester:expect_error(testName, func, args, expectedErrorMessage, com
 
     table.insert(self.resultsTable, result)
   else
-    local prefix = "^Erreur Lua dans Module:.+ à la ligne %d+ : "
+    local prefix = "^Module:.+:%d+: "
     local match = mw.ustring.match(actualResult, prefix)
     -- Suppression du début du message si présent.
     if match then

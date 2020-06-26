@@ -5,18 +5,38 @@ local m_tests = require("Module:UnitTests")
 
 -- Fonctions utilitaires --
 
-local function test(testName, functionName, testedTestName, actual, expected, expectedResultsTable)
+local function test(testName, functionName, actual, expected, expectedResultsTable)
+  local testedTestName = "test"
   m_tests.resultsTable = {}
   getmetatable(m_tests).__index[functionName](m_tests, testedTestName, actual, expected)
-  tests:equals_deep(testName, m_tests.resultsTable, { expectedResultsTable })
+  tests:equals_deep(testName, m_tests.resultsTable, {
+    {
+      testName = testedTestName,
+      success = expectedResultsTable.success,
+      actual = expectedResultsTable.actual,
+      expected = expectedResultsTable.expected,
+    }
+  })
+end
+
+local function testError(testName, func, args, expectedErrorMessage, expectedResultsTable)
+  local testedTestName = "test"
+  m_tests.resultsTable = {}
+  m_tests:expect_error(testedTestName, func, args, expectedErrorMessage)
+  tests:equals_deep(testName, m_tests.resultsTable, {
+    {
+      testName = "''(Test d’erreur)'' " .. testedTestName,
+      success = expectedResultsTable.success,
+      actual = expectedResultsTable.actual,
+      expected = expectedResultsTable.expected,
+    }
+  })
 end
 
 -- Tests --
 
 function tests:test_equals_strings()
-  local testName = "test"
-  test("equals(), chaines", "equals", testName, "a", "a", {
-    testName = testName,
+  test("equals(), chaines", "equals", "a", "a", {
     success = true,
     actual = "a",
     expected = "a",
@@ -24,9 +44,7 @@ function tests:test_equals_strings()
 end
 
 function tests:test_equals_numbers()
-  local testName = "test"
-  test("equals(), nombres", "equals", testName, 1, 1, {
-    testName = testName,
+  test("equals(), nombres", "equals", 1, 1, {
     success = true,
     actual = "1",
     expected = "1",
@@ -34,9 +52,7 @@ function tests:test_equals_numbers()
 end
 
 function tests:test_equals_booleans()
-  local testName = "test"
-  test("equals(), booléens", "equals", testName, true, true, {
-    testName = testName,
+  test("equals(), booléens", "equals", true, true, {
     success = true,
     actual = "true",
     expected = "true",
@@ -44,9 +60,7 @@ function tests:test_equals_booleans()
 end
 
 function tests:test_equals_nil()
-  local testName = "test"
-  test("equals(), nil", "equals", testName, nil, nil, {
-    testName = testName,
+  test("equals(), nil", "equals", nil, nil, {
     success = true,
     actual = "''nil''",
     expected = "''nil''",
@@ -54,9 +68,7 @@ function tests:test_equals_nil()
 end
 
 function tests:test_equals_deep_not_table()
-  local testName = "test"
-  test("equals_deep(), pas une table", "equals_deep", testName, 1, 1, {
-    testName = testName,
+  test("equals_deep(), pas une table", "equals_deep", 1, 1, {
     success = true,
     actual = "1",
     expected = "1",
@@ -65,7 +77,7 @@ end
 
 function tests:test_equals_deep_1_level()
   local testName = "test"
-  test("equals_deep(), 1 niveau", "equals_deep", testName, { 1 }, { 1 }, {
+  test("equals_deep(), 1 niveau", "equals_deep", { 1 }, { 1 }, {
     testName = testName,
     success = true,
     actual = "&#123;1&#125;",
@@ -74,9 +86,7 @@ function tests:test_equals_deep_1_level()
 end
 
 function tests:test_equals_deep_1_level_keys()
-  local testName = "test"
-  test("equals_deep(), 1 niveau", "equals_deep", testName, { a = 1 }, { a = 1 }, {
-    testName = testName,
+  test("equals_deep(), 1 niveau", "equals_deep", { a = 1 }, { a = 1 }, {
     success = true,
     actual = "&#123;a&#61;1&#125;",
     expected = "&#123;a&#61;1&#125;",
@@ -84,9 +94,7 @@ function tests:test_equals_deep_1_level_keys()
 end
 
 function tests:test_equals_deep_2_levels()
-  local testName = "test"
-  test("equals_deep(), 2 niveaux", "equals_deep", testName, { { 1 } }, { { 1 } }, {
-    testName = testName,
+  test("equals_deep(), 2 niveaux", "equals_deep", { { 1 } }, { { 1 } }, {
     success = true,
     actual = "&#123;&#123;1&#125;&#125;",
     expected = "&#123;&#123;1&#125;&#125;",
@@ -94,9 +102,7 @@ function tests:test_equals_deep_2_levels()
 end
 
 function tests:test_equals_deep_2_levels_keys()
-  local testName = "test"
-  test("equals_deep(), 2 niveaux", "equals_deep", testName, { a = { b = 1 } }, { a = { b = 1 } }, {
-    testName = testName,
+  test("equals_deep(), 2 niveaux", "equals_deep", { a = { b = 1 } }, { a = { b = 1 } }, {
     success = true,
     actual = "&#123;a&#61;&#123;b&#61;1&#125;&#125;",
     expected = "&#123;a&#61;&#123;b&#61;1&#125;&#125;",
@@ -111,9 +117,7 @@ end
 -- Tests négatifs --
 
 function tests:test_not_equals_strings()
-  local testName = "test"
-  test("equals() négatif, chaines", "equals", testName, "b", "a", {
-    testName = testName,
+  test("equals() négatif, chaines", "equals", "b", "a", {
     success = false,
     actual = "b",
     expected = "a",
@@ -121,9 +125,7 @@ function tests:test_not_equals_strings()
 end
 
 function tests:test_not_equals_numbers()
-  local testName = "test"
-  test("equals() négatif, nombres", "equals", testName, 2, 1, {
-    testName = testName,
+  test("equals() négatif, nombres", "equals", 2, 1, {
     success = false,
     actual = "2",
     expected = "1",
@@ -131,9 +133,7 @@ function tests:test_not_equals_numbers()
 end
 
 function tests:test_not_equals_booleans()
-  local testName = "test"
-  test("equals() négatif, booléens", "equals", testName, false, true, {
-    testName = testName,
+  test("equals() négatif, booléens", "equals", false, true, {
     success = false,
     actual = "false",
     expected = "true",
@@ -141,9 +141,7 @@ function tests:test_not_equals_booleans()
 end
 
 function tests:test_not_equals_nil()
-  local testName = "test"
-  test("equals() négatif, nil", "equals", testName, "nil", nil, {
-    testName = testName,
+  test("equals() négatif, nil", "equals", "nil", nil, {
     success = false,
     actual = "nil",
     expected = "''nil''",
@@ -151,9 +149,7 @@ function tests:test_not_equals_nil()
 end
 
 function tests:test_not_equals_deep_not_table()
-  local testName = "test"
-  test("equals_deep() négatif, pas une table", "equals_deep", testName, 2, 1, {
-    testName = testName,
+  test("equals_deep() négatif, pas une table", "equals_deep", 2, 1, {
     success = false,
     actual = "2",
     expected = "1",
@@ -161,9 +157,7 @@ function tests:test_not_equals_deep_not_table()
 end
 
 function tests:test_not_equals_deep_1_level()
-  local testName = "test"
-  test("equals_deep() négatif, 1 niveau", "equals_deep", testName, { 2 }, { 1 }, {
-    testName = testName,
+  test("equals_deep() négatif, 1 niveau", "equals_deep", { 2 }, { 1 }, {
     success = false,
     actual = "&#123;2&#125;",
     expected = "&#123;1&#125;",
@@ -171,9 +165,7 @@ function tests:test_not_equals_deep_1_level()
 end
 
 function tests:test_not_equals_deep_1_level_2_elements()
-  local testName = "test"
-  test("equals_deep() négatif, 1 niveau, 2 éléments", "equals_deep", testName, { 2, 1 }, { 1, 2 }, {
-    testName = testName,
+  test("equals_deep() négatif, 1 niveau, 2 éléments", "equals_deep", { 2, 1 }, { 1, 2 }, {
     success = false,
     actual = "&#123;2, 1&#125;",
     expected = "&#123;1, 2&#125;",
@@ -181,9 +173,7 @@ function tests:test_not_equals_deep_1_level_2_elements()
 end
 
 function tests:test_not_equals_deep_1_level_keys_same_values_diff()
-  local testName = "test"
-  test("equals_deep() négatif, 1 niveau, clés identiques, valeurs différentes", "equals_deep", testName, { a = 2 }, { a = 1 }, {
-    testName = testName,
+  test("equals_deep() négatif, 1 niveau, clés identiques, valeurs différentes", "equals_deep", { a = 2 }, { a = 1 }, {
     success = false,
     actual = "&#123;a&#61;2&#125;",
     expected = "&#123;a&#61;1&#125;",
@@ -191,9 +181,7 @@ function tests:test_not_equals_deep_1_level_keys_same_values_diff()
 end
 
 function tests:test_not_equals_deep_1_level_keys_diff_values_same()
-  local testName = "test"
-  test("equals_deep() négatif, 1 niveau, clés différentes, valeurs identiques", "equals_deep", testName, { b = 1 }, { a = 1 }, {
-    testName = testName,
+  test("equals_deep() négatif, 1 niveau, clés différentes, valeurs identiques", "equals_deep", { b = 1 }, { a = 1 }, {
     success = false,
     actual = "&#123;b&#61;1&#125;",
     expected = "&#123;a&#61;1&#125;",
@@ -201,9 +189,7 @@ function tests:test_not_equals_deep_1_level_keys_diff_values_same()
 end
 
 function tests:test_not_equals_deep_2_levels()
-  local testName = "test"
-  test("equals_deep() négatif, 2 niveaux, valeurs différentes", "equals_deep", testName, { { 2 } }, { { 1 } }, {
-    testName = testName,
+  test("equals_deep() négatif, 2 niveaux, valeurs différentes", "equals_deep", { { 2 } }, { { 1 } }, {
     success = false,
     actual = "&#123;&#123;2&#125;&#125;",
     expected = "&#123;&#123;1&#125;&#125;",
@@ -211,12 +197,49 @@ function tests:test_not_equals_deep_2_levels()
 end
 
 function tests:test_not_equals_deep_2_levels_keys()
-  local testName = "test"
-  test("equals_deep() négatif, 2 niveaux, clés différentes", "equals_deep", testName, { b = { a = 1 } }, { a = { b = 1 } }, {
-    testName = testName,
+  test("equals_deep() négatif, 2 niveaux, clés différentes", "equals_deep", { b = { a = 1 } }, { a = { b = 1 } }, {
     success = false,
     actual = "&#123;b&#61;&#123;a&#61;1&#125;&#125;",
     expected = "&#123;a&#61;&#123;b&#61;1&#125;&#125;",
+  })
+end
+
+-- Tests expect_error --
+
+function tests:test_expect_error()
+  local errorMessage = "Erreur"
+  m_tests.resultsTable = {}
+  testError("expect_error()", function()
+    error(errorMessage)
+  end, {}, errorMessage, {
+    success = true,
+    actual = errorMessage,
+    expected = errorMessage,
+  })
+end
+
+function tests:test_expect_error_wrong_error()
+  local errorMessage = "Erreur"
+  local errorMessage2 = "Error"
+  m_tests.resultsTable = {}
+  testError("expect_error(), mauvaise erreur", function()
+    error(errorMessage2)
+  end, {}, errorMessage, {
+    success = false,
+    actual = errorMessage2,
+    expected = errorMessage,
+  })
+end
+
+function tests:test_expect_error_no_error()
+  local errorMessage = "Erreur"
+  m_tests.resultsTable = {}
+  testError("expect_error(), pas d’erreur", function()
+    return true
+  end, {}, errorMessage, {
+    success = false,
+    actual = "true",
+    expected = errorMessage,
   })
 end
 

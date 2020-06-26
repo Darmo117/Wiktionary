@@ -1,58 +1,54 @@
 local m_params = require("Module:paramètres")
 
-local export = {}
+local p = {}
 
---- Permet de ne charger qu’une seule fois les plages de scripts.
---- Ne pas utiliser directement, passer par la fonctions associées.
-local script_ranges_cache = {}
+---------------------------------
+-- Functions for other modules --
+---------------------------------
 
--- Fonctions pour les modules --
+-- Data loading functions --
 
--- Fonctions de chargement des données --
-
---- Retourne la liste de tous les blocs Unicode.
---- @return table La liste de tous les blocs Unicode.
-function export.get_blocks()
+--- Returns the list of all Unicode blocks.
+--- @return table
+function p.getBlocks()
   return mw.loadData("Module:données Unicode/data/blocks")
 end
 
---- Retourne la liste de tous les scripts Unicode.
---- @return table La liste de tous les scripts Unicode.
-function export.get_scripts()
+--- Returns the list of all Unicode scripts.
+--- @return table
+function p.getScripts()
   return mw.loadData("Module:données Unicode/data/scripts")
 end
 
---- Retourne la liste des plages de tous les scripts Unicode.
---- @return table La liste des plages de tous les scripts Unicode.
-function export.get_script_ranges()
-  if next(script_ranges_cache) == nil then
-    -- On en peut pas utiliser mw.loadData car les clés sont des tables.
-    script_ranges_cache = require("Module:données Unicode/data/script ranges")
-  end
-  return script_ranges_cache
+--- Returns the list of all Unicode script ranges.
+--- @return table
+function p.getScriptRanges()
+  -- Loaded with require() instead of mw.loadData() as the returned table
+  -- has tables as keys.
+  return require("Module:données Unicode/data/script ranges")
 end
 
--- Fonctions pour les blocs --
+-- Block-related functions --
 
---- Retourne le bloc Unicode correspondant à la valeur donnée.
---- @param lower_codepoint number La borne inférieure du bloc (point de code).
---- @return table|nil Le bloc ou nil si le code n’existe pas.
-function export.get_block(lower_codepoint)
-  return export.get_blocks()[lower_codepoint]
+--- Returns the Unicode block that has the given lowest codepoint.
+--- @param lowerCodepoint number The lowest codepoint of the block.
+--- @return table|nil The block or nil if none were found.
+function p.getBlock(lowerCodepoint)
+  return p.getBlocks()[lowerCodepoint]
 end
 
---- Retourne le bloc Unicode correspondant au caractère donné.
---- Lance une erreur si aucun caractère ou plusieurs sont passés.
---- @param char string Le caractère.
---- @return table|nil Le bloc ou nil si le caractère n’appartient à aucun bloc.
-function export.get_block_for_char(char)
+--- Returns the Unicode block that contains the given character.
+--- Throws an error if zero or more than 1 characters were given.
+--- @param char string The character.
+--- @return table|nil The block or nil if the character doesn’t belong to any block.
+function p.getBlockForChar(char)
   local len = mw.ustring.len(char)
   if len ~= 1 then
     error(mw.ustring.format('Un seul caractère attendu, %d donnés ("%s")', len, char))
   end
   local code = mw.ustring.codepoint(char)
 
-  for _, block in pairs(export.get_blocks()) do
+  for _, block in pairs(p.getBlocks()) do
     if block.lower <= code and code <= block.upper then
       return block
     end
@@ -61,28 +57,28 @@ function export.get_block_for_char(char)
   return nil
 end
 
--- Fonctions pour les scripts --
+-- Script-related functions --
 
---- Retourne le script Unicode correspondant à la valeur donnée.
---- @param code string Le code du script.
---- @return table|nil Le script ou nil si le code n’existe pas.
-function export.get_script(code)
-  return export.get_scripts()[code]
+--- Returns the Unicode script for the given code.
+--- @param code string The script’s code.
+--- @return table|nil The script or nil if none were found.
+function p.getScript(code)
+  return p.getScripts()[code]
 end
 
---- Retourne le script Unicode correspondant au caractère donné.
---- Lance une erreur si aucun caractère ou plusieurs sont passés.
---- @param char string Le caractère.
---- @return table Le script.
-function export.get_script_for_char(char)
+--- Returns the Unicode script for the given character.
+--- Throws an error if zero or more than 1 characters were given.
+--- @param char string The character.
+--- @return table|nil The script or nil if the character doesn’t belong to any block.
+function p.getScriptForChar(char)
   local len = mw.ustring.len(char)
   if len ~= 1 then
     error(mw.ustring.format("Un seul caractère attendu, %d donnés", len))
   end
   local code = mw.ustring.codepoint(char)
-  local scripts = export.get_scripts()
+  local scripts = p.getScripts()
 
-  for range, script_code in pairs(export.get_script_ranges()) do
+  for range, script_code in pairs(p.getScriptRanges()) do
     if range[1] <= code and code <= range[2] then
       return scripts[script_code]
     end
@@ -91,56 +87,56 @@ function export.get_script_for_char(char)
   return scripts["Unknown"]
 end
 
---- Retourne le script Unicode correspondant au texte donné.
---- Si le texte est composé de caractères dans plusieurs scripts,
---- autres que Common ou Inherited, le script retourné est Common.
---- @param text string Le texte.
---- @return table Le script.
-function export.get_script_for_text(text)
-  local inherited_found = false
-  local common_found = false
+--- Returns the Unicode script for the given text.
+--- If the text contains character from several scripts other than
+--- Common or Inherited, the returned script is Common.
+--- @param text string The text.
+--- @return table The script.
+function p.getScriptForText(text)
+  local inheritedFound = false
+  local commonFound = false
   local res
 
   for i = 1, mw.ustring.len(text) do
     local c = mw.ustring.sub(text, i, i)
-    local script = export.get_script_for_char(c)
+    local script = p.getScriptForChar(c)
     local name = script.code
 
-    if not common_found and name == "Common" then
-      common_found = true
-    elseif not inherited_found and name == "Inherited" then
-      inherited_found = true
+    if not commonFound and name == "Common" then
+      commonFound = true
+    elseif not inheritedFound and name == "Inherited" then
+      inheritedFound = true
     elseif name ~= "Common" and name ~= "Inherited" then
       if res == nil or res.code == "Unknown" then
         res = script
       elseif res ~= nil and script.code ~= "Unknown" and script.code ~= res.code then
-        return export.get_script("Common")
+        return p.getScript("Common")
       end
     end
   end
 
   if res == nil then
-    if inherited_found then
-      return export.get_script("Inherited")
-    elseif common_found then
-      return export.get_script("Common")
+    if inheritedFound then
+      return p.getScript("Inherited")
+    elseif commonFound then
+      return p.getScript("Common")
     end
   end
 
   return res
 end
 
---- Indique si le texte donné est dans le script donné.
---- @param text string Le texte.
---- @param scriptCode string Le code Unicode du script.
---- @return boolean Vrai si le code existe et que le texte est
----                 effectivement dans ce script, faux sinon.
-function export.textHasScript(text, scriptCode)
-  local script = export.get_script(scriptCode)
-  return script ~= nil and export.get_script_for_text(text).code == script.code
+--- Indicates wether the given text is in the given Unicode script.
+--- @param text string The text.
+--- @param scriptCode string The scripts code.
+--- @return boolean True if the code exists and the text is in this script,
+---                 false otherwise.
+function p.textHasScript(text, scriptCode)
+  local script = p.getScript(scriptCode)
+  return script ~= nil and p.getScriptForText(text).code == script.code
 end
 
-local direction_to_css = {
+local directionToCss = {
   ["lr"] = "horizontal-tb",
   ["rl"] = "horizontal-tb",
   ["tb"] = "vertical-lr",
@@ -148,32 +144,35 @@ local direction_to_css = {
   ["m"] = "inherit",
 }
 
---- Définit le sens d’écriture pour le texte donné en l’incluant dans une balise span.
---- @param text string Le texte.
---- @return string Le text inclut dans le code HTML définissant le sens d’écriture.
-function export.set_writing_mode_for_text(text)
-  local script = export.get_script_for_text(text)
-  return mw.ustring.format('<span style="writing-mode:%s">%s</span>', direction_to_css[script.direction or "i"], text)
+--- Sets the writing direction for the given text, based on its Unicode script,
+--- by inserting it inside a span tag.
+--- @param text string The text.
+--- @return string The text, included in a span tag with the writing-mode CSS rule.
+function p.setWritingDirection(text)
+  local script = p.getScriptForText(text)
+  return mw.ustring.format('<span style="writing-mode:%s">%s</span>', directionToCss[script.direction or "i"], text)
 end
 
--- Fonctions pour les modèles --
+-----------------------------
+-- Functions for templates --
+-----------------------------
 
---- Retourne la référence du bloc Unicode donné.
----  frame.args[1] : Le code de la borne inférieure du bloc (entier).
----   Si ce paramètre n’est pas renseigné, le titre de la page sera utilisé.
---- @return string La référence vers le bloc.
-function export.reference_bloc(frame)
-  local params = {
-    [1] = { type = "int" },
-  }
-  local args = m_params.process(frame.args, params)
-  local block_code = args[1]
+--- Returns the wikitext for template [[Modèle:Bloc Unicode]].
+---  frame.args[1] (int, optional): The lower bound of the Unicode block
+---   (decimal or hexadecimal with “0x” prefix).
+---   If undefined, the code will be extracted from the page’s title.
+--- @return string The template’s wikicode.
+function p.blockReference(frame)
+  local args = m_params.process(frame.args, {
+    [1] = { type = m_params.INT },
+  })
+  local blockCode = args[1]
   local block
 
-  if block_code ~= nil then
-    block = export.get_block(block_code)
+  if blockCode ~= nil then
+    block = p.getBlock(blockCode)
   else
-    block = export.get_block_for_char(mw.title.getCurrentTitle().text)
+    block = p.getBlockForChar(mw.title.getCurrentTitle().text)
   end
 
   if block ~= nil then
@@ -184,56 +183,51 @@ function export.reference_bloc(frame)
   error("Bloc Unicode incorrect")
 end
 
---- Définit le sens d’écriture pour le texte donné.
----  frame.args[1] : Le texte.
---- @return string Le text inclut dans le code HTML définissant le sens d’écriture.
-function export.sens_ecriture(frame)
-  local params = {
-    [1] = { required = true, allow_empty = true, }
-  }
-  local args = m_params.process(frame.args, params)
-  return export.set_writing_mode_for_text(args[1])
+--- Sets the writing direction for the given text, based on its Unicode script,
+--- by inserting it inside a span tag.
+---  frame.args[1] (string): The text.
+--- @return string The text, included in a span tag with the writing-mode CSS rule.
+function p.writingDirection(frame)
+  local args = m_params.process(frame.args, {
+    [1] = { required = true, allow_empty = true },
+  })
+  return p.setWritingDirection(args[1])
 end
 
---- Retourne le point de code Unicode du caractère donné.
----  frame.args[1] : Le caractère.
----  frame.args[2] : Booléen indiquant si le point de code doit être retourné en hexadécimal (défaut : false).
---- @return string|number Le point de code du caractère.
-function export.point_de_code(frame)
-  local params = {
+--- Returns the Unicode codepoint of the given character.
+--- Throws an error if zero or more than 1 characters were given.
+---  frame.args[1] (string, only one character): The character.
+---  frame.args[2] (boolean, default = false) : Indicates wether the returned codepoint
+---   will be in hexadecimal.
+--- @return string|number The character’s codepoint without the “0x” prefix if it is in hexadecimal.
+function p.codepoint(frame)
+  local args = m_params.process(frame.args, {
     [1] = {
       required = true,
       checker = function(value)
         return mw.ustring.len(value) == 1
       end,
     },
-    ["hexa"] = {
-      type = "boolean",
-      default = false,
-    },
-  }
-  local args = m_params.process(frame.args, params)
+    ["hexa"] = { type = m_params.BOOLEAN, default = false },
+  })
   local char = args[1]
-  local is_hex = args["hexa"]
+  local isHex = args["hexa"]
 
   local code = mw.ustring.codepoint(char)
-  if is_hex then
+  if isHex then
     return string.format("%04X", code)
   end
   return code
 end
 
---- Retourne le caractère correspondant au point de code Unicode donné.
----  frame.args[1] : Le point de code (entier).
---- @return string Le caractère.
-function export.caractere(frame)
-  local params = {
-    [1] = {
-      required = true,
-      type = "int",
-    },
-  }
-  local args = m_params.process(frame.args, params)
+--- Returns the character with the given Unicode codepoint.
+--- Throws an error if the codepoint is invalid.
+---  frame.args[1] (int): The codepoint.
+--- @return string The character.
+function p.character(frame)
+  local args = m_params.process(frame.args, {
+    [1] = { required = true, type = m_params.INT },
+  })
   local code = tonumber(args[1])
 
   if code ~= nil then
@@ -246,4 +240,4 @@ function export.caractere(frame)
   error("Point de code incorrect")
 end
 
-return export
+return p

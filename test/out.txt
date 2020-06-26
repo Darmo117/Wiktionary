@@ -1,0 +1,18 @@
+
+== {{langue|eo}} ==
+=== {{S|nom|eo|flexion}} ===
+{{eo-rég|ke.mi.ˈis.to|ns=kemiisto}}
+'''kemiistoj''' {{pron|ke.mi.ˈis.toj|eo}}
+# ''Nominatif pluriel de'' {{lien|kemiisto|eo}}.
+
+== {{langue|eo}} ==
+=== {{S|nom|eo|flexion}} ===
+{{eo-rég|ke.mi.ˈis.to|ns=kemiisto}}
+'''kemiiston''' {{pron|ke.mi.ˈis.ton|eo}}
+# ''Accusatif singulier de'' {{lien|kemiisto|eo}}.
+
+== {{langue|eo}} ==
+=== {{S|nom|eo|flexion}} ===
+{{eo-rég|ke.mi.ˈis.to|ns=kemiisto}}
+'''kemiistojn''' {{pron|ke.mi.ˈis.tojn|eo}}
+# ''Accusatif pluriel de'' {{lien|kemiisto|eo}}.

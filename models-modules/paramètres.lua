@@ -1,49 +1,49 @@
 local m_table = require("Module:table")
 
-local export = {}
+local p = {}
 
 -- Types
-export.NUMBER = "number"
-export.INT = "int"
-export.FLOAT = "float"
-export.BOOLEAN = "boolean"
+p.NUMBER = "number"
+p.INT = "int"
+p.FLOAT = "float"
+p.BOOLEAN = "boolean"
 
 -- Constantes d’erreur
-export.UNKNOWN_PARAM = "unknown parameter"
-export.MISSING_PARAM = "missing required parameter"
-export.EMPTY_PARAM = "empty required parameter"
-export.INVALID_VALUE = "invalid value"
-export.VALUE_NOT_IN_ENUM = "value not in enum"
-export.INVALID_TYPE = "invalid type"
-export.ALIAS_TO_UNKNOWN = "alias to undefined parameter"
-export.ALIAS_TO_ALIAS = "alias to alias parameter"
-export.ALIAS_TO_ITSELF = "alias to itself"
-export.ENUM_WITH_CHECKER = "enum with checker"
-export.ENUM_INVALID_VALUE = "invalid enum values"
+p.UNKNOWN_PARAM = "unknown parameter"
+p.MISSING_PARAM = "missing required parameter"
+p.EMPTY_PARAM = "empty required parameter"
+p.INVALID_VALUE = "invalid value"
+p.VALUE_NOT_IN_ENUM = "value not in enum"
+p.INVALID_TYPE = "invalid type"
+p.ALIAS_TO_UNKNOWN = "alias to undefined parameter"
+p.ALIAS_TO_ALIAS = "alias to alias parameter"
+p.ALIAS_TO_ITSELF = "alias to itself"
+p.ENUM_WITH_CHECKER = "enum with checker"
+p.ENUM_INVALID_VALUE = "invalid enum values"
 
 --- Liste des erreurs non masquées par le mode silencieux.
 local UNCATCHABLE_ERRORS = {
-  export.INVALID_TYPE,
-  export.ALIAS_TO_UNKNOWN,
-  export.ALIAS_TO_ALIAS,
-  export.ALIAS_TO_ITSELF,
-  export.ENUM_WITH_CHECKER,
-  export.ENUM_INVALID_VALUE,
+  p.INVALID_TYPE,
+  p.ALIAS_TO_UNKNOWN,
+  p.ALIAS_TO_ALIAS,
+  p.ALIAS_TO_ITSELF,
+  p.ENUM_WITH_CHECKER,
+  p.ENUM_INVALID_VALUE,
 }
 
 --- Liste des templates de messages d’erreur.
 local ERROR_MESSAGES = {
-  [export.UNKNOWN_PARAM] = "Paramètre « %s » inconnu",
-  [export.MISSING_PARAM] = "Paramètre requis « %s » absent",
-  [export.EMPTY_PARAM] = "Paramètre requis « %s » vide",
-  [export.INVALID_VALUE] = 'Valeur invalide pour le paramètre « %s » ("%s") de type %s',
-  [export.VALUE_NOT_IN_ENUM] = 'Valeur invalide pour le paramètre « %s » ("%s")',
-  [export.INVALID_TYPE] = 'Type inconnu pour le paramètre « %s » ("%s")',
-  [export.ALIAS_TO_UNKNOWN] = 'Paramètre « %s », alias vers un paramètre non défini « %s »',
-  [export.ALIAS_TO_ALIAS] = 'Paramètre « %s », alias vers un autre alias (« %s »)',
-  [export.ALIAS_TO_ITSELF] = 'Paramètre « %s », alias vers lui-même',
-  [export.ENUM_WITH_CHECKER] = "Le paramètre « %s » est une énumération avec une précondition",
-  [export.ENUM_INVALID_VALUE] = 'Valeur énumérée invalide pour le paramètre « %s » ("%s") de type %s',
+  [p.UNKNOWN_PARAM] = "Paramètre « %s » inconnu",
+  [p.MISSING_PARAM] = "Paramètre requis « %s » absent",
+  [p.EMPTY_PARAM] = "Paramètre requis « %s » vide",
+  [p.INVALID_VALUE] = 'Valeur invalide pour le paramètre « %s » ("%s") de type %s',
+  [p.VALUE_NOT_IN_ENUM] = 'Valeur invalide pour le paramètre « %s » ("%s")',
+  [p.INVALID_TYPE] = 'Type inconnu pour le paramètre « %s » ("%s")',
+  [p.ALIAS_TO_UNKNOWN] = 'Paramètre « %s », alias vers un paramètre non défini « %s »',
+  [p.ALIAS_TO_ALIAS] = 'Paramètre « %s », alias vers un autre alias (« %s »)',
+  [p.ALIAS_TO_ITSELF] = 'Paramètre « %s », alias vers lui-même',
+  [p.ENUM_WITH_CHECKER] = "Le paramètre « %s » est une énumération avec une précondition",
+  [p.ENUM_INVALID_VALUE] = 'Valeur énumérée invalide pour le paramètre « %s » ("%s") de type %s',
 }
 
 --- Construit l’objet d’erreur.
@@ -52,8 +52,8 @@ local ERROR_MESSAGES = {
 --- @return table Un objet contenant le type d’erreur à l’indice "error_type" et les autres données à l’indice "error_data".
 local function buildErrorMessage(errorType, ...)
   return {
-    ["errorType"] = errorType,
-    ["errorData"] = { ... }
+    errorType = errorType,
+    errorData = { ... }
   }
 end
 
@@ -102,16 +102,16 @@ local function getValue(expectedType, rawValue, argName, errorType)
       error(buildErrorMessage(errorType, argName, rawValue, frTypeName))
     end
     value = rawValue
-  elseif expectedType == export.NUMBER then
+  elseif expectedType == p.NUMBER then
     frTypeName = "nombre"
     value = toNumber(rawValue, argName, false, frTypeName, errorType)
-  elseif expectedType == export.INT then
+  elseif expectedType == p.INT then
     frTypeName = "entier"
     value = toNumber(rawValue, argName, true, frTypeName, errorType)
-  elseif expectedType == export.FLOAT then
+  elseif expectedType == p.FLOAT then
     frTypeName = "flottant"
     value = toNumber(rawValue, argName, false, frTypeName, errorType)
-  elseif expectedType == export.BOOLEAN then
+  elseif expectedType == p.BOOLEAN then
     frTypeName = "booléen"
     value = toBoolean(rawValue, argName, frTypeName, errorType)
   end
@@ -122,19 +122,19 @@ end
 --- Vérifie la validité des définitions des paramètres.
 --- @param definedParameters table La définition des paramètres.
 local function checkParametersDefinitions(definedParameters)
-  local validTypes = { export.BOOLEAN, export.NUMBER, export.INT, export.FLOAT }
+  local validTypes = { p.BOOLEAN, p.NUMBER, p.INT, p.FLOAT }
 
   for paramName, paramValue in pairs(definedParameters) do
     if paramValue.type and not m_table.contains(validTypes, paramValue.type) then
-      error(buildErrorMessage(export.INVALID_TYPE, paramName, paramValue.type))
+      error(buildErrorMessage(p.INVALID_TYPE, paramName, paramValue.type))
     end
     if paramValue.enum then
       if paramValue.checker then
-        error(buildErrorMessage(export.ENUM_WITH_CHECKER, paramName))
+        error(buildErrorMessage(p.ENUM_WITH_CHECKER, paramName))
       else
         for _, enumValue in ipairs(paramValue.enum) do
           -- Vérification du type de la valeur.
-          getValue(paramValue.type, enumValue, paramName, export.ENUM_INVALID_VALUE)
+          getValue(paramValue.type, enumValue, paramName, p.ENUM_INVALID_VALUE)
         end
       end
     end
@@ -143,11 +143,11 @@ local function checkParametersDefinitions(definedParameters)
       local alias = paramValue.alias_of
 
       if not definedParameters[alias] then
-        error(buildErrorMessage(export.ALIAS_TO_UNKNOWN, paramName, paramValue.alias_of))
+        error(buildErrorMessage(p.ALIAS_TO_UNKNOWN, paramName, paramValue.alias_of))
       elseif alias == paramName then
-        error(buildErrorMessage(export.ALIAS_TO_ITSELF, paramName))
+        error(buildErrorMessage(p.ALIAS_TO_ITSELF, paramName))
       elseif definedParameters[alias].alias_of then
-        error(buildErrorMessage(export.ALIAS_TO_ALIAS, paramName, paramValue.alias_of))
+        error(buildErrorMessage(p.ALIAS_TO_ALIAS, paramName, paramValue.alias_of))
       end
     end
   end
@@ -191,18 +191,18 @@ local function extractArgumentValue(param, key, argName, argValue, processedArgs
       argValue = nil
       processedArgs[key] = nil
     else
-      error(buildErrorMessage(export.EMPTY_PARAM, argName))
+      error(buildErrorMessage(p.EMPTY_PARAM, argName))
     end
   end
 
   if argValue then
     -- Récupération de la valeur après transtypage éventuel.
-    local value, frTypeName = getValue(param.type, argValue, key, export.INVALID_VALUE)
+    local value, frTypeName = getValue(param.type, argValue, key, p.INVALID_VALUE)
     -- Vérification des contraintes d’énumération ou de la précondition.
     if type(param.enum) == "table" and not m_table.contains(param.enum, value) then
-      error(buildErrorMessage(export.VALUE_NOT_IN_ENUM, argName, value))
+      error(buildErrorMessage(p.VALUE_NOT_IN_ENUM, argName, value))
     elseif type(param.checker) == "function" and not param.checker(value) then
-      error(buildErrorMessage(export.INVALID_VALUE, argName, value, frTypeName))
+      error(buildErrorMessage(p.INVALID_VALUE, argName, value, frTypeName))
     end
     processedArgs[key] = value
   end
@@ -225,7 +225,7 @@ local function parseArguments(args, definedParameters)
       end
     else
       -- Les paramètres non définis lancent une erreur.
-      error(buildErrorMessage(export.UNKNOWN_PARAM, argName))
+      error(buildErrorMessage(p.UNKNOWN_PARAM, argName))
     end
   end
 
@@ -239,7 +239,7 @@ local function checkRequiredParameters(processedArgs, definedParameters)
   for paramName, paramValue in pairs(definedParameters) do
     if processedArgs[paramName] == nil and paramValue.alias_of == nil then
       if paramValue.required and not paramValue.allow_empty then
-        error(buildErrorMessage(export.MISSING_PARAM, paramName))
+        error(buildErrorMessage(p.MISSING_PARAM, paramName))
       elseif paramValue.default ~= nil then
         processedArgs[paramName] = paramValue.default
       end
@@ -253,7 +253,7 @@ end
 --- @param definedParameters table Les paramètres définis.
 --- @param silentErrors boolean Si true, les paramètres problématiques sont retournés au lieu de lancer une erreur ; ne devrait être utilisé que dans le cas où un comportement précis est nécessaire.
 --- @return table|string|number,boolean Une table contenant les paramètres traités ou le nom du paramètre ayant déclanché une erreur et un booléen indiquant le statut.
-function export.process(args, definedParameters, silentErrors)
+function p.process(args, definedParameters, silentErrors)
   local success, result = pcall(function()
     checkParametersDefinitions(definedParameters)
     local processedArgs = parseArguments(args, definedParameters)
@@ -283,4 +283,4 @@ function export.process(args, definedParameters, silentErrors)
   return result, true
 end
 
-return export
+return p

@@ -307,6 +307,14 @@ wikt.user.hasLevel = function (levelmask) {
  */
 
 /**
+ * Returns the title the current page.
+ * @return {string} The title without the namespace.
+ */
+wikt.page.getCurrentPageTitle = function () {
+  return mw.config.get("wgTitle");
+};
+
+/**
  * Returns the namespace ID of the current page.
  * @return {number} The namespace ID.
  */
@@ -368,6 +376,37 @@ wikt.page.getSubpages = function (namespaceId, basePageName, subPagesPattern, ca
       callback,
       "json"
   );
+}
+
+/**
+ * Adds the given buttons to the current page’s title.
+ * @param buttons {Array<Object>} The buttons to add.
+ * Each button object has to define a text, a title and
+ * a callback function.
+ */
+wikt.page.addButtonAfterTitle = function (buttons) {
+  var $heading = $("#firstHeading");
+
+  for (var i = 0; i < buttons.length; i++) {
+    var button = buttons[i];
+    var text = button["text"];
+    var title = button["title"];
+    var $span = $("<span>");
+    var $link = $("<a>");
+
+    $span.addClass("noprint ancretitres");
+    $span.attr("style", "font-size: small; font-weight: normal; " +
+        "-moz-user-select: none; -webkit-user-select: none; " +
+        "-ms-user-select: none; user-select: none; margin-left: 5px;");
+
+    $link.text(text);
+    $link.attr("href", "#");
+    $link.attr("title", title);
+    $link.on("click", button["callback"]);
+
+    $span.append($link);
+    $heading.append($span);
+  }
 }
 
 /*

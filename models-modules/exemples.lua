@@ -30,7 +30,7 @@ local function _example(text, transcription, meaning, source, heading, lang, scr
 
   if lang ~= "fr" then
     if transcription then
-      wikicode = wikicode .. "<br/>" .. m_bases.balise_langue("''" .. text .. "''", scriptLang .. "-Latn")
+      wikicode = wikicode .. "<br/>" .. m_bases.balise_langue("''" .. transcription .. "''", scriptLang .. "-Latn")
     end
     wikicode = wikicode .. mw.ustring.format("\n%s: ", heading)
     if meaning then

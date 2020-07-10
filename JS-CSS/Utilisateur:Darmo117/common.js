@@ -35,7 +35,15 @@ mw.loader.using("ext.gadget.Barre_de_luxe").done(function () {
     },
     {
       action: function (selectedText, delimiter) {
-        return "{{pron-API|" + delimiter + selectedText + delimiter + "}}";
+        var start, end;
+        if ("[]".includes(delimiter)) {
+          start = "[";
+          end = "]"
+        }
+        else {
+          start = end = delimiter;
+        }
+        return "{{pron-API|" + start + selectedText + end + "}}";
       },
       promptText: "Délimiteur",
       promptDefault: "\\",

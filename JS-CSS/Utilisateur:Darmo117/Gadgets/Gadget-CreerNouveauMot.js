@@ -1,19 +1,20 @@
 /**
- * Création d’un mot à partir d’un patron généré automatiquement
- * à partir de quelques clics dans une boite de dialogue.
+ * (fr)
+ * Ce gadget permet de facilement créer une entrée dans une langue donnée en
+ * remplissant quelques champs de texte.
  * ------------------------------------------------------------------------------------
- * Versions antérieures à la 5.0 :
- * Code en partie inspiré de [[w:MediaWiki:Gadget-RenommageCategorie.js]]
- * et aussi de [[MediaWiki:Gadget-SpecialChar.js]].
+ * (en)
+ * This gadget helps create new entries for a given language by filling out some
+ * text fields.
  * ------------------------------------------------------------------------------------
  * v2.0 2012-12-10
  * v2.1 2012-12-26
  * v2.2 2013-01-01
- * v2.3 2013-01-04 restructuration des fonctions pour la boite de dialogue
- * v2.4 2013-01-29 cookies pour mémoriser préférences
- * v3.0 2013-02-28 intégration de l'outil dans la page
- * v4.0 2014-01-22 prise en charge de la nouvelle syntaxe des sections modifiables
- * v5.0 2020-06-?? réécriture complète TODO màj la date à la sortie
+ * v2.3 2013-01-04 dialog box functions restructuration
+ * v2.4 2013-01-29 cookies to store preferences
+ * v3.0 2013-02-28 tool integration into pages
+ * v4.0 2014-01-22 support for new editable sections syntax
+ * v5.0 2020-07-?? full rewrite, migration to OOUI TODO màj la date à la sortie
  * ------------------------------------------------------------------------------------
  * [[Catégorie:JavaScript du Wiktionnaire|CreerNouveauMot.js]]
  */
@@ -51,6 +52,7 @@ mw.loader.using(["oojs-ui-core", "oojs-ui-widgets", "oojs-ui-toolbars", "oojs-ui
     _SECTIONS: [
       {label: "Variantes orthographiques", code: "variantes orthographiques"},
       {label: "Variantes", code: "variantes"},
+      {label: "Abréviations", code: "abréviations"},
       {label: "Synonymes", code: "synonymes"},
       {label: "Antonymes", code: "antonymes"},
       {label: "Composés", code: "composés"},
@@ -293,11 +295,22 @@ mw.loader.using(["oojs-ui-core", "oojs-ui-widgets", "oojs-ui-toolbars", "oojs-ui
       wikicode += seeAlso;
 
       var containsRefTemplates = /{{(R|RÉF|réf)\||<ref>.+<\/ref>/gm.test(wikicode);
+
       if (containsRefTemplates || references || bibliography) {
-        sources = "{{Références}}" + (sources ? "\n" : "") + sources;
-        wikicode += (references ? "=== {{S|références}} ===\n" + references + "\n\n" : "")
-            + "==== {{S|sources}} ====\n" + sources + "\n\n"
-            + (bibliography ? "==== {{S|bibliographie}} ====\n" + bibliography + "\n\n" : "");
+        var insertSourcesSection = containsRefTemplates || sources;
+
+        if (references || insertSourcesSection || bibliography) {
+          wikicode += "=== {{S|références}} ===\n";
+          if (references) {
+            wikicode += references + "\n\n";
+          }
+        }
+        if (insertSourcesSection) {
+          wikicode += "==== {{S|sources}} ====\n{{Références}}" + (sources ? "\n" : "") + sources + "\n\n";
+        }
+        if (bibliography) {
+          wikicode += "==== {{S|bibliographie}} ====\n" + bibliography + "\n\n";
+        }
       }
 
       wikicode += (sortingKey !== word ? "{{clé de tri|{0}}}\n".format(sortingKey) : "");
@@ -334,6 +347,10 @@ mw.loader.using(["oojs-ui-core", "oojs-ui-widgets", "oojs-ui-toolbars", "oojs-ui
         this._selectedLanguage = language;
         wikt.cookie.create(this._COOKIE_NAME, language.code, this._COOKIE_DURATION);
         this._gui.selectLanguage(this._selectedLanguage);
+
+        if (!this._gui.pronunciation) {
+          this._gui.pronunciation = language.generatePronunciation(this._word);
+        }
       }
     },
 
@@ -512,7 +529,6 @@ mw.loader.using(["oojs-ui-core", "oojs-ui-widgets", "oojs-ui-toolbars", "oojs-ui
      * @type {Array<wikt.gadgets.creerNouveauMot.Tab>}
      */
     this._tabs = [];
-    this._wordLbl = null;
     this._languageFld = null;
     this._languageSelectFld = null;
     this._languageBnt = null;
@@ -540,9 +556,10 @@ mw.loader.using(["oojs-ui-core", "oojs-ui-widgets", "oojs-ui-toolbars", "oojs-ui
 
     var $tedit = $(this.TARGET_ELEMENT);
 
-    var specialChars = "’àÀâÂæÆçÇéÉèÈêÊëËîÎïÏôÔœŒùÙûÛÿŸ".split("");
-    specialChars.push("«&nbsp;");
-    specialChars.push("&nbsp;»");
+    // TODO empêcher le scroll de remonter à l’insertion
+    var specialChars = "’àÀâÂæÆçÇéÉèÈêÊëËîÎïÏôÔœŒùÙûÛüÜÿŸ".split("");
+    specialChars.push("«\u00a0");
+    specialChars.push("\u00a0»");
 
     // Alias to avoid confusion inside nested functions.
     var self = this;
@@ -596,8 +613,7 @@ mw.loader.using(["oojs-ui-core", "oojs-ui-widgets", "oojs-ui-toolbars", "oojs-ui
           });
 
           self._pronunciationFld = new OO.ui.TextInputWidget({
-            // FIXME classe non appliquée ?
-            classes: ["API"],
+            id: "cnm-pronunciation-field",
           });
           self._pronunciationPnl = new OO.ui.FieldLayout(self._pronunciationFld, {
             align: "inline",
@@ -772,7 +788,6 @@ mw.loader.using(["oojs-ui-core", "oojs-ui-widgets", "oojs-ui-toolbars", "oojs-ui
                   "textfield": textFld,
                 };
 
-                // TODO changer le code langue du domaine en fonction de la langue sélectionnée.
                 var url = "https://{0}/wiki/{1}".format(projectDomain, encodeURI(word));
                 // noinspection HtmlUnknownTarget
                 var label = new OO.ui.HtmlSnippet('<a href="{0}" target="_blank">Rechercher</a>'.format(url));
@@ -848,17 +863,13 @@ mw.loader.using(["oojs-ui-core", "oojs-ui-widgets", "oojs-ui-toolbars", "oojs-ui
 
     var popup = new OO.ui.PopupWidget({
       // $autoCloseIgnore: button.$element,
-      $content: $('<p>Le code a été inséré dans la boite d’édition ci-dessous. ' +
-          'Vous devriez <strong>vérifier</strong> que le résultat est conforme à vos souhaits, ' +
-          'et en particulier utiliser le bouton «&nbsp;Prévisualer&nbsp;» avant de publier.</p>'),
+      $content: $("<p>Le code a été inséré dans la boite d’édition ci-dessous. " +
+          "Vous devriez <strong>vérifier</strong> que le résultat est conforme à vos souhaits, " +
+          "et en particulier utiliser le bouton «&nbsp;Prévisualer&nbsp;» avant de publier.</p>"),
       padded: true,
       width: 300,
-      align: 'forwards',
-      head: true,
       anchor: false,
     });
-    // FIXME pas ajouté ?
-    $(document.body).append(popup.$element);
 
     var toolFactory = new OO.ui.ToolFactory();
     var toolGroupFactory = new OO.ui.ToolGroupFactory();
@@ -883,8 +894,7 @@ mw.loader.using(["oojs-ui-core", "oojs-ui-widgets", "oojs-ui-toolbars", "oojs-ui
       CustomTool.static.name = name;
       CustomTool.static.icon = icon;
       CustomTool.static.title = title;
-      // FIXME primary = icones blancs
-      CustomTool.static.flags = progressive ? "progressive" : "primary";
+      CustomTool.static.flags = progressive ? "progressive" : "";
       CustomTool.prototype.onSelect = onSelect;
       CustomTool.prototype.onUpdateState = onUpdateState || function () {
         this.setActive(false);
@@ -909,6 +919,7 @@ mw.loader.using(["oojs-ui-core", "oojs-ui-widgets", "oojs-ui-toolbars", "oojs-ui
     var insertWikicodeBtn = "insert-wikicode";
     generateButton(insertWikicodeBtn, "funnel", true, "Insérer le wikicode", function () {
       onInsertWikicode();
+      console.log(popup);
       // noinspection JSCheckFunctionSignatures
       popup.toggle(true);
     });
@@ -947,6 +958,15 @@ mw.loader.using(["oojs-ui-core", "oojs-ui-widgets", "oojs-ui-toolbars", "oojs-ui
         $("#sister-project-{0} span.oo-ui-fieldLayout-field".format(projectCode)).attr("style", "width: 100%");
       }
     }
+
+    // Enforce .API class fonts for pronunciation text input.
+    $("#cnm-pronunciation-field > input").attr("style",
+        'font-family:' +
+        '"Cambria","Calibri","Consolas","DejaVu Sans","Segoe UI",' +
+        '"Segoe UI Symbol","Lucida Grande","Lucida Sans Unicode","Charis SIL",' +
+        '"Doulos SIL","Gentium","GentiumAlt","Adobe Pi Std","Code2000",' +
+        '"Chrysanthi Unicode","TITUS Cyberbit Basic","Bitstream Cyberbit",' +
+        '"Hiragino Kaku Gothic Pro","Matrix Unicode",sans-serif !important');
   };
 
   wikt.gadgets.creerNouveauMot.MainGui.prototype = Object.create(wikt.gadgets.creerNouveauMot.Gui.prototype);
@@ -1087,12 +1107,16 @@ mw.loader.using(["oojs-ui-core", "oojs-ui-widgets", "oojs-ui-toolbars", "oojs-ui
           .format(cssClass, item.replace("&", "&amp;"), item.trim()));
       // noinspection JSCheckFunctionSignatures
       $link.click(function (e) {
+        var scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+        var scrollLeft = window.pageXOffset || document.documentElement.scrollLeft;
+
         textField.insertContent($(e.target).data("value"));
         textField.focus();
+        window.scrollTo(scrollLeft, scrollTop); // TEST
       });
       $links.append($link);
       if (i < list.length - 1) {
-        $links.append("&nbsp;");
+        $links.append("\u00a0");
       }
     }
 

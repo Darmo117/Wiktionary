@@ -12,6 +12,7 @@ window.wikt.gadgets.barreDeLuxe = {
   VERSION: "2.0",
 
   groups: [
+    {id: "misc_templates", label: "Modèles"},
     {id: "links", label: "Liens"},
     {id: "section_templates", label: "Patrons"},
     {id: "messages", label: "Messages"},
@@ -166,7 +167,7 @@ window.wikt.gadgets.barreDeLuxe = {
     },
     {
       tagOpen: "== {{langue|fr}} ==\n=== {{S|étymologie}} ===\n{{ébauche-étym|fr}}\n:",
-      tagClose: " {{date|?|lang=fr}}/{{siècle|?|lang=fr}}\n=== {{S|nom|fr}} ===\n{{fr-rég|}}\n'''{{subst:" + "PAGENAME}}''' {{pron||fr}} {{genre ?}}\n#\n#* ''''\n==== {{S|variantes orthographiques}} ====\n==== {{S|synonymes}} ====\n==== {{S|antonymes}} ====\n==== {{S|dérivés}} ====\n==== {{S|apparentés}} ====\n==== {{S|vocabulaire}} ====\n==== {{S|hyperonymes}} ====\n==== {{S|hyponymes}} ====\n==== {{S|méronymes}} ====\n==== {{S|holonymes}} ====\n==== {{S|traductions}} ====\n{{trad-début}}\n{{ébauche-trad}}\n{{trad-fin}}\n=== {{S|prononciation}} ===\n* {{pron||fr}}\n* {{écouter|<!--  précisez svp la ville ou la région -->||audio=|lang=}}\n==== {{S|homophones|fr}} ====\n==== {{S|paronymes}} ====\n=== {{S|anagrammes}} ===\n=== {{S|voir aussi}} ===\n* {{WP}}\n=== {{S|références}} ===\n{{clé de tri}}",
+      tagClose: " {{" + "date|?|lang=fr}}/{{" + "siècle|?|lang=fr}}\n=== {{S|nom|fr}} ===\n{{fr-rég|}}\n'''{{subst:" + "PAGENAME}}''' {{pron||fr}} {{genre ?}}\n#\n#* ''''\n==== {{S|variantes orthographiques}} ====\n==== {{S|synonymes}} ====\n==== {{S|antonymes}} ====\n==== {{S|dérivés}} ====\n==== {{S|apparentés}} ====\n==== {{S|vocabulaire}} ====\n==== {{S|hyperonymes}} ====\n==== {{S|hyponymes}} ====\n==== {{S|méronymes}} ====\n==== {{S|holonymes}} ====\n==== {{S|traductions}} ====\n{{trad-début}}\n{{ébauche-trad}}\n{{trad-fin}}\n=== {{S|prononciation}} ===\n* {{pron||fr}}\n* {{écouter|<!--  précisez svp la ville ou la région -->||audio=|lang=}}\n==== {{S|homophones|fr}} ====\n==== {{S|paronymes}} ====\n=== {{S|anagrammes}} ===\n=== {{S|voir aussi}} ===\n* {{WP}}\n=== {{S|références}} ===\n{{clé de tri}}",
       imageFileName: "3/32/Button_anular_voto.png",
       imageFileNameOOUI: "thumb/8/81/OOjs_UI_icon_stripeFlow-ltr.svg/24px-OOjs_UI_icon_stripeFlow-ltr.svg.png",
       tooltip: "Patron long",
@@ -206,6 +207,24 @@ window.wikt.gadgets.barreDeLuxe = {
       tooltip: "Autres projets",
       buttonId: "other-projects",
       group: "links",
+    },
+    {
+      tagOpen: "{{" + "refnec|",
+      tagClose: "|lang=<!-- Merci d’indiquer la langue -->}}",
+      imageFileName: "0/0b/Button_fuente.png",
+      imageFileNameOOUI: "thumb/6/69/OOjs_UI_icon_help.svg/24px-OOjs_UI_icon_help.svg.png",
+      tooltip: "Référence nécessaire",
+      buttonId: "refnec",
+      group: "misc_templates",
+    },
+    {
+      tagOpen: "{{" + "?|",
+      tagClose: "|lang=<!-- Merci d’indiquer la langue -->}}",
+      imageFileName: "8/89/Button_nosense.png",
+      imageFileNameOOUI: "thumb/b/b2/OOjs_UI_icon_help-ltr.svg/24px-OOjs_UI_icon_help-ltr.svg.png",
+      tooltip: "À vérifier",
+      buttonId: "to-check",
+      group: "misc_templates",
     },
   ],
 

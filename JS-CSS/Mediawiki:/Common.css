@@ -1,0 +1,510 @@
+/* Soulignement des titres niveau 3 + clear + interligne */
+.ns-0 #mw-content-text h3, .ns-106 #mw-content-text h3, .ns-110 #mw-content-text h3 {
+  border-bottom: dotted 1px #aaa;
+  line-height: 2;
+}
+
+/* Lien [modifier] plus petit, comme WP, sauf pour le skin Timeless */
+body:not(.skin-timeless) .mw-editsection {
+  font-size: x-small;
+}
+
+/* Espace fine insécable devant les numéros de référence */
+.reference:before {
+  content: '\202f';
+}
+
+/****************************************/
+/*        Liens                        **/
+/****************************************/
+/* Liens externes en rouge (seulement avec la classe rougelinks) */
+#bodyContent .rougelinks a {
+  background: none !important;
+  color: #ba0000;
+  padding-right: 0;
+}
+
+/*****************************************/
+/* Table jaune                           */
+/*****************************************/
+table.table-jaune {
+  border: 1px solid #AAA;
+  text-align: center;
+  border-collapse: collapse;
+  background: #FFF;
+}
+
+/* Titre */
+table.table-jaune caption {
+  background: #ffffaa;
+  font-weight: bold;
+  border: 1px solid #AAA;
+  padding: 0.2em;
+}
+
+/* Titres de colonnes */
+table.table-jaune th {
+  padding: 0.2em;
+  background: #FFFFCC;
+  border: 1px solid #AAA;
+}
+
+/* Cellule */
+table.table-jaune td {
+  padding: 0.3em;
+  background: #FFF;
+  border: 1px solid #AAA;
+}
+
+/*****************************************/
+/* Boites déroulantes                    */
+/*****************************************/
+.boite {
+  border: 1px solid #aaa;
+  overflow: auto;
+  background-color: #F7F8FF;
+}
+
+.boite table {
+  border-spacing: 0;
+  width: 100%;
+  text-align: left;
+  background: #F7F8FF;
+}
+
+/*****************************************/
+/* Boites déroulantes                    */
+/*****************************************/
+
+.liste-colonnes > ul {
+  margin-top: 0;
+}
+
+.liste-colonnes li {
+  -webkit-column-break-inside: avoid;
+  page-break-inside: avoid;
+  break-inside: avoid-column;
+}
+
+/*********/
+/*  API  */
+/*********/
+.API, .API > input {
+  font-family: "Cambria", "Calibri", "Consolas", "DejaVu Sans", "Segoe UI",
+  "Segoe UI Symbol", "Lucida Grande", "Lucida Sans Unicode", "Charis SIL",
+  "Doulos SIL", "Gentium", "GentiumAlt", "Adobe Pi Std", "Code2000",
+  "Chrysanthi Unicode", "TITUS Cyberbit Basic", "Bitstream Cyberbit",
+  "Hiragino Kaku Gothic Pro", "Matrix Unicode", sans-serif !important;
+  font-size: 110% !important;
+  text-decoration: none !important;
+}
+
+/*****************************************/
+/* Liens des projets Wikimedia           */
+/*****************************************/
+#liens_wikimedia td {
+  border: 1px solid #AAA;
+  background: #EEF;
+  padding: 0.3em;
+}
+
+/*****************************************/
+/* ne pas afficher les groupes vides     */
+/* des statistiques                      */
+/*****************************************/
+tr.statistics-group-zero {
+  display: none;
+}
+
+/*****************************************/
+/* Styles de bandeaux                    */
+/*****************************************/
+/* Bandeau d'EditNotice, voir [[:Catégorie:Wiktionnaire:Editnotice]] */
+.bandeau-editnotice {
+  border: 3px solid #88F;
+  border-left: 0;
+  border-right: 0;
+  background-color: #F3F5FF;
+  text-align: left;
+  width: 95%;
+  margin: auto auto 0.5em;
+  padding: 5px 0;
+}
+
+/* Style des bandeaux principaux, par le [[Modèle:Méta bandeau d'avertissement]] comme WP */
+.bandeau-niveau-grave {
+  border-color: #aa0044;
+  background-color: #ffcccc;
+}
+
+/* PDD 1 */
+.bandeau-niveau-modere {
+  border-color: #ff8822;
+  background-color: #ffeedd;
+}
+
+/* PDD 1 */
+.bandeau-niveau-ebauche {
+  border-color: #77ccff;
+  background-color: #fbfbfb;
+}
+
+/* PDD 1 */
+.bandeau-niveau-information {
+  border-color: #77ccff;
+  background-color: #fbfbfb;
+}
+
+/* PDD 1 */
+.bandeau-niveau-detail {
+  border-color: #e7e7e7;
+  background-color: #fdfdfd;
+}
+
+/* PDD 2 */
+
+.bandeau { /* monobookocentré */
+  text-align: left;
+  margin: 8px 10% 12px;
+  border-style: solid;
+  border-width: 1px 1px 1px 10px;
+  padding: 2px 10px;
+}
+
+.bandeau table {
+  background-color: transparent
+}
+
+.bandeau-icone {
+  vertical-align: middle;
+  text-align: center;
+  min-width: 45px;
+  padding-right: 10px
+}
+
+.bandeau-titre {
+  font-size: 1em;
+  line-height: 1.4em;
+  margin-bottom: 0.5em
+}
+
+.bandeau-texte {
+  font-size: 0.9em;
+  line-height: 1.2em
+}
+
+/* Cadre des documentations */
+.documentation {
+  background-color: #ECFCF4;
+  border: 1px solid #aaa;
+  padding: 0.5em;
+}
+
+/***************************************************************************/
+
+/* Style boîte d’ouverture de session */
+#userlogin {
+  padding: 1em 1em .7em 1em;
+  background-color: #ffffe6;
+  border: 2px solid #fc6;
+  color: #000;
+  margin-right: 2em;
+}
+
+#userlogin table {
+  background-color: #ffffe6;
+  color: #000;
+}
+
+/*************************************/
+/* Boîtes de l’accueil communautaire */
+/*************************************/
+/* Style des boîtes de l’accueil */
+.boite-accueil-haut {
+  background-color: #C8D8FF;
+  font-family: Verdana, Arial, Helvetica, sans-serif;
+  font-size: small;
+  font-weight: bold;
+  border: 1px solid #AAAAAA;
+  padding-bottom: 2px;
+  padding-left: 2px;
+  padding-top: 2px;
+  -moz-border-radius-topright: 0.5em;
+  border-top-right-radius: 0.5em;
+  -moz-border-radius-topleft: 0.5em;
+  border-top-left-radius: 0.5em;
+}
+
+/* ALTERNANCE */
+
+/* Classes permettant d'alterner les couleurs de ligne
+	dans les tableaux selon le nombre de lignes d'en-tête :
+	.alternance si nombre impair
+	.alternance2 si nombre pair.
+
+	.odd est un be kind to IE<9 qui n'implémente pas
+	le sélecteur :nth-child, appliquée via Common.js
+
+	.sortable : les tableaux triables nécessitent d'inverser
+	l'alternance.
+
+*/
+
+table.alternance tr, .alternance .wikitable th[scope="row"] {
+  background: #fff;
+}
+
+table.alternance tr:nth-child(odd), .alternance .wikitable tr:nth-child(odd) th[scope="row"] {
+  background: #E9E9E9;
+}
+
+table.alternance tr.odd, table.alternance .wikitable tr.odd th[scope="row"] {
+  background: #E9E9E9;
+}
+
+table.alternance2 tr, table.alternance .sortable tr {
+  background: #E9E9E9;
+}
+
+table.alternance2 tr:nth-child(odd), table.alternance .sortable tr:nth-child(2n+1) {
+  background: #fff;
+}
+
+table.alternance2 tr.odd, table.alternance .sortable tr.odd {
+  background: #fff;
+}
+
+/* Styles de [[Modèle:Méta palette de navigation]] */
+table.navbox {
+  background: #F9F9F9;
+  border: 1px solid #AAA;
+  clear: both;
+  font-size: 90%;
+  margin: 1em 0 0;
+  padding: 2px;
+  text-align: center;
+  width: 100%;
+}
+
+table.navbox th {
+  background: #CCF;
+  padding-left: 1em;
+  padding-right: 1em;
+}
+
+table.navbox td.group {
+  background: #DDF;
+  vertical-align: middle;
+  width: 150px;
+  padding-left: 1em;
+  padding-right: 1em;
+  font-weight: bold;
+}
+
+table.navbox td.list {
+  text-align: left
+}
+
+table.navbox td.even {
+  background: #EEF
+}
+
+table.navbox td.below {
+  background: #CCF;
+  vertical-align: middle;
+  padding-left: 1em;
+  padding-right: 1em;
+}
+
+/* Modèle de palettes groupées, [[Modèle:Palette]] */
+
+div.navbox_group {
+  border: 1px solid #aaaaaa;
+  margin-top: 15px;
+}
+
+div.navbox_group table.navbox {
+  border: 0;
+  margin: 0;
+}
+
+/* Fin styles de [[Modèle:Méta palette de navigation]] */
+
+
+/* * Boites et messages * */
+
+.boite-grise {
+  background: #F9F9F9;
+  border: 1px solid #aaa;
+  padding: 5px;
+}
+
+.boite-a-droite {
+  clear: right;
+  float: right;
+  margin: 1em 0 1em 1em;
+  width: auto;
+}
+
+.boite-a-gauche {
+  clear: left;
+  float: left;
+  margin: 0 1em 1em 1em;
+  width: auto;
+}
+
+
+/* Modèle:Autres projets et interprojet */
+.interprojet li.interprojet_top {
+  background-position: left top;
+}
+
+.autres-projets ul {
+  margin: 0;
+  padding: 0;
+}
+
+.autres-projets li {
+  list-style-type: none;
+  list-style-image: none;
+  margin: 0.2em 0;
+  text-indent: 0;
+  padding-left: 24px;
+  min-height: 20px;
+}
+
+.autres-projets .titre {
+  text-align: center;
+  margin: 0.2em 0;
+}
+
+.autres-projets li a {
+  font-style: italic;
+}
+
+.species {
+  background-image: url(//upload.wikimedia.org/wikipedia/commons/thumb/d/df/Wikispecies-logo.svg/17px-Wikispecies-logo.svg.png);
+  background-position: 1px 0;
+}
+
+.source {
+  background-image: url(//upload.wikimedia.org/wikipedia/commons/thumb/4/4c/Wikisource-logo.svg/17px-Wikisource-logo.svg.png);
+  background-position: 1px 1px;
+}
+
+.pedia {
+  background-image: url(//upload.wikimedia.org/wikipedia/commons/thumb/8/80/Wikipedia-logo-v2.svg/19px-Wikipedia-logo-v2.svg.png);
+  background-position: 1px 0;
+}
+
+.books {
+  background-image: url(//upload.wikimedia.org/wikipedia/commons/thumb/f/fa/Wikibooks-logo.svg/19px-Wikibooks-logo.svg.png);
+  background-position: 1px 1px;
+}
+
+.meta {
+  background-image: url("//upload.wikimedia.org/wikipedia/commons/thumb/7/75/Wikimedia_Community_Logo.svg/18px-Wikimedia_Community_Logo.svg.png");
+  background-position: 1px 1px;
+}
+
+.versity {
+  background-image: url(//upload.wikimedia.org/wikipedia/commons/thumb/9/91/Wikiversity-logo.svg/20px-Wikiversity-logo.svg.png);
+  background-position: 0 2px;
+}
+
+.wiktionary {
+  background-image: url(//upload.wikimedia.org/wikipedia/commons/thumb/9/9f/Wiktprintable_without_text.svg/20px-Wiktprintable_without_text.svg.png);
+  background-position: 0 1px;
+}
+
+.news {
+  background-image: url(//upload.wikimedia.org/wikipedia/commons/thumb/2/24/Wikinews-logo.svg/20px-Wikinews-logo.svg.png);
+  background-position: 0 5px;
+}
+
+.quote {
+  background-image: url(//upload.wikimedia.org/wikipedia/commons/thumb/f/fa/Wikiquote-logo.svg/16px-Wikiquote-logo.svg.png);
+  background-position: 2px 1px;
+}
+
+.commons {
+  background-image: url(//upload.wikimedia.org/wikipedia/commons/thumb/4/4a/Commons-logo.svg/14px-Commons-logo.svg.png);
+  background-position: 3px 0;
+}
+
+.media {
+  background-image: url(//upload.wikimedia.org/wikipedia/commons/thumb/8/81/Wikimedia-logo.svg/20px-Wikimedia-logo.svg.png);
+  background-position: 0 0;
+}
+
+.data {
+  background-image: url(//upload.wikimedia.org/wikipedia/commons/thumb/f/ff/Wikidata-logo.svg/22px-Wikidata-logo.svg.png);
+  background-position: 0 5px;
+}
+
+.voyage {
+  background-image: url(//upload.wikimedia.org/wikipedia/commons/thumb/d/dd/Wikivoyage-Logo-v3-icon.svg/20px-Wikivoyage-Logo-v3-icon.svg.png);
+  background-position: 2px 2px;
+}
+
+.species,
+.meta,
+.versity,
+.pedia,
+.books,
+.news,
+.quote,
+.source,
+.commons,
+.data,
+.voyage {
+  background-repeat: no-repeat;
+  line-height: 1.5em;
+  text-indent: 23px;
+}
+
+/* Wikitables */
+
+table.centre {
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* Listes */
+
+ul.no-dots {
+  list-style-type: none;
+  list-style-image: none; /* Pour Vector */
+  margin-left: 0 !important;
+}
+
+/*
+ * Copie de http://fr.wikipedia.org/wiki/MediaWiki:Common.css
+ * Correction de la taille du texte dans les balises "syntaxhighlight", les pages .css/.js et les modules Lua
+ * workaround pour Firefox et Chrome - voir [[bugzilla:26204]]
+ */
+.mw-geshi div,
+.mw-geshi div pre,
+.mw-geshi,
+.source-css,
+.source-javascript,
+.source-lua {
+  font-family: monospace, "Courier New" !important; /* cet ordre des fontes est volontaire */
+}
+
+/* Message d’erreur */
+.error {
+  font-size: 1em;
+}
+
+/* Affichage uniquement sur mobile */
+
+.mobileonly {
+  display: none !important;
+}
+
+/* Guillemets pour citation, etc. */
+q {
+  quotes: "«\202F" "\202F»" "“" "”" "«\202F" "\202F»" "“" "”";
+  font: inherit;
+}

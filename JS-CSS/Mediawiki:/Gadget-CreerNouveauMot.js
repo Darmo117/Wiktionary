@@ -901,8 +901,9 @@ mw.loader.using(["oojs-ui-core", "oojs-ui-widgets", "oojs-ui-toolbars", "oojs-ui
      * @param title {string} Button’s tooltip text.
      * @param onSelect {function} Callback for when the button is clicked.
      * @param onUpdateState {function?} Callback for when the button changes state (optional).
+     * @param displayBothIconAndLabel {boolean} Whether both the icon and label should be displayed.
      */
-    function generateButton(toolFactory, name, icon, progressive, title, onSelect, onUpdateState) {
+    function generateButton(toolFactory, name, icon, progressive, title, onSelect, onUpdateState, displayBothIconAndLabel) {
       /** @constructor */
       function CustomTool() {
         CustomTool.super.apply(this, arguments);
@@ -913,8 +914,9 @@ mw.loader.using(["oojs-ui-core", "oojs-ui-widgets", "oojs-ui-toolbars", "oojs-ui
       CustomTool.static.icon = icon;
       CustomTool.static.title = title;
       if (progressive) {
-        CustomTool.static.flags = "progressive";
+        CustomTool.static.flags = ["primary", "progressive"];
       }
+      CustomTool.static.displayBothIconAndLabel = !!displayBothIconAndLabel;
       CustomTool.prototype.onSelect = onSelect;
       CustomTool.prototype.onUpdateState = onUpdateState || function () {
         this.setActive(false);
@@ -939,7 +941,7 @@ mw.loader.using(["oojs-ui-core", "oojs-ui-widgets", "oojs-ui-toolbars", "oojs-ui
     var actionsToolbar = new OO.ui.Toolbar(toolFactory, toolGroupFactory);
 
     var insertWikicodeBtn = "insert";
-    generateButton(toolFactory, insertWikicodeBtn, "articleCheck", true, "Insérer le code", onInsertWikicode);
+    generateButton(toolFactory, insertWikicodeBtn, null, true, "Insérer le code", onInsertWikicode, null, true);
 
     actionsToolbar.setup([
       {

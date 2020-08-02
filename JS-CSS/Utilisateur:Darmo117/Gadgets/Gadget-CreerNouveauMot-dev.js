@@ -14,16 +14,16 @@
  * v2.4 2013-01-29 cookies to store preferences
  * v3.0 2013-02-28 tool integration into pages
  * v4.0 2014-01-22 support for new editable sections syntax
- * v5.0 2020-07-?? full rewrite, migration to OOUI TODO màj la date à la sortie
+ * v5.0 2020-07-29 full rewrite, migration to OOUI
  * ------------------------------------------------------------------------------------
- * [[Catégorie:JavaScript du Wiktionnaire|CreerNouveauMot.js]]
+ * [[Catégorie:JavaScript du Wiktionnaire|CreerNouveauMot-dev.js]]
  */
 
 mw.loader.using(["oojs-ui-core", "oojs-ui-widgets", "oojs-ui-toolbars", "oojs-ui-windows"], function () {
   window.wikt.gadgets.creerNouveauMot = {
     NAME: "Créer nouveau mot",
 
-    VERSION: "5.0d",
+    VERSION: "5.0.1",
 
     _COOKIE_NAME: "cnm_last_lang",
     /** Cookie duration in days. */
@@ -230,7 +230,7 @@ mw.loader.using(["oojs-ui-core", "oojs-ui-widgets", "oojs-ui-toolbars", "oojs-ui
       }
       else {
         // trim() to remove trailing space(s) if no gender or number template.
-        wikicode += " " + "{{pron|{0}|{1}}} {2} {3}".format(pron, langCode, gender.template, number.template)
+        wikicode += " " + "{{pron|{0}|{1}}} {2} {3}".format(pron, langCode, gender.template.format(langCode), number.template)
             .replace(/\s+/g, " ").trim() + "\n";
       }
       wikicode += definition + "\n\n";
@@ -242,10 +242,10 @@ mw.loader.using(["oojs-ui-core", "oojs-ui-widgets", "oojs-ui-toolbars", "oojs-ui
           var line = lines[i];
 
           if (/^[^=#:;\[{\s][^\s]*/.test(line)) {
-            lines[i] = "* [[{0}#{1}|{0}]]\n".format(line.trim(), langCode);
+            lines[i] = "* {{lien|{0}|{1}}}\n".format(line.trim(), langCode);
           }
           else if (/^\*\s*[^\s]+/.test(line)) {
-            lines[i] = "* [[{0}#{1}|{0}]]\n".format(line.substring(1).trim(), langCode);
+            lines[i] = "* {{lien|{0}|{1}}}\n".format(line.substring(1).trim(), langCode);
           }
         }
 
@@ -285,7 +285,7 @@ mw.loader.using(["oojs-ui-core", "oojs-ui-widgets", "oojs-ui-toolbars", "oojs-ui
             if (seeAlso === "") {
               seeAlso = "=== {{S|voir aussi}} ===\n";
             }
-            seeAlso += "* {{{0}{1}}}\n".format(templateName, projectModelParams ? "|" + projectModelParams : "");
+            seeAlso += "* {{{0}{1}|lang={2}}}\n".format(templateName, projectModelParams ? "|" + projectModelParams : "", langCode);
           }
         }
       }
@@ -497,14 +497,12 @@ mw.loader.using(["oojs-ui-core", "oojs-ui-widgets", "oojs-ui-toolbars", "oojs-ui
     wikt.gadgets.creerNouveauMot.Gui.call(this);
 
     var $target = $(this.TARGET_ELEMENT);
-    var $openUiBtn = $('<a id="cnm-open-ui" href="#">Ouvrir le gadget {0}</a>'.format(gadgetName));
-    $openUiBtn.on("click", onActivateGadget);
 
-    $target.html('<div id="cnm-start-bar"></div>'
-        + '<strong><em>{0}</em></strong> est un outil qui vous aide à ajouter des mots sur le Wiktionnaire'.format(gadgetName)
-        + ' sans avoir besoin de tout comprendre à la syntaxe wiki.'
-        + ' Voir <a href="/wiki/Aide:Gadget-CreerNouveauMot" target="_blank">l’aide</a> pour plus d’explications.');
-    $target.find("#cnm-start-bar").append($openUiBtn);
+    $target.html(('<div class="center" style="margin-bottom: 5px"><span id="cnm-open-ui" class="mw-ui-button mw-ui-progressive">Ouvrir le gadget {0}</span></div>'
+        + '<strong><em>{0}</em></strong> est un outil qui vous aide à ajouter des mots sur le Wiktionnaire '
+        + 'sans avoir besoin de tout comprendre à la syntaxe wiki. '
+        + 'Voir <a href="/wiki/Aide:Gadget-CreerNouveauMot" target="_blank">l’aide</a> pour plus d’explications.').format(gadgetName));
+    $target.find("#cnm-open-ui").on("click", onActivateGadget);
   };
 
   // Inherit from gadget Gui’s prototype.
@@ -556,7 +554,6 @@ mw.loader.using(["oojs-ui-core", "oojs-ui-widgets", "oojs-ui-toolbars", "oojs-ui
 
     var $tedit = $(this.TARGET_ELEMENT);
 
-    // TODO empêcher le scroll de remonter à l’insertion
     var specialChars = "’àÀâÂæÆçÇéÉèÈêÊëËîÎïÏôÔœŒùÙûÛüÜÿŸ".split("");
     specialChars.push("«\u00a0");
     specialChars.push("\u00a0»");
@@ -692,6 +689,7 @@ mw.loader.using(["oojs-ui-core", "oojs-ui-widgets", "oojs-ui-toolbars", "oojs-ui
             rows: 4,
           });
 
+          // TODO réagencer par paires
           var fields = [];
           for (var i = 0; i < sections.length; i++) {
             var section = sections[i];
@@ -764,7 +762,7 @@ mw.loader.using(["oojs-ui-core", "oojs-ui-widgets", "oojs-ui-toolbars", "oojs-ui
 
           for (var projectCode in otherProjects) {
             if (otherProjects.hasOwnProperty(projectCode)) {
-              // * DO NOT REMOVE FUNCTION *
+              // * DO NOT REMOVE FUNCTION *
               // This function in necessary to avoid “textFld”
               // changing value in checkbox.on() after each iteration.
               (function () {
@@ -844,7 +842,7 @@ mw.loader.using(["oojs-ui-core", "oojs-ui-widgets", "oojs-ui-toolbars", "oojs-ui
 
     var tabsWidget = new OO.ui.IndexLayout({
       expanded: false,
-      framed: true,
+      id: "cnm-tabs-widget",
     });
     for (var i = 0; i < tabs.length; i++) {
       var tab = new wikt.gadgets.creerNouveauMot.Tab('cnm-tab{0}'.format(i), {
@@ -861,30 +859,32 @@ mw.loader.using(["oojs-ui-core", "oojs-ui-widgets", "oojs-ui-toolbars", "oojs-ui
      * Constructing GUI
      */
 
-    var popup = new OO.ui.PopupWidget({
-      // $autoCloseIgnore: button.$element,
-      $content: $("<p>Le code a été inséré dans la boite d’édition ci-dessous. " +
-          "Vous devriez <strong>vérifier</strong> que le résultat est conforme à vos souhaits, " +
-          "et en particulier utiliser le bouton «&nbsp;Prévisualer&nbsp;» avant de publier.</p>"),
-      padded: true,
-      width: 300,
-      anchor: false,
-    });
+    // TODO afficher le texte quelque part
+    // var popup = new OO.ui.PopupWidget({
+    //   // $autoCloseIgnore: button.$element,
+    //   $content: $("<p>Le code a été inséré dans la boite d’édition ci-dessous. " +
+    //       "Vous devriez <strong>vérifier</strong> que le résultat est conforme à vos souhaits, " +
+    //       "et en particulier utiliser le bouton «&nbsp;Prévisualer&nbsp;» avant de publier.</p>"),
+    //   padded: true,
+    //   width: 300,
+    //   anchor: false,
+    // });
 
     var toolFactory = new OO.ui.ToolFactory();
     var toolGroupFactory = new OO.ui.ToolGroupFactory();
-    var toolbar = new OO.ui.Toolbar(toolFactory, toolGroupFactory);
+    var toolbar = new OO.ui.Toolbar(toolFactory, toolGroupFactory, {actions: true});
 
     /**
      * Adds a custom button to the tool factory.
+     * @param toolFactory The tool factory into which the tool will be registered.
      * @param name {string} Button’s name.
-     * @param icon {string} Buttons’s icon name.
+     * @param icon {string|null} Buttons’s icon name.
      * @param progressive {boolean} Wether the icon should be marked as progressive.
      * @param title {string} Button’s tooltip text.
      * @param onSelect {function} Callback for when the button is clicked.
      * @param onUpdateState {function?} Callback for when the button changes state (optional).
      */
-    function generateButton(name, icon, progressive, title, onSelect, onUpdateState) {
+    function generateButton(toolFactory, name, icon, progressive, title, onSelect, onUpdateState) {
       /** @constructor */
       function CustomTool() {
         CustomTool.super.apply(this, arguments);
@@ -894,7 +894,9 @@ mw.loader.using(["oojs-ui-core", "oojs-ui-widgets", "oojs-ui-toolbars", "oojs-ui
       CustomTool.static.name = name;
       CustomTool.static.icon = icon;
       CustomTool.static.title = title;
-      CustomTool.static.flags = progressive ? "progressive" : "";
+      if (progressive) {
+        CustomTool.static.flags = "progressive";
+      }
       CustomTool.prototype.onSelect = onSelect;
       CustomTool.prototype.onUpdateState = onUpdateState || function () {
         this.setActive(false);
@@ -904,7 +906,7 @@ mw.loader.using(["oojs-ui-core", "oojs-ui-widgets", "oojs-ui-toolbars", "oojs-ui
     }
 
     var hideBtn = "hide";
-    generateButton(hideBtn, "eyeClosed", false, "Masquer", function () {
+    generateButton(toolFactory, hideBtn, "eyeClosed", false, "Masquer", function () {
       // noinspection JSCheckFunctionSignatures
       tabsWidget.toggle();
       this.setTitle(tabsWidget.isVisible() ? "Masquer" : "Afficher");
@@ -912,32 +914,36 @@ mw.loader.using(["oojs-ui-core", "oojs-ui-widgets", "oojs-ui-toolbars", "oojs-ui
     });
 
     var helpBtn = "help";
-    generateButton(helpBtn, "help", false, "Aide (s’ouvre dans un nouvel onglet)", function () {
+    generateButton(toolFactory, helpBtn, "help", false, "Aide (s’ouvre dans un nouvel onglet)", function () {
       window.open("/wiki/Aide:Gadget-CreerNouveauMot");
     });
 
-    var insertWikicodeBtn = "insert-wikicode";
-    generateButton(insertWikicodeBtn, "funnel", true, "Insérer le wikicode", function () {
-      onInsertWikicode();
-      console.log(popup);
-      // noinspection JSCheckFunctionSignatures
-      popup.toggle(true);
-    });
+    var actionsToolbar = new OO.ui.Toolbar(toolFactory, toolGroupFactory);
+
+    var insertWikicodeBtn = "insert";
+    generateButton(toolFactory, insertWikicodeBtn, "articleCheck", true, "Insérer le code", onInsertWikicode);
+
+    actionsToolbar.setup([
+      {
+        type: "bar",
+        include: [insertWikicodeBtn],
+      },
+    ]);
 
     toolbar.setup([
       {
         type: "bar",
-        include: [insertWikicodeBtn, hideBtn, helpBtn]
+        include: [hideBtn, helpBtn],
       },
     ]);
+    toolbar.$actions.append(actionsToolbar.$element);
 
     var gadgetBox = new OO.ui.PanelLayout({
       expanded: false,
-      framed: true
+      framed: true,
     });
     var contentFrame = new OO.ui.PanelLayout({
       expanded: false,
-      padded: true
     });
 
     gadgetBox.$element.append(
@@ -959,14 +965,14 @@ mw.loader.using(["oojs-ui-core", "oojs-ui-widgets", "oojs-ui-toolbars", "oojs-ui
       }
     }
 
-    // Enforce .API class fonts for pronunciation text input.
+    // Enforce fonts for pronunciation text input.
     $("#cnm-pronunciation-field > input").attr("style",
         'font-family:' +
-        '"Cambria","Calibri","Consolas","DejaVu Sans","Segoe UI",' +
-        '"Segoe UI Symbol","Lucida Grande","Lucida Sans Unicode","Charis SIL",' +
-        '"Doulos SIL","Gentium","GentiumAlt","Adobe Pi Std","Code2000",' +
-        '"Chrysanthi Unicode","TITUS Cyberbit Basic","Bitstream Cyberbit",' +
-        '"Hiragino Kaku Gothic Pro","Matrix Unicode",sans-serif !important');
+        '"Segoe UI","Calibri","DejaVu Sans","Charis SIL","Doulos SIL",' +
+        '"Gentium Plus","Gentium","GentiumAlt","Lucida Grande",' +
+        '"Arial Unicode MS",sans-serif !important');
+    // Remove class as to remove the gap between the tabs panel and the frame.
+    // $("#cnm-tabs-widget").parent().removeClass("oo-ui-panelLayout-padded");
   };
 
   wikt.gadgets.creerNouveauMot.MainGui.prototype = Object.create(wikt.gadgets.creerNouveauMot.Gui.prototype);
@@ -1107,12 +1113,10 @@ mw.loader.using(["oojs-ui-core", "oojs-ui-widgets", "oojs-ui-toolbars", "oojs-ui
           .format(cssClass, item.replace("&", "&amp;"), item.trim()));
       // noinspection JSCheckFunctionSignatures
       $link.click(function (e) {
-        var scrollTop = window.pageYOffset || document.documentElement.scrollTop;
-        var scrollLeft = window.pageXOffset || document.documentElement.scrollLeft;
-
         textField.insertContent($(e.target).data("value"));
         textField.focus();
-        window.scrollTo(scrollLeft, scrollTop); // TEST
+        // Return false to disable default event from triggering.
+        return false;
       });
       $links.append($link);
       if (i < list.length - 1) {
@@ -1442,9 +1446,6 @@ mw.loader.using(["oojs-ui-core", "oojs-ui-widgets", "oojs-ui-toolbars", "oojs-ui
     },
   }
 
-  // TODO gérer les valence verbes (intrans, causatif, passif, perfectif, etc.)
-  // TODO gérer les cas ?
-  // cf. https://fr.wiktionary.org/wiki/Projet:Informations_grammaticales#Formes_des_verbes
   /**
    * Defines all available grammatical genders.
    * @type {Object<string, wikt.gadgets.creerNouveauMot.Gender>}
@@ -1454,10 +1455,10 @@ mw.loader.using(["oojs-ui-core", "oojs-ui-widgets", "oojs-ui-toolbars", "oojs-ui
     FEMININE: new wikt.gadgets.creerNouveauMot.Gender("féminin", "{{f}}"),
     FEMININE_MASCULINE: new wikt.gadgets.creerNouveauMot.Gender("masc. et fém. identiques", "{{mf}}"),
     NO_GENDER: new wikt.gadgets.creerNouveauMot.Gender("pas de genre"),
-    // TODO séparer
     VERB_GROUP1: new wikt.gadgets.creerNouveauMot.Gender("1<sup>er</sup> groupe", "{{conjugaison|fr|group=1}}"),
     VERB_GROUP2: new wikt.gadgets.creerNouveauMot.Gender("2<sup>ème</sup> groupe", "{{conjugaison|fr|group=2}}"),
     VERB_GROUP3: new wikt.gadgets.creerNouveauMot.Gender("3<sup>ème</sup> groupe", "{{conjugaison|fr|group=3}}"),
+    VERB: new wikt.gadgets.creerNouveauMot.Gender("verbe", "{{conjugaison|{0}}}"),
     REGULAR_VERB: new wikt.gadgets.creerNouveauMot.Gender("régulier"),
     IRREGULAR_VERB: new wikt.gadgets.creerNouveauMot.Gender("irrégulier"),
   };
@@ -1639,7 +1640,7 @@ mw.loader.using(["oojs-ui-core", "oojs-ui-widgets", "oojs-ui-toolbars", "oojs-ui
   $(function () {
     // Activate only in main namespace when in edit/submit mode.
     if (wikt.page.hasNamespaceIn([""]) && ["edit", "submit"].includes(mw.config.get("wgAction"))) {
-      console.log("Chargement de Gadget-CreerNouveauMot.js…");
+      console.log("Chargement de Gadget-CreerNouveauMot-dev.js…");
 
       var namespaceId = mw.config.get("wgNamespaceIds")["mediawiki"];
       var basePage = "Gadget-CreerNouveauMot-dev.js";

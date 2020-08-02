@@ -1,3 +1,8 @@
+/*
+ * French language definition.
+ * ----
+ * [[Catégorie:Sous-page de CreerNouveauMot|fr]]
+ */
 (function () {
   var cnm = wikt.gadgets.creerNouveauMot;
 
@@ -32,7 +37,7 @@
       "français",
       [
         ["a", "ɑ", "ɑ̃", "ə", "œ", "ø", "e", "ɛ", "i", "ɛ̃", "œ̃", "o", "ɔ", "ɔ̃", "y", "u"],
-        ["b", "k", "ʃ", "d", "f", "ɡ", "ʒ", "l", "m", "n", "ɲ", "ŋ", "p", "ʁ", "s", "t", "v", "z"],
+        ["b", "d", "f", "ɡ", "k", "l", "m", "n", "ɲ", "ŋ", "p", "ʁ", "s", "ʃ", "t", "v", "z", "ʒ"],
         ["j", "w", "ɥ"],
         [".", "‿"],
       ],

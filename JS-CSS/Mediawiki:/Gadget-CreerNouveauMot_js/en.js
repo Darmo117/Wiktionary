@@ -1,3 +1,8 @@
+/*
+ * English language definition.
+ * ----
+ * [[Catégorie:Sous-page de CreerNouveauMot|en]]
+ */
 (function () {
   var cnm = wikt.gadgets.creerNouveauMot;
 
@@ -21,8 +26,9 @@
       [
         ["i", "iː", "ɪ", "ɛ", "æ", "ə", "ɚ", "ɜː", "ɝ", "uː", "u", "ʊ", "ʌ", "ɔː", "ɑː", "ɒ"],
         ["aɪ", "aʊ", "ɔɪ", "eɪ", "əʊ", "oʊ", "ɪə", "eə", "ʊə", "uə", "ɔə"],
-        ["b", "d", "f", "ɡ", "h", "k", "l", "m", "n", "ŋ", "ɲ", "p", "ɹ", "ɻ", "s", "ʃ", "t", "θ", "ð", "v", "w", "j", "z", "ʒ"],
-        ["ˌ", "ˈ", "ː"],
+        ["b", "d", "f", "ɡ", "h", "k", "l", "m", "n", "ŋ", "ɲ", "p", "ɹ", "ɻ", "s", "ʃ", "t", "θ", "ð", "v", "z", "ʒ"],
+        ["j", "w"],
+        [".", "ˌ", "ˈ", "ː"],
       ],
       [
         new cnm.GrammaticalItem(cnm.grammaticalClasses.ADJECTIVE, [cnm.genders.NO_GENDER], [cnm.numbers.INVARIABLE], function (word, grammarClass, gender, number, pron) {
@@ -109,7 +115,7 @@
         }),
         new cnm.GrammaticalItem(cnm.grammaticalClasses.SUFFIX, [cnm.genders.NO_GENDER]),
         new cnm.GrammaticalItem(cnm.grammaticalClasses.VERB, [cnm.genders.REGULAR_VERB, cnm.genders.IRREGULAR_VERB], [], function (word, grammarClass, gender, number, pron) {
-          return gender.label === cnm.genders.REGULAR_VERB.label
+          return gender === cnm.genders.REGULAR_VERB.label
               ? "{{en-conj-rég|inf.pron={0}}}".format(pron)
               : "{{en-conj-irrég|inf={0}|inf.pron={1}|<!-- Compléter -->}}".format(word, pron);
         }),

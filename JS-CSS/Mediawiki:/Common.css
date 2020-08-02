@@ -89,14 +89,12 @@ table.table-jaune td {
 /*********/
 /*  API  */
 /*********/
-.API, .API > input {
-  font-family: "Cambria", "Calibri", "Consolas", "DejaVu Sans", "Segoe UI",
-  "Segoe UI Symbol", "Lucida Grande", "Lucida Sans Unicode", "Charis SIL",
-  "Doulos SIL", "Gentium", "GentiumAlt", "Adobe Pi Std", "Code2000",
-  "Chrysanthi Unicode", "TITUS Cyberbit Basic", "Bitstream Cyberbit",
-  "Hiragino Kaku Gothic Pro", "Matrix Unicode", sans-serif !important;
-  font-size: 110% !important;
-  text-decoration: none !important;
+.API {
+  font-family: "Segoe UI", "Calibri", "DejaVu Sans", "Charis SIL", "Doulos SIL",
+  "Gentium Plus", "Gentium", "GentiumAlt", "Lucida Grande",
+  "Arial Unicode MS", sans-serif;
+  font-size: 110%;
+  text-decoration: none;
 }
 
 /*****************************************/
@@ -507,4 +505,18 @@ ul.no-dots {
 q {
   quotes: "«\202F" "\202F»" "“" "”" "«\202F" "\202F»" "“" "”";
   font: inherit;
+}
+
+/* Message d’avertissement des illustrations. */
+.show-illus-btn {
+  cursor: pointer;
+  border: #eaecf0 solid 1px;
+  border-radius: 3px;
+  background-color: #f8f9fa;
+  width: 100px;
+  padding: 5px;
+}
+
+.hide-illus-btn {
+  cursor: pointer;
 }

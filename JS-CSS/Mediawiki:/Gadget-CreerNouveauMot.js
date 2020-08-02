@@ -1,600 +1,1652 @@
-/*====================================================================================
- Création d’un mot à partir d’un patron généré automatiquement
- à partir de quelques clics dans une boite de dialogue
-------------------------------------------------------------------------------------
- Code en partie inspiré de w:MediaWiki:Gadget-RenommageCategorie.js
- et aussi de MediaWiki:Gadget-SpecialChar.js
- Le reste est fait par ArséniureDeGallium, sous CC-BY-SA-3.0
-------------------------------------------------------------------------------------
- v2.0 2012-12-10
- v2.1 2012-12-26
- v2.2 2013-01-01
- v2.3 2013-01-04 restructuration des fonctions pour la boite de dialogue
- v2.4 2013-01-29 cookies pour mémoriser préférences
- v3.0 2013-02-28 intégration de l’outil dans la page
- v4.0 2014-01-22 prise en charge de la nouvelle syntaxe des sections modifiables
- v4.1 … en cours …
-------------------------------------------------------------------------------------
-[[Catégorie:JavaScript du Wiktionnaire|CreerNouveauMot.js]]
-======================================================================================*/
+/**
+ * (fr)
+ * Ce gadget permet de facilement créer une entrée dans une langue donnée en
+ * remplissant quelques champs de texte.
+ * ------------------------------------------------------------------------------------
+ * (en)
+ * This gadget helps create new entries for a given language by filling out some
+ * text fields.
+ * ------------------------------------------------------------------------------------
+ * v2.0 2012-12-10
+ * v2.1 2012-12-26
+ * v2.2 2013-01-01
+ * v2.3 2013-01-04 dialog box functions restructuration
+ * v2.4 2013-01-29 cookies to store preferences
+ * v3.0 2013-02-28 tool integration into pages
+ * v4.0 2014-01-22 support for new editable sections syntax
+ * v5.0 2020-07-29 full rewrite, migration to OOUI
+ * ------------------------------------------------------------------------------------
+ * [[Catégorie:JavaScript du Wiktionnaire|CreerNouveauMot.js]]
+ */
 
-// Tests
-console.log("Gadget-CreerNouveauMot.js");
+mw.loader.using(["oojs-ui-core", "oojs-ui-widgets", "oojs-ui-toolbars", "oojs-ui-windows"], function () {
+  window.wikt.gadgets.creerNouveauMot = {
+    NAME: "Créer nouveau mot",
 
-//--------------------------------------------------------------------------------------------
-// Valeurs par défaut et variables globales
+    VERSION: "5.0",
 
-// Constantes (personnalisables dans votre .js)
-window.CrNoMo_OuvrirAuto = false;
-window.CrNoMo_Ebauche = true; // mettre bandeau ébauche
-window.CrNoMo_DureeCookie = 30;
-window.CrNoMo_TexteOnglet = "Ajouter avec un patron (v4.0)";
-window.CrNoMo_ResumModif = "Ajout d’un mot assisté par [[Aide:Gadget-CreerNouveauMot|Gadget-CreerNouveauMot]] (v4.0)";
+    _COOKIE_NAME: "cnm_last_lang",
+    /** Cookie duration in days. */
+    _COOKIE_DURATION: 30,
 
-// Variables globales initialisées par vos cookies
-window.CrNoMo_LangueMot = "fr"; // code langue selon ISO639
+    /**
+     * List of sister projects and associated templates and domain names.
+     * @type {Object<string, Object<string, string>>}
+     */
+    _OTHER_PROJECTS: {
+      w: {label: "Wikipédia", templateName: "WP", urlDomain: "fr.wikipedia.org"},
+      s: {label: "Wikisource", templateName: "WS", urlDomain: "fr.wikisource.org"},
+      q: {label: "Wikiquote", templateName: "WQ", urlDomain: "fr.wikiquote.org"},
+      v: {label: "Wikiversité", templateName: "WV", urlDomain: "fr.wikiversity.org"},
+      l: {label: "Wikilivres", templateName: "WL", urlDomain: "fr.wikibooks.org"},
+      species: {label: "Wikispecies", templateName: "WSP", urlDomain: "wikispecies.org"},
+      voy: {label: "Wikivoyage", templateName: "VOY", urlDomain: "fr.wikivoyage.org"},
+      n: {label: "Wikinews", templateName: "WN", urlDomain: "fr.wikinews.org"},
+      c: {label: "Commons", templateName: "Commons", urlDomain: "commons.wikimedia.org"},
+    },
 
-// Variables globales formulaire (init automatique)
-window.CrNoMo_LangueSection = true; // créer section langue
-window.CrNoMo_MotVedette = mw.config.get('wgTitle'); // page en cours, non modifiable
-window.CrNoMo_CleVedette = CommonWikt_CleTri(CrNoMo_MotVedette); // clé de tri
-window.CrNoMo_Lemme = CrNoMo_MotVedette; // forme de base pour flexions
+    /**
+     * List of word type subsections.
+     * @type {Array<Object<string, string|boolean>>}
+     */
+    _SECTIONS: [
+      {label: "Variantes orthographiques", code: "variantes orthographiques"},
+      {label: "Variantes", code: "variantes"},
+      {label: "Abréviations", code: "abréviations"},
+      {label: "Synonymes", code: "synonymes"},
+      {label: "Antonymes", code: "antonymes"},
+      {label: "Composés", code: "composés"},
+      {label: "Dérivés", code: "dérivés"},
+      {label: "Apparentés étymologiques", code: "apparentés étymologiques"},
+      {label: "Apparentés par le sens (vocabulaire)", code: "vocabulaire"},
+      {label: "Phrases et expressions", code: "phrases"},
+      {label: "Variantes dialectales", code: "variantes dialectales"},
+      {label: "Hyperonymes", code: "hyperonymes"},
+      {label: "Hyponymes", code: "hyponymes"},
+      {label: "Holonymes", code: "holonymes"},
+      {label: "Méronymes", code: "méronymes"},
+      {label: "Hyper-verbes", code: "hyper-verbes"},
+      {label: "Troponymes", code: "troponymes"},
+      {label: "Homophones", code: "homophones", section: "prononciation", needsLang: true},
+      {label: "Paronymes", code: "paronymes", section: "prononciation"},
+    ],
 
-// Variables globales formulaire (autres)
-window.CrNoMo_TypeMot="";
-window.CrNoMo_Flexion=false;
-window.CrNoMo_Sigle=false;
-window.CrNoMo_GenreMot="";
-window.CrNoMo_Definit="";
-window.CrNoMo_Prononc="";
+    /**
+     * Main word.
+     * @type {string}
+     * @private
+     */
+    _word: mw.config.get("wgTitle").replace("_", " "),
 
-var CrNoMo_SsÉty="";
-var CrNoMo_SsSyn="";
-var CrNoMo_SsDrv="";
-var CrNoMo_SsApr="";
-var CrNoMo_SsVoc="";
-var CrNoMo_SsRéf="";
+    /**
+     * Currently selected language.
+     * @type {wikt.gadgets.creerNouveauMot.Language}
+     * @private
+     */
+    _selectedLanguage: null,
 
-var CrNoMo_VoirWp = false; //créer section "voir aussi"
+    /**
+     * List of available languages.
+     * @type {Array<wikt.gadgets.creerNouveauMot.Language>}
+     * @private
+     */
+    _languages: [],
 
-// Variables globales pour les calculs
-window.CrNoMo_InsTxt="";
-window.CrNoMo_LangueEffective=""; // == CrNoMo_LangueMot si patron spécifique, "qqq" sinon.
-window.CrNoMo_InsertionFaite = false;
+    /**
+     * Start up GUI.
+     * @type {wikt.gadgets.creerNouveauMot.StartGui}
+     * @private
+     */
+    _startGui: null,
 
-/***********************************************************************************************
- Création du lien d’ouverture du gadget, uniquement en mode édit ns=0
- (test fait sur id='Editnotice-0' censé être présent dans [[Mediawiki:Editnotice-0]])
- Ouverture automatique si autorisé et page vide
- (attention CrNoMo_OuvrirAuto personnalisable, c’est pour ça qu’il faut attendre window.load)
- ***********************************************************************************************/
-jQuery( document ).ready( function( $ ) {
-  var tedit = document.getElementById("Editnotice-0");
-  // Si la coloration syntaxique est activée ou non (le crayon au-dessus de la fenêtre dédition)
-  var useCodeMirror;
-  if(tedit){
-    var texte_bandeau = '<a href="javascript:CrNoMo_OpenMenu0()">Ouvrir le gadget CréerNouveauMot</a>';
-    window.mw.loader.using( 'user.options' ).then(
-        function() {
-          if ( window.mw.user.options.get('codemirror-syntax-highlight') == 1 ) {
-            useCodeMirror = true;
-            texte_bandeau = '<span class="error">CréerNouveauMot n’est pas compatible'
-                + 'avec la coloration syntaxique (le crayon au-dessus de la fenêtre d’édition)</span>';
-          }
-          CommonWikt_AddTabMenu( "javascript:CrNoMo_OpenMenu0();", CrNoMo_TexteOnglet );
-          tedit.innerHTML = '<div class="CrNoMo_DialogBoxTitle" width="100%" style="border: 3px solid #9f9fff;text-align:center;border-radius: .2em; background-color:#f8f8ff	">'
-              + texte_bandeau
-              + '</div>'
-              + '<b><i>CréerNouveauMot</i></b> est un outil qui vous aide à ajouter des mots sur le Wiktionnaire'
-              + ' sans avoir besoin de tout comprendre à la syntaxe wiki.'
-              + ' Voir <a href="javascript:CrNoMo_Aide()">l’aide</a> pour plus d’explications.<br />';
+    /**
+     * Main GUI.
+     * @type {wikt.gadgets.creerNouveauMot.MainGui}
+     * @private
+     */
+    _gui: null,
+
+    /*
+     * Public functions
+     */
+
+    /**
+     * Initializes this gadget.
+     */
+    init: function () {
+      // Sorting languages: french first,
+      // then all remaining in lexicographical order.
+      this._languages.sort(function (a, b) {
+        if (a.code === "fr") {
+          return -1;
         }
-    );
-  }
-} );
+        else if (b.code === "fr") {
+          return 1;
+        }
+        else {
+          return a.name.localeCompare(b.name);
+        }
+      });
 
-//jQuery( window ).on( 'load', function( $ ) {
-//  var tb = document.getElementById("wpTextbox1");
-//  if( (tb) && (CrNoMo_OuvrirAuto) && (tb.value.length==0) ){CrNoMo_OpenMenu0();}
-//} );
+      if ($(this.Gui.prototype.TARGET_ELEMENT)) {
+        this._generateStartUi();
+      }
+    },
 
-/***********************************************************************************************
- PATRONS SPÉCIFIQUES PAR LANGUE
- ***********************************************************************************************/
-if ( mw.config.get('wgNamespaceNumber') === 0 &&
-    $.inArray( mw.config.get( 'wgAction' ), ['edit', 'submit'] ) !== -1
-) {
+    /**
+     * Adds a language to the list of available languages.
+     * @param language {wikt.gadgets.creerNouveauMot.Language} The language to add.
+     */
+    addLanguage: function (language) {
+      this._languages.push(language);
+    },
 
-  // On importe les sous-pages uniquement si on est en mode édition dans l’espace principal
+    /**
+     * Fecthes the language with the given code.
+     * @param languageCode {string} Language code.
+     * @returns {wikt.gadgets.creerNouveauMot.Language|null} The language object or null if none were found.
+     */
+    getLanguage: function (languageCode) {
+      for (var i = 0; i < this._languages.length; i++) {
+        var lang = this._languages[i];
+        if (lang.code === languageCode) {
+          return lang;
+        }
+      }
+      return null;
+    },
 
-  importScript("MediaWiki:Gadget-CreerNouveauMot.js/fr.js");
-  importScript("MediaWiki:Gadget-CreerNouveauMot.js/ca.js");
-  importScript("MediaWiki:Gadget-CreerNouveauMot.js/en.js");
-  importScript("MediaWiki:Gadget-CreerNouveauMot.js/eo.js");
-  importScript("MediaWiki:Gadget-CreerNouveauMot.js/es.js");
-  importScript("MediaWiki:Gadget-CreerNouveauMot.js/it.js");
-  importScript("MediaWiki:Gadget-CreerNouveauMot.js/oc.js");
-  importScript("MediaWiki:Gadget-CreerNouveauMot.js/pcd.js");
-  importScript("MediaWiki:Gadget-CreerNouveauMot.js/pro.js");
-  importScript("MediaWiki:Gadget-CreerNouveauMot.js/pt.js");
-  // Patron générique (par défaut si les autres n’existent pas)
-  importScript("MediaWiki:Gadget-CreerNouveauMot.js/qqq.js");
-}
+    /*
+     * Private functions
+     */
 
-/***********************************************************************************************
- BOITE FORMULAIRE POUR LA LANGUE CHOISIE
- ***********************************************************************************************/
-// --------------------------------------------------------------------------------------------
-// Récup préférences utilisateur
-// --------------------------------------------------------------------------------------------
-function CrNoMo_OpenMenu0(){
-  var x = CommonWikt_LitCookie("CrNoMo_LangueMot");
-  if (x) CrNoMo_LangueMot = x;
-  //suppression du blabla au dessus de la zone d’édition
-  CommonWikt_Delete( document.getElementById('nouvel-article') );
-  //passage à la suite
-  setTimeout(CrNoMo_OpenMenu1, 1);
-}
-window.CrNoMo_OpenMenu0 = CrNoMo_OpenMenu0;
+    /**
+     * Generates the start up GUI.
+     * @private
+     */
+    _generateStartUi: function () {
+      this._startGui = new this.StartGui(this.NAME, this._generateMainUi.bind(this));
+    },
 
-// --------------------------------------------------------------------------------------------
-// affichage de l’onglet actif, et masquage de tous les autres
-// --------------------------------------------------------------------------------------------
-function CrNoMo_Onglet(num){
-  CrNoMo_LitMenu(); //avant de changer d’onglet, il faut tout mémoriser !
-  for (var k=1;k<=6;k++){
-    var bt=document.getElementById("mb999bt"+k);
-    var og=document.getElementById("mb999og"+k);
-    if (k==num){
-      bt.className="mbBoutonSel";
-      og.style.display="block";
-    }else{
-      bt.className="mbBouton";
-      og.style.display="none";
-    }
-  }
-}
-window.CrNoMo_Onglet = CrNoMo_Onglet;
+    /**
+     * Generates the main GUI.
+     * @private
+     */
+    _generateMainUi: function () {
+      this._gui = new this.MainGui(
+          this._word,
+          this._languages,
+          this._SECTIONS,
+          this._onLanguageSelect.bind(this),
+          this._onClassSelect.bind(this),
+          this._insertWikicode.bind(this),
+          this._OTHER_PROJECTS
+      );
 
-// --------------------------------------------------------------------------------------------
-// Création de la boite de dialogue
-// --------------------------------------------------------------------------------------------
-function CrNoMo_OpenMenu1(){
-  var tedit = document.getElementById('Editnotice-0');
+      var previousLang = wikt.cookie.read(this._COOKIE_NAME);
+      this._onLanguageSelect(previousLang || this._languages[0].code);
+      this._gui.sortingKey = wikt.page.getSortingKey(this._word);
+      this._gui.isDraft = false;
+    },
 
-  // détection auto existence section de langue
-  var wikicode = document.getElementById("wpTextbox1").value;
-  var section = new RegExp( "\\{\\{langue\\|" + CrNoMo_LangueMot + "\\}\\}","g");
-  var pos = wikicode.search(section);
-  CrNoMo_LangueSection = (pos<0);
+    /**
+     * Generates the wikicode then inserts it into the edit box.
+     * @private
+     */
+    _insertWikicode: function () {
+      var word = this._word;
+      var langCode = this._selectedLanguage.code;
+      var isDraft = this._gui.isDraft;
+      var etymology = this._gui.etymology || ": {{ébauche-étym|{0}}}".format(langCode);
+      var pron = this._gui.pronunciation;
+      var isConv = langCode === "conv";
 
-  // html selon la langue
-  // Si les fonctions existent, c’est qu’il y a un modèle dédié à la langue,
-  // sinon on prend le modèle par défaut (qqq)
-  try {
-    var lg = CrNoMo_LangueMot + "();"; // suffixe de l'appel de fonction
-    eval( "var MenuContent = CrNoMo_DialogHtml_" + lg );
-    eval( "var TitreContent = CrNoMo_TitreHtml_" + lg );
-    eval( "var BarreAPI = CrNoMo_BarreAPI_" + lg );
-    CrNoMo_LangueEffective = CrNoMo_LangueMot;
-  }
-  catch(err){
-    var MenuContent = CrNoMo_DialogHtml_qqq();
-    var TitreContent = CrNoMo_TitreHtml_qqq();
-    var BarreAPI = CrNoMo_BarreAPI_qqq();
-    CrNoMo_LangueEffective = "qqq";
-  }
+      var grammarItem = this._selectedLanguage.getGrammarItem(this._gui.grammarClass);
+      var gender = grammarItem.getGender(this._gui.gender);
+      var number = grammarItem.getNumber(this._gui.number);
+      var grammarClass = grammarItem.grammaticalClass;
+      var inflectionsTemplate = grammarItem.getInflectionsTemplate(word, gender.label, number.label, pron);
 
-  // bandeau titre
-  var bandeau='<div class="CrNoMo_DialogBoxTitle" width="100%" style="text-align:center;background-color:silver">'
-      + TitreContent+'</div>';
+      var definition = this._gui.definition || "# {{ébauche-déf|{0}}}".format(langCode);
 
-  // onglet n°1
-  var titre1 = '<a href="javascript:CrNoMo_Onglet(1)">Langue, type, définition</a>';
-  var contenu1 = bandeau
-      + '<fieldset><legend>Langue</legend>'
-      + '<input type="text" id="IdLangue" size="4" value="' + CrNoMo_LangueMot
-      + '" onchange="CrNoMo_ChangeLangue();"/>&nbsp;'
-      + '<select id="IdLangList" onchange="CrNoMo_ClicLangue();">'
-      + '<option value="">choisissez</option>'
-      + '<option value="fr">français</option>'
-      + '<option value="pro">ancien occitan</option>'
-      + '<option value="en">anglais</option>'
-      + '<option value="ca">catalan</option>'
-      + '<option value="es">espagnol</option>'
-      + '<option value="eo">espéranto</option>'
-      + '<option value="it">italien</option>'
-      + '<option value="oc">occitan</option>'
-      + '<option value="pcd">picard</option>'
-      + '<option value="pt">portugais</option>'
-      + '</select>&nbsp;'
-      + '<input type="button" value="Passer à cette langue" onclick="CrNoMo_ChangeLangue();"/>'
-      + '&nbsp;<input type="checkbox" id="IdLangueSection" /><label for="IdLangueSection">'
-      + 'Ajouter à la section de langue existante si elle existe déjà</label>'
-      + '</fieldset>'
-      + MenuContent
-      + '<fieldset><legend>Prononciation — '+BarreAPI+'</legend>'
-      + '<input type="text" id="IdPron" value="'+CrNoMo_Prononc+'" size="45" tabindex="2"/>'
-      + '</fieldset>'
-      + '<fieldset><legend>Définition — '+CrNoMo_BarCharDef('’àÀæÆçÇéÉèÈêÊëîÎïôÔœŒùû')+'</legend>'
-      + '<textarea id="IdDefinit" rows="3" tabindex="3">'+CrNoMo_Definit+'</textarea><br />'
-      + '</fieldset>';
+      if (!definition.includes("#*")) {
+        definition += "\n#* {{ébauche-exe|{0}}}".format(langCode);
+      }
 
-  // onglet n°2
-  var titre2 = '<a href="javascript:CrNoMo_Onglet(2)">Sections supplémentaires</a>';
-  var contenu2 = bandeau + '<br />'
-      + '<fieldset><legend>Étymologie — '+CrNoMo_BarCharÉty('’àÀæÆçÇéÉèÈêÊëîÎïôÔœŒùû«  »')+'</legend>'
-      + '<textarea id="IdSsÉtyBx" rows="2">' + CrNoMo_SsÉty + '</textarea><br />'
-      + '</fieldset>'
-      + 'Références :<br />'
-      + '<textarea id="IdSsRéfBx" rows="2">' + CrNoMo_SsRéf + '</textarea><br />'
-      + '<small>Ci-dessous mettez les mots les uns en dessous des autres sans aucune mise en forme.</small><br />'
-      + '<table style="border-spacing:5px"><tr><td>'
-      + 'Synonymes :<br />'
-      + '<textarea id="IdSsSynBx" rows="5" cols="30">'+CrNoMo_SsSyn+'</textarea><br />'
-      + 'Dérivés :<br />'
-      + '<textarea id="IdSsDrvBx" rows="5" cols="30">'+CrNoMo_SsDrv+'</textarea><br />'
-      + '</td><td>'
-      + 'Apparentés étymologiques :<br />'
-      + '<textarea id="IdSsAprBx" rows="5" cols="30">'+CrNoMo_SsApr+'</textarea><br />'
-      + 'Apparentés par le sens :<br />'
-      + '<textarea id="IdSsVocBx" rows="5" cols="30">'+CrNoMo_SsVoc+'</textarea><br />'
-      + '</td></tr></table>';
+      var references = this._gui.references;
+      var sources = this._gui.sources;
+      var bibliography = this._gui.bibliography;
+      var sortingKey = this._gui.sortingKey;
 
-  // onglet n°3
-  var titre3 = '<a href="javascript:CrNoMo_Onglet(3)">Options avancées</a>';
-  var contenu3 = bandeau
-      + '<fieldset><legend>Options avancées</legend>'
-      + '<input type="checkbox" id="IdEbauche" /><label for="IdEbauche">Ébauche</label><br />'
-      + '<input type="checkbox" id="IdVoirWp" /><label for="IdVoirWp">Mettre une section "voir Wikipédia"</label><br />'
-      + 'Clé de tri : <input type="text" id="IdCle" size="40" value="'+CrNoMo_CleVedette+'"/>'
-      + '</fieldset>';
+      var wikicode = "== {{langue|{0}}} ==\n".format(langCode)
+          + (isDraft ? "{{ébauche|{0}}}\n".format(langCode) : "")
+          + "=== {{S|étymologie}} ===\n"
+          + etymology + "\n\n"
+          + "=== {{S|{0}|{1}}} ===\n".format(grammarClass.sectionCode, langCode)
+          + (inflectionsTemplate ? inflectionsTemplate + "\n" : "");
+      wikicode += "'''{0}'''".format(word);
+      if (isConv) {
+        wikicode += "\n";
+      }
+      else {
+        // trim() to remove trailing space(s) if no gender or number template.
+        wikicode += " " + "{{pron|{0}|{1}}} {2} {3}".format(pron, langCode, gender.template, number.template)
+            .replace(/\s+/g, " ").trim() + "\n";
+      }
+      wikicode += definition + "\n\n";
 
-  // onglet n°4
-  var titre4 = '<a href="javascript:CrNoMo_Onglet(4)">Masquer</a>';
-  var contenu4 = '';
+      function linkify(content) {
+        var lines = content.split("\n");
 
-  // onglet n°5
-  var titre5 = '<a href="javascript:CrNoMo_Aide()">Aide</a>';
-  var contenu5 = '';
+        for (var i = 0; i < lines.length; i++) {
+          var line = lines[i];
 
-  // onglet n°6
-  var titre6 = '<a href="javascript:CrNoMo_CheckMenu();CrNoMo_Onglet(6)">Insérer le code wiki</a>';
-  var contenu6 = 'Le code a été inséré dans la boite d’édition ci-dessous.'
-      + ' Vous devriez <b>vérifier</b> que le résultat est conforme à vos souhaits, et en particulier'
-      + ' utiliser le bouton "prévisualisation" avant de publier (faites <b>Ctrl+F5</b> pour tout annuler).';
+          if (/^[^=#:;\[{\s][^\s]*/.test(line)) {
+            lines[i] = "* [[{0}#{1}|{0}]]\n".format(line.trim(), langCode);
+          }
+          else if (/^\*\s*[^\s]+/.test(line)) {
+            lines[i] = "* [[{0}#{1}|{0}]]\n".format(line.substring(1).trim(), langCode);
+          }
+        }
 
-  // création boiboite en html, avec plein d'onglets, c'est plus cool :D
-  tedit.innerHTML = '<div id="mb999" class="mbViolet"><div>'
-      + '<div id="mb999bt1" class="mbBoutonSel">'+titre1+'</div>'
-      + '<div id="mb999bt2" class="mbBouton">'+titre2+'</div>'
-      + '<div id="mb999bt3" class="mbBouton">'+titre3+'</div>'
-      + '<div id="mb999bt4" class="mbBouton">'+titre4+'</div>'
-      + '<div id="mb999bt5" class="mbBouton">'+titre5+'</div>'
-      + '<div id="mb999bt6" class="mbBouton">'+titre6+'</div>'
-      + '</div><div class="mbContenu">'
-      + '<div id="mb999og1" style="display:block;">'+contenu1+'</div>'
-      + '<div id="mb999og2" style="display:none;">'+contenu2+'</div>'
-      + '<div id="mb999og3" style="display:none;">'+contenu3+'</div>'
-      + '<div id="mb999og4" style="display:none;">'+contenu4+'</div>'
-      + '<div id="mb999og5" style="display:none;">'+contenu5+'</div>'
-      + '<div id="mb999og6" style="display:none;">'+contenu6+'</div>'
-      + '</div></div>';
+        return lines.join("\n");
+      }
 
-  //initialisations des checkbox et selects
-  document.getElementById('IdSigle').checked = CrNoMo_Sigle;
-  document.getElementById('IdFlexion').checked = CrNoMo_Flexion;
-  document.getElementById('IdEbauche').checked = CrNoMo_Ebauche;
-  document.getElementById('IdLangueSection').checked = !CrNoMo_LangueSection;
-  document.getElementById('IdVoirWp').checked = CrNoMo_VoirWp;
+      for (var i = 0; i < this._SECTIONS.length; i++) {
+        var section = this._SECTIONS[i];
+        var content = this._gui.getSectionContent(section.code);
+        var upperSection = section.section;
 
-  var tt=document.getElementById('IdType');
-  if (CrNoMo_TypeMot.length>0) tt.value = CrNoMo_TypeMot;
-  document.getElementById('IdGenre').value = CrNoMo_GenreMot;
+        if (content) {
+          if (upperSection && !wikicode.includes("S|" + upperSection)) {
+            wikicode += "=== {{S|{0}}} ===\n".format(upperSection);
+          }
+          wikicode += "==== {{S|{0}{1}}} ====\n".format(section.code, section.needsLang ? ("|" + langCode) : "")
+              + linkify(content).trim() + "\n\n";
+        }
+      }
 
-  // poka yoke pour éviter une prévisualisation sans avoir inséré le texte
-  document.getElementById ('wpPreview').onclick = function (event) {
-    if (CrNoMo_InsertionFaite === true) {
-      // si l’insertion a déjà été réalisée, rien à signaler.
-      return true;
-    }
-    if (document.getElementById('IdDefinit').value === '') {
-      // si la définition (dans le gadget) est vide, rien à signaler.
-      return true;
-    }
-    alert ('Attention : en prévisualisant maintenant sans appuyer sur « Insérer le code wiki », vous perdrez ce que vous avez entré dans le gadget. Si c’est ce que vous souhaitez, effacez le contenu du champ « définition » avant de recliquer sur « Prévisualiser ».');
-    // si la définition n’est pas vide et que l’insertion n’est pas faite, on empêche le bouton de fonctionner.
-    event.preventDefault ();
-    return false;
+      if (langCode === "fr") {
+        wikicode += "==== {{S|traductions}} ====\n"
+            + "{{trad-début}}\n"
+            + "{{ébauche-trad}}\n"
+            + "{{trad-fin}}\n\n";
+      }
+
+      var seeAlso = "";
+      for (var projectCode in this._OTHER_PROJECTS) {
+        if (this._OTHER_PROJECTS.hasOwnProperty(projectCode)) {
+          var addLink = this._gui.hasAddLinkToProject(projectCode);
+
+          if (addLink) {
+            var projectModelParams = this._gui.getProjectLinkParams(projectCode);
+            var templateName = this._OTHER_PROJECTS[projectCode].templateName;
+
+            if (seeAlso === "") {
+              seeAlso = "=== {{S|voir aussi}} ===\n";
+            }
+            seeAlso += "* {{{0}{1}|lang={2}}}\n".format(templateName, projectModelParams ? "|" + projectModelParams : "", langCode);
+          }
+        }
+      }
+      if (seeAlso) {
+        seeAlso += "\n";
+      }
+      wikicode += seeAlso;
+
+      var containsRefTemplates = /{{(R|RÉF|réf)\||<ref>.+<\/ref>/gm.test(wikicode);
+
+      if (containsRefTemplates || references || bibliography) {
+        var insertSourcesSection = containsRefTemplates || sources;
+
+        if (references || insertSourcesSection || bibliography) {
+          wikicode += "=== {{S|références}} ===\n";
+          if (references) {
+            wikicode += references + "\n\n";
+          }
+        }
+        if (insertSourcesSection) {
+          wikicode += "==== {{S|sources}} ====\n{{Références}}" + (sources ? "\n" : "") + sources + "\n\n";
+        }
+        if (bibliography) {
+          wikicode += "==== {{S|bibliographie}} ====\n" + bibliography + "\n\n";
+        }
+      }
+
+      wikicode += (sortingKey !== word ? "{{clé de tri|{0}}}\n".format(sortingKey) : "");
+
+      wikt.edit.insertText(wikt.edit.getCursorLocation(), wikicode);
+
+      var $summaryFld = wikt.edit.getEditSummaryField();
+      var summary = $summaryFld.val();
+      var comment = this._editComment();
+
+      if (!summary.includes(comment)) {
+        $summaryFld.val(comment + " " + summary);
+      }
+    },
+
+    /**
+     * Function called whenever the user selects a language.
+     * @param languageCode {string} Code of the selected language.
+     * @private
+     */
+    _onLanguageSelect: function (languageCode) {
+      languageCode = languageCode.trim();
+
+      if (languageCode !== "") {
+        var language = this.getLanguage(languageCode);
+
+        if (!language) {
+          language = new this.Language(languageCode, languageCode, [], [
+            new wikt.gadgets.creerNouveauMot.GrammaticalItem(
+                new wikt.gadgets.creerNouveauMot.GrammaticalClass("<em>indisponible</em>", "<!-- À compléter -->")
+            )
+          ]);
+        }
+        this._selectedLanguage = language;
+        wikt.cookie.create(this._COOKIE_NAME, language.code, this._COOKIE_DURATION);
+        this._gui.selectLanguage(this._selectedLanguage);
+
+        if (!this._gui.pronunciation) {
+          this._gui.pronunciation = language.generatePronunciation(this._word);
+        }
+      }
+    },
+
+    /**
+     * Function called whenever the user selects a grammatical class.
+     * @param className {string} Code of the selected grammatical class.
+     * @private
+     */
+    _onClassSelect: function (className) {
+      var grammarItem = this._selectedLanguage.getGrammarItem(className);
+      this._gui.setAvailableGenders(grammarItem.availableGenders);
+      this._gui.setAvailableNumbers(grammarItem.availableNumbers);
+    },
+
+    /**
+     * Returns the edit comment.
+     * It is a function and not an attribute as “this.VERSION” would not be defined yet.
+     * @return {string}
+     * @private
+     */
+    _editComment: function () {
+      return "Ajout d’un mot assisté par [[Aide:Gadget-CreerNouveauMot|Gadget-CreerNouveauMot]] (v{0})".format(this.VERSION);
+    },
   };
-}
 
-// --------------------------------------------------------------------------------------------
-// récupération des données de la boite de dialogue
+  /**
+   * This class encapsulates data and behaviors specific to the given language.
+   * @param code {string} Language code defined in [[Module:langues/data]].
+   * @param name {string} Language’s name.
+   * @param ipaSymbols {Array<Array<string>>?} An optional list of common IPA symbols for the language.
+   * @param grammarItems {Array<wikt.gadgets.creerNouveauMot.GrammaticalItem>?} An optional list of grammatical items.
+   * @param pronGenerator {Function?} An optional function that generates an approximate pronunciation
+   * based on the word.
+   * @constructor
+   */
+  wikt.gadgets.creerNouveauMot.Language = function (code, name, ipaSymbols, grammarItems, pronGenerator) {
+    /** @type {string} */
+    this._code = code;
+    /** @type {string} */
+    this._name = name;
+    /** @type {Array<Array<string>>} */
+    this._ipaSymbols = ipaSymbols || [];
+    /** @type {Object<string, wikt.gadgets.creerNouveauMot.GrammaticalItem>} */
+    this._grammarItems = {};
+    /** @type {Function} */
+    this._pronGenerator = pronGenerator || function () {
+      return "";
+    };
 
-function CrNoMo_LitMenu(){
-  CrNoMo_Prononc = document.getElementById('IdPron').value;
-  CrNoMo_Lemme = document.getElementById('IdLemme').value;
-  CrNoMo_TypeMot = document.getElementById('IdType').value;
-  CrNoMo_LangueSection = !document.getElementById('IdLangueSection').checked;
-  CrNoMo_Flexion = document.getElementById('IdFlexion').checked;
-  CrNoMo_Sigle = document.getElementById('IdSigle').checked;
-  CrNoMo_GenreMot = document.getElementById('IdGenre').value;
-  CrNoMo_Definit = document.getElementById('IdDefinit').value;
-  CrNoMo_Ebauche = document.getElementById('IdEbauche').checked;
-  CrNoMo_SsÉty = document.getElementById('IdSsÉtyBx').value;
-  CrNoMo_SsSyn = document.getElementById('IdSsSynBx').value;
-  CrNoMo_SsDrv = document.getElementById('IdSsDrvBx').value;
-  CrNoMo_SsApr = document.getElementById('IdSsAprBx').value;
-  CrNoMo_SsVoc = document.getElementById('IdSsVocBx').value;
-  CrNoMo_SsRéf = document.getElementById('IdSsRéfBx').value;
-  CrNoMo_VoirWp = document.getElementById('IdVoirWp').checked;
-}
-
-// --------------------------------------------------------------------------------------------
-// Choix de la langue dans la liste
-
-function CrNoMo_ClicLangue(){
-  document.getElementById('IdLangue').value=document.getElementById('IdLangList').value;
-}
-window.CrNoMo_ClicLangue = CrNoMo_ClicLangue;
-
-// --------------------------------------------------------------------------------------------
-// Traitement du bouton "changer de langue"
-// * ferme la boite de dialogue
-// * charge les fonctions pour la nouvelle langue
-// --------------------------------------------------------------------------------------------
-function CrNoMo_ChangeLangue(){
-  CrNoMo_LitMenu();
-  CrNoMo_LangueMot = document.getElementById('IdLangue').value;
-  CommonWikt_AjouteCookie("CrNoMo_LangueMot", CrNoMo_LangueMot, CrNoMo_DureeCookie );
-  setTimeout(CrNoMo_OpenMenu1,250);
-}
-window.CrNoMo_ChangeLangue = CrNoMo_ChangeLangue;
-
-// --------------------------------------------------------------------------------------------
-// Traitement du bouton "aide"
-// --------------------------------------------------------------------------------------------
-function CrNoMo_Aide(){
-  var urlVrb = mw.config.get('wgServer') + mw.config.get('wgScript') +
-      "?title="+encodeURIComponent("Aide:Gadget-CreerNouveauMot") +
-      "&action=view";
-  window.open(urlVrb);
-}
-window.CrNoMo_Aide = CrNoMo_Aide;
-
-// --------------------------------------------------------------------------------------------
-// Traitement du bouton "insérer"
-// * teste la validité des saisies de l’utilisateur, et si possible…
-// * lance le calcul du patron à insérer
-// * insère le texte du patron dans la boite d’édition
-// --------------------------------------------------------------------------------------------
-function CrNoMo_CheckMenu(){
-  CrNoMo_LitMenu();
-  var tb = document.getElementById("wpTextbox1");
-
-  // calcul du texte à insérer
-  CrNoMo_Insert();
-
-  // position initiale du curseur
-  var startPos = tb.selectionStart;
-  var endPos = tb.selectionEnd;
-  var textScroll = tb.scrollTop;
-
-  // insertion du texte
-  var DebTxt = tb.value.substring(0, startPos);
-  var FinTxt = tb.value.substring(startPos);
-  tb.value = DebTxt + CrNoMo_InsTxt + FinTxt;
-  // mise à jour de CrNoMo_InsertionFaite
-  window.CrNoMo_InsertionFaite = true;
-
-  // résumé de modif
-  document.getElementById('wpSummary').value = CrNoMo_ResumModif;
-
-  // repositionnement du curseur
-  tb.selectionStart = startPos + CrNoMo_Curseur;
-  tb.selectionEnd = tb.selectionStart;
-  tb.scrollTop = textScroll;
-
-}
-window.CrNoMo_CheckMenu = CrNoMo_CheckMenu;
-
-//------------------------------
-// réponse au clic "flexion"
-//------------------------------
-function CrNoMo_ClicFlexion() {
-  var cb = document.getElementById('IdFlexion');
-  var tb = document.getElementById('IdLemme');
-  tb.disabled = !cb.checked;
-}
-window.CrNoMo_ClicFlexion = CrNoMo_ClicFlexion;
-
-//------------------------------
-// Clavier virtuel pour API
-//------------------------------
-function CrNoMo_ClicCharAPI(c) {
-  var pb = document.getElementById('IdPron');
-  var m = pb.selectionStart;
-  var n = pb.selectionEnd;
-  pb.value = pb.value.substring(0,m) + c + pb.value.substring(n);
-  pb.selectionStart = m + c.length;
-  pb.selectionEnd = pb.selectionStart;
-  pb.focus();
-}
-window.CrNoMo_ClicCharAPI = CrNoMo_ClicCharAPI;
-
-function CrNoMo_BarCharAPI(lc){
-  var res = "";
-  for (var k=0;k<lc.length;k++)
-    res += ' <a href="#" onclick="CrNoMo_ClicCharAPI(\'' + lc[k] + '\');">' + lc[k] + '</a>';
-  return res;
-}
-window.CrNoMo_BarCharAPI = CrNoMo_BarCharAPI;
-
-//----------------------------------------
-// Clavier virtuel pour définitions
-//----------------------------------------
-function CrNoMo_ClicCharDef(c) {
-  var db = document.getElementById('IdDefinit');
-  var m = db.selectionStart;
-  var n = db.selectionEnd;
-  db.value = db.value.substring(0,m) + c + db.value.substring(n);
-  db.selectionStart = m + c.length;
-  db.selectionEnd = db.selectionStart;
-  db.focus();
-}
-window.CrNoMo_ClicCharDef = CrNoMo_ClicCharDef;
-
-function CrNoMo_BarCharDef(lc){
-  var res = "";
-  for (var k=0;k<lc.length;k++)
-    res += ' <a href="#" onclick="CrNoMo_ClicCharDef(\'' + lc[k] + '\');">' + lc[k] + '</a>';
-  return res;
-}
-window.CrNoMo_BarCharDef = CrNoMo_BarCharDef;
-
-//----------------------------------------
-// Clavier virtuel pour étymologie
-//----------------------------------------
-function CrNoMo_ClicCharÉty(c) {
-  var eb = document.getElementById('IdSsÉtyBx');
-  var m = eb.selectionStart;
-  var n = eb.selectionEnd;
-  eb.value = eb.value.substring(0,m) + c + eb.value.substring(n);
-  eb.selectionStart = m + c.length;
-  eb.selectionEnd = eb.selectionStart;
-  eb.focus();
-}
-window.CrNoMo_ClicCharÉty = CrNoMo_ClicCharÉty;
-
-function CrNoMo_BarCharÉty(lc){
-  var res = "";
-  for (var k=0;k<lc.length;k++)
-    res += ' <a href="#" onclick="CrNoMo_ClicCharÉty(\'' + lc[k] + '\');">' + lc[k] + '</a>';
-  return res;
-}
-window.CrNoMo_BarCharÉty = CrNoMo_BarCharÉty;
-
-//-------------------------------------
-// Ajout d'une option à un select
-//-------------------------------------
-function CrNoMo_AddOpt(lb,txt,val) {
-  var xx = document.createElement('option');
-  xx.text = txt;
-  xx.value = val;
-  try {
-    lb.add(xx, null); // standards compliant; doesn't work in IE
-  }
-  catch(ex) {
-    lb.add(xx); // IE only
-  }
-}
-window.CrNoMo_AddOpt = CrNoMo_AddOpt;
-
-/***********************************************************************************************
- BOITE OPTIONS AVANCÉES
- ***********************************************************************************************/
-
-// --------------------------------------------------------------------------------------------
-// Wikification d'une liste de mots séparés par des \n
-function CrNoMo_SectionsSuppWikifListe(liste, langue){
-  var li = liste.split("\n");
-  var ch = "";
-  var mot = "";
-  for (k=0;k<li.length;k++){
-    mot = li[k].replace(/^\s+|\s+$/g,''); //enlever les espaces au début et à la fin
-    if (mot.length>0) ch += "* {{lien|" + mot + "|" + langue + "}}\n";
-  }
-  if (li.length>3) ch = "{{(}}\n" + ch + "{{)}}\n"; //boite déroulante éventuelle
-  return ch;
-}
-
-/****************************************************************************
- CRÉATION PATRON
- *****************************************************************************/
-// ----------------------------------------------------------------------
-// Création du texte à insérer
-// ----------------------------------------------------------------------
-function CrNoMo_Insert() {
-  CrNoMo_InsTxt = "";
-
-  //-- section langue (début)
-  if (CrNoMo_LangueSection){
-    CrNoMo_InsTxt += "== {{langue|" + CrNoMo_LangueMot + "}} ==\n";
-
-    if (CrNoMo_Ebauche){
-      CrNoMo_InsTxt += "{{ébauche|" + CrNoMo_LangueMot + "}}\n";
+    grammarItems = grammarItems || [];
+    for (var i = 0; i < grammarItems.length; i++) {
+      var grammarItem = grammarItems[i];
+      this._grammarItems[grammarItem.grammaticalClass.sectionCode] = grammarItem;
     }
-    if (CrNoMo_SsÉty.length>0){
-      CrNoMo_InsTxt += "=== {{S|étymologie}} ===\n";
-      if (CrNoMo_SsÉty[0]!=":") CrNoMo_InsTxt += ": ";
-      CrNoMo_InsTxt += CrNoMo_SsÉty + "\n";
-    }else if (!CrNoMo_Flexion){
-      CrNoMo_InsTxt += "=== {{S|étymologie}} ===\n: {{ébauche-étym|" + CrNoMo_LangueMot + "}}\n";
+  };
+
+  wikt.gadgets.creerNouveauMot.Language.prototype = {
+    /**
+     * @return {string} This language code.
+     */
+    get code() {
+      return this._code;
+    },
+
+    /**
+     * @return {string} This language’s name.
+     */
+    get name() {
+      return this._name;
+    },
+
+    /**
+     * @return {Array<Array<string>>} The IPA symbols for this language.
+     */
+    get ipaSymbols() {
+      return this._ipaSymbols;
+    },
+
+    /**
+     * @return {Object<string, wikt.gadgets.creerNouveauMot.GrammaticalItem>} The grammatical items for this language.
+     */
+    get grammarItems() {
+      return this._grammarItems;
+    },
+
+    /**
+     * Fetches the grammatical item that has the given section title.
+     * @param sectionName {string} Section’s title.
+     * @return {wikt.gadgets.creerNouveauMot.GrammaticalItem} The grammatical item if found or undefined otherwise.
+     */
+    getGrammarItem: function (sectionName) {
+      return this._grammarItems[sectionName];
+    },
+
+    /**
+     * Generates the pronunciation of the given word for this language.
+     * @param word {string} The word.
+     * @return {string} The pronunciation or an empty string if no function was defined in the constructor.
+     */
+    generatePronunciation: function (word) {
+      return this._pronGenerator(word);
     }
-    CrNoMo_InsTxt += "\n";
+  };
+
+  /**
+   * Wrapper class for OO.ui.TabPanelLayout.
+   * @param name {string} Tab’s name.
+   * @param options {Object} OOUI tab’s options.
+   * @constructor
+   */
+  wikt.gadgets.creerNouveauMot.Tab = function (name, options) {
+    OO.ui.TabPanelLayout.call(this, name, options);
+  };
+
+  // Inherit from OOUI TabPanelLayout’s prototype.
+  wikt.gadgets.creerNouveauMot.Tab.prototype = Object.create(OO.ui.TabPanelLayout.prototype);
+
+  /**
+   * Sets this tab as active.
+   */
+  wikt.gadgets.creerNouveauMot.Tab.prototype.select = function () {
+    this.setActive(true);
+  };
+
+  /**
+   * Base class for GUIs.
+   * @constructor
+   */
+  wikt.gadgets.creerNouveauMot.Gui = function () {
+  };
+
+  wikt.gadgets.creerNouveauMot.Gui.prototype = {
+    /** jQuery selector of the HTML element GUIs will be inserted into. */
+    TARGET_ELEMENT: "#Editnotice-0",
   }
 
-  //-------------------- titre section mot -----------------------
-  var xx = CrNoMo_TypeMot;
-  //if (CrNoMo_Flexion) xx = "-flex" + xx;
-  CrNoMo_InsTxt += "=== {{S|" + xx + "|" + CrNoMo_LangueMot;
-  if (CrNoMo_Flexion) CrNoMo_InsTxt += "|flexion";
-  CrNoMo_InsTxt += "}} ===\n";
+  /**
+   * Inherits from wikt.gadgets.creerNouveauMot.Gui.
+   * @param gadgetName {string}
+   * @param onActivateGadget {function}
+   * @constructor
+   */
+  wikt.gadgets.creerNouveauMot.StartGui = function (gadgetName, onActivateGadget) {
+    wikt.gadgets.creerNouveauMot.Gui.call(this);
 
-  //------- contenu section mot selon la langue sélectionnée -----
-  try {
-    eval( "CrNoMo_InsTxt += CrNoMo_Patron_" + CrNoMo_LangueEffective + "();" );
-  }catch(err){
-    alert("Bug lors de l'appel de CrNoMo_Patron_" + CrNoMo_LangueEffective + "(). Merci de le signaler à GaAs." );
+    var $target = $(this.TARGET_ELEMENT);
+
+    $target.html(('<div class="center" style="margin-bottom: 5px"><span id="cnm-open-ui" class="mw-ui-button mw-ui-progressive">Ouvrir le gadget {0}</span></div>'
+        + '<strong><em>{0}</em></strong> est un outil qui vous aide à ajouter des mots sur le Wiktionnaire '
+        + 'sans avoir besoin de tout comprendre à la syntaxe wiki. '
+        + 'Voir <a href="/wiki/Aide:Gadget-CreerNouveauMot" target="_blank">l’aide</a> pour plus d’explications.').format(gadgetName));
+    $target.find("#cnm-open-ui").on("click", onActivateGadget);
+  };
+
+  // Inherit from gadget Gui’s prototype.
+  wikt.gadgets.creerNouveauMot.StartGui.prototype = Object.create(wikt.gadgets.creerNouveauMot.Gui.prototype);
+
+  /**
+   * Inherits from wikt.gadgets.creerNouveauMot.Gui.
+   * @param word {string} The word.
+   * @param languages {Array<wikt.gadgets.creerNouveauMot.Language>} The language.
+   * @param sections {Array<Object<string, string>>} The list of word type sub-sections.
+   * @param onLanguageSelect {Function<string|null, void>} Callback function for when a language is selected.
+   * @param onClassSelect {Function} Callback function for when a grammatical class is selected.
+   * @param onInsertWikicode {Function} Callback function for when “insert wikicode” button is clicked.
+   * @param otherProjects {Object<string, string>} Object containing data for sister projects.
+   * @constructor
+   */
+  wikt.gadgets.creerNouveauMot.MainGui = function (word, languages, sections, onLanguageSelect, onClassSelect, onInsertWikicode, otherProjects) {
+    wikt.gadgets.creerNouveauMot.Gui.call(this);
+
+    /**
+     * Tabs list.
+     * @type {Array<wikt.gadgets.creerNouveauMot.Tab>}
+     */
+    this._tabs = [];
+    this._languageFld = null;
+    this._languageSelectFld = null;
+    this._languageBnt = null;
+    this._pronunciationFld = null;
+    this._pronunciationPnl = null;
+    this._grammarClassSelectFld = null;
+    this._gendersFld = null;
+    this._numbersFld = null;
+    this._definitionFld = null;
+    this._etymologyFld = null;
+    this._referencesFld = null;
+    this._sourcesFld = null;
+    this._bibliographyFld = null;
+    /**
+     * Word type sub-sections list.
+     * @type {Object<string, Object>}
+     */
+    this._otherSectionFields = {};
+    this._draftChk = null;
+    this._seeOtherProjectsChk = {};
+    this._sortKeyFld = null;
+
+    // Deleting all content above edit box.
+    $("#nouvel-article").parent().remove();
+
+    var $tedit = $(this.TARGET_ELEMENT);
+
+    var specialChars = "’àÀâÂæÆçÇéÉèÈêÊëËîÎïÏôÔœŒùÙûÛüÜÿŸ".split("");
+    specialChars.push("«\u00a0");
+    specialChars.push("\u00a0»");
+
+    // Alias to avoid confusion inside nested functions.
+    var self = this;
+
+    // Defining all tabs.
+    var tabs = [
+      {
+        title: "Langue, type, définition",
+        content: function () {
+          self._languageFld = new OO.ui.TextInputWidget();
+          self._languageBnt = new OO.ui.ButtonWidget({
+            label: "Passer à cette langue",
+          });
+          self._languageBnt.on("click", function () {
+            // noinspection JSCheckFunctionSignatures,JSValidateTypes
+            onLanguageSelect(self._languageFld.getValue());
+          });
+
+          var languageOptions = [];
+          for (var i = 0; i < languages.length; i++) {
+            var lang = languages[i];
+
+            languageOptions.push(new OO.ui.MenuOptionWidget({
+              data: lang.code,
+              label: lang.name,
+            }));
+          }
+          self._languageSelectFld = new OO.ui.DropdownWidget({
+            label: "Choisissez",
+            menu: {
+              items: languageOptions,
+            },
+          });
+          self._languageSelectFld.getMenu().on("select", function (e) {
+            // noinspection JSCheckFunctionSignatures,JSValidateTypes
+            onLanguageSelect(e.getData());
+          });
+
+          self._grammarClassSelectFld = new OO.ui.DropdownWidget({
+            label: "Choisissez",
+          });
+          self._grammarClassSelectFld.getMenu().on("select", function (e) {
+            // noinspection JSCheckFunctionSignatures
+            onClassSelect(e.getData());
+          });
+          self._gendersFld = new OO.ui.DropdownWidget({
+            label: "Choisissez",
+          });
+          self._numbersFld = new OO.ui.DropdownWidget({
+            label: "Choisissez",
+          });
+
+          self._pronunciationFld = new OO.ui.TextInputWidget({
+            id: "cnm-pronunciation-field",
+          });
+          self._pronunciationPnl = new OO.ui.FieldLayout(self._pronunciationFld, {
+            align: "inline",
+          });
+
+          self._definitionFld = new OO.ui.MultilineTextInputWidget({
+            rows: 4,
+          });
+
+          return new OO.ui.FieldsetLayout({
+            items: [
+              new OO.ui.FieldsetLayout({
+                label: "Langue",
+                items: [
+                  new OO.ui.HorizontalLayout({
+                    items: [
+                      new OO.ui.ActionFieldLayout(self._languageFld, self._languageBnt),
+                      new OO.ui.FieldLayout(self._languageSelectFld, {
+                        expanded: false,
+                      }),
+                    ],
+                  }),
+                ],
+              }),
+              new OO.ui.FieldsetLayout({
+                label: "Informations grammaticales",
+                items: [
+                  new OO.ui.HorizontalLayout({
+                    items: [
+                      new OO.ui.FieldLayout(self._grammarClassSelectFld, {
+                        expanded: false,
+                      }),
+                      new OO.ui.FieldLayout(self._gendersFld, {
+                        expanded: false,
+                      }),
+                      new OO.ui.FieldLayout(self._numbersFld, {
+                        expanded: false,
+                      }),
+                    ],
+                  }),
+                ],
+              }),
+              new OO.ui.FieldsetLayout({
+                label: "Prononciation",
+                items: [
+                  self._pronunciationPnl,
+                ],
+              }),
+              new OO.ui.FieldsetLayout({
+                label: "Définition",
+                items: [
+                  new OO.ui.FieldLayout(self._definitionFld, {
+                    label: self._createLinks(specialChars, self._definitionFld),
+                    align: "inline",
+                  }),
+                ],
+              }),
+            ],
+          });
+        },
+      },
+      {
+        title: "Sections supplémentaires",
+        content: function () {
+          self._etymologyFld = new OO.ui.MultilineTextInputWidget({
+            rows: 4,
+            autofocus: true,
+          });
+          self._referencesFld = new OO.ui.MultilineTextInputWidget({
+            rows: 4,
+          });
+          self._sourcesFld = new OO.ui.MultilineTextInputWidget({
+            rows: 4,
+          });
+          self._bibliographyFld = new OO.ui.MultilineTextInputWidget({
+            rows: 4,
+          });
+
+          // TODO réagencer par paires
+          var fields = [];
+          for (var i = 0; i < sections.length; i++) {
+            var section = sections[i];
+            var field = new OO.ui.MultilineTextInputWidget({
+              rows: 4,
+              columns: 20,
+            });
+            self._otherSectionFields[section.code] = field;
+            fields.push(new OO.ui.FieldLayout(field, {
+              label: section.label,
+              align: "inline",
+            }));
+          }
+
+          return new OO.ui.FieldsetLayout({
+            items: [
+              new OO.ui.FieldsetLayout({
+                label: "Étymologie",
+                items: [
+                  new OO.ui.FieldLayout(self._etymologyFld, {
+                    label: self._createLinks(specialChars, self._etymologyFld),
+                    align: "inline",
+                  }),
+                ],
+                help: new OO.ui.HtmlSnippet(wikt.page.renderWikicode(
+                    "Laisser le champ de texte vide ajoutera le modèle «&nbsp;[[Modèle:ébauche-étym|ébauche-étym]]&nbsp;».",
+                    true
+                )),
+                helpInline: true,
+              }),
+              new OO.ui.FieldsetLayout({
+                label: "Références",
+                items: [
+                  new OO.ui.FieldLayout(self._referencesFld, {
+                    label: self._createLinks(specialChars, self._referencesFld),
+                    align: "inline",
+                  }),
+                  new OO.ui.FieldLayout(self._sourcesFld, {
+                    label: self._createLinks(specialChars, self._sourcesFld, "", "Sources"),
+                    align: "inline",
+                  }),
+                  new OO.ui.FieldLayout(self._bibliographyFld, {
+                    label: self._createLinks(specialChars, self._bibliographyFld, "", "Bibliographie"),
+                    align: "inline",
+                  }),
+                ],
+                help: new OO.ui.HtmlSnippet(wikt.page.renderWikicode(
+                    "Le modèle <code>{{[[Modèle:Références|Références]]}}</code> est ajouté automatiquement au début de la section «&nbsp;Sources&nbsp;».",
+                    true
+                )),
+                helpInline: true,
+              }),
+              new OO.ui.FieldsetLayout({
+                label: "Autres sections",
+                items: [
+                  new OO.ui.HorizontalLayout({
+                    items: fields,
+                  }),
+                ],
+              }),
+            ],
+          });
+        },
+      },
+      {
+        title: "Options avancées",
+        content: function () {
+          var otherProjectsFields = [];
+          var linksEnabled = false;
+
+          for (var projectCode in otherProjects) {
+            if (otherProjects.hasOwnProperty(projectCode)) {
+              // * DO NOT REMOVE FUNCTION *
+              // This function in necessary to avoid “textFld”
+              // changing value in checkbox.on() after each iteration.
+              (function () {
+                var projectName = otherProjects[projectCode].label;
+                var projectDomain = otherProjects[projectCode].urlDomain;
+                var checkbox = new OO.ui.CheckboxInputWidget({
+                  value: projectCode,
+                  selected: linksEnabled,
+                });
+                var textFld = new OO.ui.TextInputWidget({
+                  label: projectName,
+                  disabled: !linksEnabled,
+                });
+
+                checkbox.on("change", function (selected) {
+                  textFld.setDisabled(!selected);
+                });
+
+                self._seeOtherProjectsChk[projectCode] = {
+                  "checkbox": checkbox,
+                  "textfield": textFld,
+                };
+
+                var url = "https://{0}/wiki/{1}".format(projectDomain, encodeURI(word));
+                // noinspection HtmlUnknownTarget
+                var label = new OO.ui.HtmlSnippet('<a href="{0}" target="_blank">Rechercher</a>'.format(url));
+
+                otherProjectsFields.push(new OO.ui.ActionFieldLayout(
+                    checkbox,
+                    textFld,
+                    {
+                      align: "inline",
+                      id: "sister-project-{0}".format(projectCode),
+                      label: label,
+                    }
+                ));
+              })();
+            }
+          }
+
+          self._draftChk = new OO.ui.CheckboxInputWidget();
+          self._sortKeyFld = new OO.ui.TextInputWidget();
+
+          return new OO.ui.FieldsetLayout({
+            items: [
+              new OO.ui.FieldsetLayout({
+                label: "Liens vers les autres projets",
+                items: otherProjectsFields,
+                help: "Les champs de texte permettent de renseigner des paramètres" +
+                    " supplémentaire aux modèles de liens interwiki.",
+                helpInline: true,
+              }),
+              new OO.ui.FieldsetLayout({
+                label: "Autres options",
+                items: [
+                  new OO.ui.FieldLayout(self._draftChk, {
+                    label: "Ébauche",
+                    align: "inline",
+                  }),
+                  new OO.ui.FieldLayout(self._sortKeyFld, {
+                    label: "Clé de tri",
+                    help: "Permet de trier les pages dans les catégories.",
+                    align: "inline",
+                    helpInline: true,
+                  }),
+                ],
+              }),
+            ],
+          });
+        },
+      },
+    ];
+
+    /*
+     * Inserting tabs
+     */
+
+    var tabsWidget = new OO.ui.IndexLayout({
+      expanded: false,
+      id: "cnm-tabs-widget",
+    });
+    for (var i = 0; i < tabs.length; i++) {
+      var tab = new wikt.gadgets.creerNouveauMot.Tab('cnm-tab{0}'.format(i), {
+        label: tabs[i].title,
+        expanded: false,
+      });
+      var content = tabs[i].content();
+      tab.$element.append(typeof content === "string" ? content : content.$element);
+      tabsWidget.addTabPanels([tab]);
+      this._tabs.push(tab);
+    }
+
+    /*
+     * Constructing GUI
+     */
+
+    // TODO afficher le texte quelque part
+    // var popup = new OO.ui.PopupWidget({
+    //   // $autoCloseIgnore: button.$element,
+    //   $content: $("<p>Le code a été inséré dans la boite d’édition ci-dessous. " +
+    //       "Vous devriez <strong>vérifier</strong> que le résultat est conforme à vos souhaits, " +
+    //       "et en particulier utiliser le bouton «&nbsp;Prévisualer&nbsp;» avant de publier.</p>"),
+    //   padded: true,
+    //   width: 300,
+    //   anchor: false,
+    // });
+
+    var toolFactory = new OO.ui.ToolFactory();
+    var toolGroupFactory = new OO.ui.ToolGroupFactory();
+    var toolbar = new OO.ui.Toolbar(toolFactory, toolGroupFactory, {actions: true});
+
+    /**
+     * Adds a custom button to the tool factory.
+     * @param name {string} Button’s name.
+     * @param icon {string} Buttons’s icon name.
+     * @param progressive {boolean} Wether the icon should be marked as progressive.
+     * @param title {string} Button’s tooltip text.
+     * @param onSelect {function} Callback for when the button is clicked.
+     * @param onUpdateState {function?} Callback for when the button changes state (optional).
+     */
+    function generateButton(name, icon, progressive, title, onSelect, onUpdateState) {
+      /** @constructor */
+      function CustomTool() {
+        CustomTool.super.apply(this, arguments);
+      }
+
+      OO.inheritClass(CustomTool, OO.ui.Tool);
+      CustomTool.static.name = name;
+      if (icon) {
+        CustomTool.static.icon = icon;
+      }
+      CustomTool.static.title = title;
+      CustomTool.static.flags = progressive ? "progressive" : "";
+      CustomTool.prototype.onSelect = onSelect;
+      CustomTool.prototype.onUpdateState = onUpdateState || function () {
+        this.setActive(false);
+      };
+
+      toolFactory.register(CustomTool);
+    }
+
+    var hideBtn = "hide";
+    generateButton(hideBtn, "eyeClosed", false, "Masquer", function () {
+      // noinspection JSCheckFunctionSignatures
+      tabsWidget.toggle();
+      this.setTitle(tabsWidget.isVisible() ? "Masquer" : "Afficher");
+      this.setIcon(tabsWidget.isVisible() ? "eyeClosed" : "eye");
+    });
+
+    var helpBtn = "help";
+    generateButton(helpBtn, "help", false, "Aide (s’ouvre dans un nouvel onglet)", function () {
+      window.open("/wiki/Aide:Gadget-CreerNouveauMot");
+    });
+
+    var insertWikicodeBtn = new OO.ui.ButtonWidget({
+      label: "Insérer le code",
+      flags: "progressive",
+    });
+    insertWikicodeBtn.on("click", onInsertWikicode);
+
+    toolbar.setup([
+      {
+        type: "bar",
+        include: [hideBtn, helpBtn]
+      },
+    ]);
+    // TODO set as toolbar title
+    toolbar.$actions.append(insertWikicodeBtn.$element);
+
+    var gadgetBox = new OO.ui.PanelLayout({
+      expanded: false,
+      framed: true
+    });
+    var contentFrame = new OO.ui.PanelLayout({
+      expanded: false,
+      // padded: true
+    });
+
+    gadgetBox.$element.append(
+        toolbar.$element,
+        contentFrame.$element.append(tabsWidget.$element)
+    );
+
+    toolbar.initialize();
+    toolbar.emit("updateState");
+
+    $tedit.html(gadgetBox.$element);
+    // Allows layout taking all available width.
+    // gadgetBox.$element.removeClass("oo-ui-fieldLayout-align-left");
+
+    for (var projectCode in otherProjects) {
+      if (otherProjects.hasOwnProperty(projectCode)) {
+        $("#sister-project-{0} span.oo-ui-actionFieldLayout-button".format(projectCode)).attr("style", "width: 100%");
+        $("#sister-project-{0} span.oo-ui-fieldLayout-field".format(projectCode)).attr("style", "width: 100%");
+      }
+    }
+
+    // Enforce fonts for pronunciation text input.
+    $("#cnm-pronunciation-field > input").attr("style",
+        'font-family:' +
+        '"Segoe UI","Calibri","DejaVu Sans","Charis SIL","Doulos SIL",' +
+        '"Gentium Plus","Gentium","GentiumAlt","Lucida Grande",' +
+        '"Arial Unicode MS",sans-serif !important');
+    // Remove class as to remove the gap between the tabs panel and the frame.
+    // $("#cnm-tabs-widget").parent().removeClass("oo-ui-panelLayout-padded");
+  };
+
+  wikt.gadgets.creerNouveauMot.MainGui.prototype = Object.create(wikt.gadgets.creerNouveauMot.Gui.prototype);
+
+  /*
+   * Public methods
+   */
+
+  /**
+   * Selects the tab at the given index.
+   * @param index {number} The index.
+   */
+  wikt.gadgets.creerNouveauMot.MainGui.prototype.selectTab = function (index) {
+    this._tabs[index].select();
+  };
+
+  /**
+   * Selects the given language.
+   * If the language is not in the dropdown menu, it is added to it.
+   * @param language {wikt.gadgets.creerNouveauMot.Language} The language object.
+   */
+  wikt.gadgets.creerNouveauMot.MainGui.prototype.selectLanguage = function (language) {
+    if (!this._languageSelectFld.getMenu().findItemFromData(language.code)) {
+      this._languageSelectFld.getMenu().addItems([new OO.ui.MenuOptionWidget({
+        data: language.code,
+        label: language.name,
+      })], 0);
+    }
+    this._updateFields(language);
+    this._languageSelectFld.getMenu().selectItemByData(language.code);
+    this._pronunciationPnl.setLabel(this._formatApi(language.ipaSymbols));
+  };
+
+  /**
+   * Sets the available genders widget.
+   * @param genders {Array<wikt.gadgets.creerNouveauMot.Gender>} The list of genders.
+   */
+  wikt.gadgets.creerNouveauMot.MainGui.prototype.setAvailableGenders = function (genders) {
+    this._setListValues(genders, this._gendersFld);
+  };
+
+  /**
+   * Sets the available grammatical numbers widget.
+   * @param numbers {Array<wikt.gadgets.creerNouveauMot.Number>} The list of grammatical numbers.
+   */
+  wikt.gadgets.creerNouveauMot.MainGui.prototype.setAvailableNumbers = function (numbers) {
+    this._setListValues(numbers, this._numbersFld);
+  };
+
+  /*
+   * Private methods
+   */
+
+  /**
+   * Updates all language-related fields.
+   * @param language {wikt.gadgets.creerNouveauMot.Language} The selected language.
+   * @private
+   */
+  wikt.gadgets.creerNouveauMot.MainGui.prototype._updateFields = function (language) {
+    this._grammarClassSelectFld.getMenu().clearItems();
+    var grammarItems = language.grammarItems;
+    var items = [];
+
+    for (var key in grammarItems) {
+      if (grammarItems.hasOwnProperty(key)) {
+        var grammarItem = grammarItems[key];
+        items.push(new OO.ui.MenuOptionWidget({
+          data: key,
+          label: new OO.ui.HtmlSnippet(grammarItem.grammaticalClass.label),
+        }));
+      }
+    }
+
+    this._grammarClassSelectFld.getMenu().addItems(items);
+    this._grammarClassSelectFld.getMenu().selectItem(items[0]);
+
+    this._pronunciationFld.setDisabled(language.code === "conv");
+  };
+
+  // noinspection JSValidateJSDoc
+  /**
+   * Sets the values of the given OOUI dropdown widget.
+   * @param values {Array<wikt.gadgets.creerNouveauMot.Gender|wikt.gadgets.creerNouveauMot.Number>} The list of values.
+   * @param field {OO.ui.DropdownWidget} The OOUI widget.
+   */
+  wikt.gadgets.creerNouveauMot.MainGui.prototype._setListValues = function (values, field) {
+    field.getMenu().clearItems();
+    var items = [];
+    for (var i = 0; i < values.length; i++) {
+      var value = values[i];
+      items.push(new OO.ui.MenuOptionWidget({
+        data: value.label,
+        label: new OO.ui.HtmlSnippet(value.label),
+      }));
+    }
+    field.getMenu().addItems(items);
+    field.getMenu().selectItem(items[0]);
+  };
+
+  /**
+   * Creates an HTML list of IPA symbols from a array of symbols.
+   * @param ipaSymbols {Array<Array<string>>} The list of IPA symbols.
+   * @return {object} A jQuery object.
+   * @private
+   */
+  wikt.gadgets.creerNouveauMot.MainGui.prototype._formatApi = function (ipaSymbols) {
+    var $label = $("<span>");
+
+    for (var i = 0; i < ipaSymbols.length; i++) {
+      $label.append(this._createLinks(ipaSymbols[i], this._pronunciationFld, "API"));
+      if (i < ipaSymbols.length - 1) {
+        $label.append(" &mdash; ");
+      }
+    }
+
+    return $label;
+  };
+
+  /**
+   * Creates an HTML links sequence that will insert text into a text field when clicked.
+   * @param list {Array<string>} The list of strings to convert into links.
+   * @param textField {object} The text field to insert the text into.
+   * @param cssClass {string?} Optional additonnal CSS classes.
+   * @param text {string?} Some text that will be appended before the links.
+   * @return {Object} A jQuery object.
+   * @private
+   */
+  wikt.gadgets.creerNouveauMot.MainGui.prototype._createLinks = function (list, textField, cssClass, text) {
+    var $links = $("<span>");
+
+    if (text) {
+      $links.append(text + " &mdash; ");
+    }
+
+    for (var i = 0; i < list.length; i++) {
+      var item = list[i];
+      var $link = $('<a href="#" class="{0}" data-value="{1}">{2}</a>'
+          .format(cssClass, item.replace("&", "&amp;"), item.trim()));
+      // noinspection JSCheckFunctionSignatures
+      $link.click(function (e) {
+        textField.insertContent($(e.target).data("value"));
+        textField.focus();
+        // Return false to disable default event from triggering.
+        return false;
+      });
+      $links.append($link);
+      if (i < list.length - 1) {
+        $links.append("\u00a0");
+      }
+    }
+
+    return $links;
+  };
+
+  /*
+   * Getters & setters
+   */
+
+  /**
+   * Returns the contents of the given section.
+   * @param sectionCode {string} Sections’s code.
+   * @return {string} The section’s contents.
+   */
+  wikt.gadgets.creerNouveauMot.MainGui.prototype.getSectionContent = function (sectionCode) {
+    // noinspection JSCheckFunctionSignatures
+    return this._otherSectionFields[sectionCode].getValue().trim();
+  };
+
+  /**
+   * Sets the contents of the given section.
+   * @param sectionCode {string} Sections’s code.
+   * @param content {string} The section’s contents.
+   */
+  wikt.gadgets.creerNouveauMot.MainGui.prototype.setSectionContent = function (sectionCode, content) {
+    this._otherSectionFields[sectionCode].setValue(content.trim());
+  };
+
+  /**
+   * Indicates whether a link to the given sister project has to be inserted.
+   * @param projectCode {string} Project’s code.
+   * @return {boolean} True if a link has to be inserted.
+   */
+  wikt.gadgets.creerNouveauMot.MainGui.prototype.hasAddLinkToProject = function (projectCode) {
+    return this._seeOtherProjectsChk[projectCode]["checkbox"].isSelected();
+  };
+
+  /**
+   * Sets whether a link to the given sister project has to be inserted.
+   * @param projectCode {string} Project’s code.
+   * @param link {boolean} True if a link has to be inserted.
+   */
+  wikt.gadgets.creerNouveauMot.MainGui.prototype.setAddLinkToProject = function (projectCode, link) {
+    this._seeOtherProjectsChk[projectCode]["checkbox"].setSelected(link);
+  };
+
+  /**
+   * Returns the template parameters for the given sister project link.
+   * @param projectCode {string} Project’s code.
+   * @return {string} Template’s parameters.
+   */
+  wikt.gadgets.creerNouveauMot.MainGui.prototype.getProjectLinkParams = function (projectCode) {
+    // noinspection JSCheckFunctionSignatures
+    return this._seeOtherProjectsChk[projectCode]["textfield"].getValue().trim();
+  };
+
+  /**
+   * Sets template parameters for the given sister project link.
+   * @param projectCode {string} Project’s code.
+   * @param params {string} Template’s parameters.
+   */
+  wikt.gadgets.creerNouveauMot.MainGui.prototype.setProjectLinkParams = function (projectCode, params) {
+    this._seeOtherProjectsChk[projectCode]["textfield"].setValue(params.trim());
+  };
+
+  Object.defineProperty(wikt.gadgets.creerNouveauMot.MainGui.prototype, "tabsNumber", {
+    /**
+     * @return {number} The number of tabs.
+     */
+    get: function () {
+      return this._tabs.length;
+    }
+  });
+
+  Object.defineProperty(wikt.gadgets.creerNouveauMot.MainGui.prototype, "selectedLanguage", {
+    /**
+     * @return {string} Selected language’s code.
+     */
+    get: function () {
+      // noinspection JSCheckFunctionSignatures
+      return this._languageSelectFld.getMenu().findSelectedItem().getData();
+    }
+  });
+
+  Object.defineProperty(wikt.gadgets.creerNouveauMot.MainGui.prototype, "gender", {
+    /**
+     * @return {string} Selected gender’s code.
+     */
+    get: function () {
+      // noinspection JSCheckFunctionSignatures
+      return this._gendersFld.getMenu().findSelectedItem().getData();
+    },
+  });
+
+  Object.defineProperty(wikt.gadgets.creerNouveauMot.MainGui.prototype, "number", {
+    /**
+     * @return {string} Selected grammatical number’s code.
+     */
+    get: function () {
+      // noinspection JSCheckFunctionSignatures
+      return this._numbersFld.getMenu().findSelectedItem().getData();
+    },
+  });
+
+  Object.defineProperty(wikt.gadgets.creerNouveauMot.MainGui.prototype, "grammarClass", {
+    /**
+     * @return {string} Selected grammatical class.
+     */
+    get: function () {
+      // noinspection JSCheckFunctionSignatures
+      return this._grammarClassSelectFld.getMenu().findSelectedItem().getData();
+    },
+  });
+
+  Object.defineProperty(wikt.gadgets.creerNouveauMot.MainGui.prototype, "pronunciation", {
+    /**
+     * @return {string} The pronunciation.
+     */
+    get: function () {
+      // noinspection JSCheckFunctionSignatures
+      return this._pronunciationFld.getValue().trim();
+    },
+
+    /**
+     * Sets the pronunciation.
+     * @param pron {string} The pronunciation.
+     */
+    set: function (pron) {
+      this._pronunciationFld.setValue(pron.trim());
+    },
+  });
+
+  Object.defineProperty(wikt.gadgets.creerNouveauMot.MainGui.prototype, "definition", {
+    /**
+     * @return {string} The definition.
+     */
+    get: function () {
+      // noinspection JSCheckFunctionSignatures
+      return this._definitionFld.getValue().trim();
+    },
+
+    /**
+     * Sets the definition.
+     * @param def {string} The definition.
+     */
+    set: function (def) {
+      this._definitionFld.setValue(def.trim());
+    }
+  });
+
+  Object.defineProperty(wikt.gadgets.creerNouveauMot.MainGui.prototype, "etymology", {
+    /**
+     * @return {string} The etymology.
+     */
+    get: function () {
+      // noinspection JSCheckFunctionSignatures
+      return this._etymologyFld.getValue().trim();
+    },
+
+    /**
+     * Sets the etymology.
+     * @param etym {string} The etymology.
+     */
+    set: function (etym) {
+      this._etymologyFld.setValue(etym.trim());
+    }
+  });
+
+  Object.defineProperty(wikt.gadgets.creerNouveauMot.MainGui.prototype, "references", {
+    /**
+     * @return {string} The references.
+     */
+    get: function () {
+      // noinspection JSCheckFunctionSignatures
+      return this._referencesFld.getValue().trim();
+    },
+
+    /**
+     * Sets the references.
+     * @param references {string} The references.
+     */
+    set: function (references) {
+      this._referencesFld.setValue(references.trim());
+    },
+  });
+
+  Object.defineProperty(wikt.gadgets.creerNouveauMot.MainGui.prototype, "sources", {
+    /**
+     * @return {string} The sources.
+     */
+    get: function () {
+      // noinspection JSCheckFunctionSignatures
+      return this._sourcesFld.getValue().trim();
+    },
+
+    /**
+     * Sets the sources.
+     * @param sources {string} The sources.
+     */
+    set: function (sources) {
+      this._sourcesFld.setValue(sources.trim());
+    },
+  });
+
+  Object.defineProperty(wikt.gadgets.creerNouveauMot.MainGui.prototype, "bibliography", {
+    /**
+     * @return {string} The bibliography.
+     */
+    get: function () {
+      // noinspection JSCheckFunctionSignatures
+      return this._bibliographyFld.getValue().trim();
+    },
+
+    /**
+     * Sets the bibliography.
+     * @param bibliography {string} The bibliography.
+     */
+    set: function (bibliography) {
+      this._bibliographyFld.setValue(bibliography.trim());
+    },
+  });
+
+  Object.defineProperty(wikt.gadgets.creerNouveauMot.MainGui.prototype, "isDraft", {
+    /**
+     * Indicates whether the article is a draft.
+     * @return {boolean} True if it is a draft.
+     */
+    get: function () {
+      return this._draftChk.isSelected();
+    },
+
+    /**
+     * Sets whether the article is a draft.
+     * @param draft {boolean} True if it is a draf
+     */
+    set: function (draft) {
+      this._draftChk.setSelected(draft);
+    },
+  });
+
+  Object.defineProperty(wikt.gadgets.creerNouveauMot.MainGui.prototype, "sortingKey", {
+    /**
+     * @return {string} The sorting key.
+     */
+    get: function () {
+      // noinspection JSCheckFunctionSignatures
+      return this._sortKeyFld.getValue().trim();
+    },
+
+    /**
+     * Defines the sorting key.
+     * @param key {string} The sorting key.
+     */
+    set: function (key) {
+      this._sortKeyFld.setValue(key.trim());
+    },
+  });
+
+  /**
+   * This class represents a grammatical number (singular, plural, etc.).
+   * @param label {string} Number’s label.
+   * @param template {string?} Number’s template if any.
+   * @constructor
+   */
+  wikt.gadgets.creerNouveauMot.Number = function (label, template) {
+    this._label = label;
+    this._template = template || "";
   }
 
-  //-------------------- définition ------------------------------
-  if (CrNoMo_Definit.length>0) {
-    if (CrNoMo_Definit[0] != "#") CrNoMo_InsTxt += "# ";
-    CrNoMo_InsTxt += CrNoMo_Definit + "\n";
-  }else{
-    CrNoMo_InsTxt = CrNoMo_InsTxt
-        + "# {{ébauche-déf|" + CrNoMo_LangueMot + "}}\n"
-        + "#*<!-- ''.'' {{source|}}-->{{ébauche-exe|" + CrNoMo_LangueMot + "}}\n";
-  }
-  CrNoMo_InsTxt += "\n";
+  wikt.gadgets.creerNouveauMot.Number.prototype = {
+    /**
+     * @return {string} The label.
+     */
+    get label() {
+      return this._label;
+    },
 
-  //----------------- ss-sections optionnelles -------------------
-  if (CrNoMo_SsSyn.length>0){
-    CrNoMo_InsTxt += "==== {{S|synonymes}} ====\n" + CrNoMo_SectionsSuppWikifListe(CrNoMo_SsSyn, CrNoMo_LangueMot) + "\n";
-  }
-  if (CrNoMo_SsDrv.length>0){
-    CrNoMo_InsTxt += "==== {{S|dérivés}} ====\n" + CrNoMo_SectionsSuppWikifListe(CrNoMo_SsDrv, CrNoMo_LangueMot) + "\n";
-  }
-  if (CrNoMo_SsApr.length>0){
-    CrNoMo_InsTxt += "==== {{S|apparentés}} ====\n" + CrNoMo_SectionsSuppWikifListe(CrNoMo_SsApr, CrNoMo_LangueMot) + "\n";
-  }
-  if (CrNoMo_SsVoc.length>0){
-    CrNoMo_InsTxt += "==== {{S|vocabulaire}} ====\n" + CrNoMo_SectionsSuppWikifListe(CrNoMo_SsVoc, CrNoMo_LangueMot) + "\n";
+    /**
+     * @return {string} The template if any.
+     */
+    get template() {
+      return this._template;
+    },
   }
 
-  //------------------ ss-section "traduc" -----------------------
-  if ((!CrNoMo_Flexion) &&(CrNoMo_LangueMot=="fr")) {
-    CrNoMo_InsTxt = CrNoMo_InsTxt
-        + "==== {{S|traductions}} ====\n"
-        + "{{trad-début|}}\n"
-        + "{{trad-fin}}\n"
-        + "\n";
+  /**
+   * Defines all available grammatical numbers.
+   * @type {Object<string, wikt.gadgets.creerNouveauMot.Number>}
+   */
+  wikt.gadgets.creerNouveauMot.numbers = {
+    DIFF_SINGULAR_PLURAL: new wikt.gadgets.creerNouveauMot.Number("sing. et plur. différents"),
+    SAME_SINGULAR_PLURAL: new wikt.gadgets.creerNouveauMot.Number("sing. et plur. identiques", "{{sp}}"),
+    SINGULAR_ONLY: new wikt.gadgets.creerNouveauMot.Number("singulier uniquement", "{{au singulier uniquement}}"),
+    PLURAL_ONLY: new wikt.gadgets.creerNouveauMot.Number("pluriel uniquement", "{{au pluriel uniquement}}"),
+    INVARIABLE: new wikt.gadgets.creerNouveauMot.Number("invariable", "{{invar}}"),
+  };
+
+  /**
+   * This class represents a grammatical gender (feminine, masculine, etc.).
+   * @param label {string} Gender’s label.
+   * @param template {string?} Gender’s template if any.
+   * @constructor
+   */
+  wikt.gadgets.creerNouveauMot.Gender = function (label, template) {
+    this._label = label;
+    this._template = template || "";
   }
 
-  // mémo pos curseur pour enchainement création
-  CrNoMo_Curseur = CrNoMo_InsTxt.length;
+  wikt.gadgets.creerNouveauMot.Gender.prototype = {
+    /**
+     * @return {string} Gender’s label.
+     */
+    get label() {
+      return this._label;
+    },
 
-  //-- section langue (fin)
-  if (CrNoMo_VoirWp){
-    var modele_wp = CrNoMo_LangueMot == 'fr' ? '{{WP}}' : '{{WP|lang=xx}}'.replace('xx', CrNoMo_LangueMot);
-    CrNoMo_InsTxt += "=== {{S|voir aussi}} ===\n* <modele_wp>\n\n".replace('<modele_wp>', modele_wp);
+    /**
+     * @return {string} Gender’s template if any.
+     */
+    get template() {
+      return this._template;
+    },
   }
-  if (CrNoMo_SsRéf.length>0){
-    CrNoMo_InsTxt += "=== {{S|références}} ===\n" + CrNoMo_SsRéf + "\n\n";
+
+  /**
+   * Defines all available grammatical genders.
+   * @type {Object<string, wikt.gadgets.creerNouveauMot.Gender>}
+   */
+  wikt.gadgets.creerNouveauMot.genders = {
+    MASCULINE: new wikt.gadgets.creerNouveauMot.Gender("masculin", "{{m}}"),
+    FEMININE: new wikt.gadgets.creerNouveauMot.Gender("féminin", "{{f}}"),
+    FEMININE_MASCULINE: new wikt.gadgets.creerNouveauMot.Gender("masc. et fém. identiques", "{{mf}}"),
+    NO_GENDER: new wikt.gadgets.creerNouveauMot.Gender("pas de genre"),
+    VERB_GROUP1: new wikt.gadgets.creerNouveauMot.Gender("1<sup>er</sup> groupe", "{{conjugaison|fr|group=1}}"),
+    VERB_GROUP2: new wikt.gadgets.creerNouveauMot.Gender("2<sup>ème</sup> groupe", "{{conjugaison|fr|group=2}}"),
+    VERB_GROUP3: new wikt.gadgets.creerNouveauMot.Gender("3<sup>ème</sup> groupe", "{{conjugaison|fr|group=3}}"),
+    REGULAR_VERB: new wikt.gadgets.creerNouveauMot.Gender("régulier"),
+    IRREGULAR_VERB: new wikt.gadgets.creerNouveauMot.Gender("irrégulier"),
+  };
+
+  /**
+   * This class represents a grammatical class.
+   * @param label {string} Class’ label.
+   * @param sectionCode {string} Class’ section code.
+   * (as defined in [[Wiktionnaire:Structure_des_pages#Résumé_des_sections]] 2,1 onwards).
+   * @constructor
+   */
+  wikt.gadgets.creerNouveauMot.GrammaticalClass = function (label, sectionCode) {
+    this._label = label;
+    this._sectionCode = sectionCode;
   }
-  if ( CrNoMo_LangueSection && (CrNoMo_CleVedette.toLowerCase() != CrNoMo_MotVedette.toLowerCase()) ){
-    CrNoMo_InsTxt += "{{clé de tri|" + CrNoMo_CleVedette + "}}\n";
+
+  wikt.gadgets.creerNouveauMot.GrammaticalClass.prototype = {
+    /**
+     * @return {string} Class’ label.
+     */
+    get label() {
+      return this._label;
+    },
+
+    /**
+     * @return {string} Class’ section code.
+     */
+    get sectionCode() {
+      return this._sectionCode;
+    },
   }
-}
+
+  /**
+   * Defines all available grammatical classes.
+   * @type {Object<string, wikt.gadgets.creerNouveauMot.GrammaticalClass>}
+   */
+  wikt.gadgets.creerNouveauMot.grammaticalClasses = {
+    SYMBOL: new wikt.gadgets.creerNouveauMot.GrammaticalClass("symbole", "symbole"),
+    LETTER: new wikt.gadgets.creerNouveauMot.GrammaticalClass("lettre", "lettre"),
+
+    SCIENTIFIC_NAME: new wikt.gadgets.creerNouveauMot.GrammaticalClass("nom scientifique", "nom scientifique"),
+
+    // Nouns
+    NOUN: new wikt.gadgets.creerNouveauMot.GrammaticalClass("nom commun", "nom"),
+    PROPER_NOUN: new wikt.gadgets.creerNouveauMot.GrammaticalClass("nom propre", "nom propre"),
+    FIRST_NAME: new wikt.gadgets.creerNouveauMot.GrammaticalClass("prénom", "prénom"),
+    LAST_NAME: new wikt.gadgets.creerNouveauMot.GrammaticalClass("nom de famille", "nom de famille"),
+
+    // Adjectives
+    ADJECTIVE: new wikt.gadgets.creerNouveauMot.GrammaticalClass("adjectif", "adjectif"),
+    INTERROGATIVE_ADJECTIVE: new wikt.gadgets.creerNouveauMot.GrammaticalClass("adjectif interrogatif", "adjectif interrogatif"),
+    NUMERAL_ADJECTIVE: new wikt.gadgets.creerNouveauMot.GrammaticalClass("adjectif numéral", "adjectif numéral"),
+    POSSESSIVE_ADJECTIVE: new wikt.gadgets.creerNouveauMot.GrammaticalClass("adjectif possessif", "adjectif possessif"),
+
+    // Adverbs
+    ADVERB: new wikt.gadgets.creerNouveauMot.GrammaticalClass("adverbe", "adverbe"),
+    INTERROGATIVE_ADVERB: new wikt.gadgets.creerNouveauMot.GrammaticalClass("adverbe interrogatif", "adverbe interrogatif"),
+
+    // Pronouns
+    PRONOUN: new wikt.gadgets.creerNouveauMot.GrammaticalClass("pronom", "pronom"),
+    DEMONSTRATIVE_PRONOUN: new wikt.gadgets.creerNouveauMot.GrammaticalClass("pronom démonstratif", "pronom démonstratif"),
+    INDEFINITE_PRONOUN: new wikt.gadgets.creerNouveauMot.GrammaticalClass("pronom indéfini", "pronom indéfini"),
+    INTERROGATIVE_PRONOUN: new wikt.gadgets.creerNouveauMot.GrammaticalClass("pronom interrogatif", "pronom interrogatif"),
+    PERSONAL_PRONOUN: new wikt.gadgets.creerNouveauMot.GrammaticalClass("pronom personnel", "pronom personnel"),
+    POSSESSIVE_PRONOUN: new wikt.gadgets.creerNouveauMot.GrammaticalClass("pronom possessif", "pronom possessif"),
+    RELATIVE_PRONOUN: new wikt.gadgets.creerNouveauMot.GrammaticalClass("pronom relatif", "pronom relatif"),
+
+    // Conjunctions
+    CONJUNCTION: new wikt.gadgets.creerNouveauMot.GrammaticalClass("conjonction", "conjonction"),
+    COORDINATION_CONJUNCTION: new wikt.gadgets.creerNouveauMot.GrammaticalClass("conjonction de coordination", "conjonction de coordination"),
+
+    // Articles
+    ARTICLE: new wikt.gadgets.creerNouveauMot.GrammaticalClass("article", "article"),
+    INDEFINITE_ARTICLE: new wikt.gadgets.creerNouveauMot.GrammaticalClass("article indéfini", "article indéfini"),
+    DEFINITE_ARTICLE: new wikt.gadgets.creerNouveauMot.GrammaticalClass("article défini", "article défini"),
+    PARTITIVE_ARTICLE: new wikt.gadgets.creerNouveauMot.GrammaticalClass("article partitif", "article partitif"),
+
+    // Affixes
+    PREFIX: new wikt.gadgets.creerNouveauMot.GrammaticalClass("préfixe", "préfixe"),
+    SUFFIX: new wikt.gadgets.creerNouveauMot.GrammaticalClass("suffixe", "suffixe"),
+    CIRCUMFIX: new wikt.gadgets.creerNouveauMot.GrammaticalClass("circonfixe", "circonfixe"),
+    INFIX: new wikt.gadgets.creerNouveauMot.GrammaticalClass("infixe", "infixe"),
+
+    VERB: new wikt.gadgets.creerNouveauMot.GrammaticalClass("verbe", "verbe"),
+    PREPOSITION: new wikt.gadgets.creerNouveauMot.GrammaticalClass("préposition", "préposition"),
+    POSTPOSITION: new wikt.gadgets.creerNouveauMot.GrammaticalClass("postposition", "postposition"),
+    PARTICLE: new wikt.gadgets.creerNouveauMot.GrammaticalClass("particule", "particule"),
+    INTERJECTION: new wikt.gadgets.creerNouveauMot.GrammaticalClass("interjection", "interjection"),
+  };
+
+  /**
+   * A grammatical item associates a grammatical class to genders and numbers.
+   * @param grammaticalClass {wikt.gadgets.creerNouveauMot.GrammaticalClass} The grammatical class.
+   * @param availableGenders {Array<wikt.gadgets.creerNouveauMot.Gender>?} Associated genders.
+   * @param availableNumbers {Array<wikt.gadgets.creerNouveauMot.Number>?} Associated numbers.
+   * @param generateInflections {Function?} Optional function that generates inflections template.
+   * @constructor
+   */
+  wikt.gadgets.creerNouveauMot.GrammaticalItem = function (grammaticalClass, availableGenders, availableNumbers, generateInflections) {
+    this._grammaticalClass = grammaticalClass;
+    /** @type {Array<wikt.gadgets.creerNouveauMot.Gender>} */
+    this._availableGenders = availableGenders || [new wikt.gadgets.creerNouveauMot.Gender("<em>indisponible</em>")];
+    /** @type {Array<wikt.gadgets.creerNouveauMot.Number>} */
+    this._availableNumbers = availableNumbers || [new wikt.gadgets.creerNouveauMot.Number("<em>indisponible</em>")];
+    this._generateInflections = generateInflections || function () {
+      return "";
+    };
+  };
+
+  wikt.gadgets.creerNouveauMot.GrammaticalItem.prototype = {
+    /**
+     * @return {wikt.gadgets.creerNouveauMot.GrammaticalClass} The grammatical class.
+     */
+    get grammaticalClass() {
+      return this._grammaticalClass;
+    },
+
+    /**
+     * @return {Array<wikt.gadgets.creerNouveauMot.Gender>} Associated genders.
+     */
+    get availableGenders() {
+      return this._availableGenders;
+    },
+
+    /**
+     * @return {Array<wikt.gadgets.creerNouveauMot.Number>} Associated numbers.
+     */
+    get availableNumbers() {
+      return this._availableNumbers;
+    },
+  };
+
+  /**
+   * Fetches the gender with the given label.
+   * @param genderLabel {string} Gender’s label.
+   * @return {wikt.gadgets.creerNouveauMot.Gender|null} The gender object or null if none were found.
+   */
+  wikt.gadgets.creerNouveauMot.GrammaticalItem.prototype.getGender = function (genderLabel) {
+    for (var i = 0; i < this._availableGenders.length; i++) {
+      var gender = this._availableGenders[i];
+      if (gender.label === genderLabel) {
+        return gender;
+      }
+    }
+
+    return null;
+  };
+
+  /**
+   * Fetches the number with the given label.
+   * @param numberLabel {string} Number’s label
+   * @return {wikt.gadgets.creerNouveauMot.Number|null} The number object or null if none were found.
+   */
+  wikt.gadgets.creerNouveauMot.GrammaticalItem.prototype.getNumber = function (numberLabel) {
+    for (var i = 0; i < this._availableNumbers.length; i++) {
+      var number = this._availableNumbers[i];
+      if (number.label === numberLabel) {
+        return number;
+      }
+    }
+
+    return null;
+  };
+
+  /**
+   * Generates inflections template.
+   * @param word {string} The base word.
+   * @param genderLabel {string} Gender’s label.
+   * @param numberLabel {string} Number’s label.
+   * @param pronunciation {string} IPA pronunciation.
+   * @return {string} Template’s wikicode.
+   */
+  wikt.gadgets.creerNouveauMot.GrammaticalItem.prototype.getInflectionsTemplate = function (word, genderLabel, numberLabel, pronunciation) {
+    var grammarClass = this._grammaticalClass.label;
+    grammarClass = grammarClass.charAt(0).toUpperCase() + grammarClass.substring(1);
+    return this._generateInflections(word, grammarClass, genderLabel, numberLabel, pronunciation);
+  };
+
+  $(function () {
+    // Activate only in main namespace when in edit/submit mode.
+    if (wikt.page.hasNamespaceIn([""]) && ["edit", "submit"].includes(mw.config.get("wgAction"))) {
+      console.log("Chargement de Gadget-CreerNouveauMot.js…");
+
+      var namespaceId = mw.config.get("wgNamespaceIds")["mediawiki"];
+      var basePage = "Gadget-CreerNouveauMot.js";
+
+      wikt.page.getSubpages(namespaceId, basePage, "[a-zA-Z]*\\.js", function (response) {
+        var modules = $.map(response.query.search, function (e) {
+          return "https://fr.wiktionary.org/wiki/{0}?action=raw&ctype=text/javascript".format(e.title);
+        });
+        wikt.loadScripts(modules).done(function () {
+          wikt.gadgets.creerNouveauMot.init();
+        });
+      });
+    }
+  });
+});

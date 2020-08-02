@@ -126,6 +126,26 @@ $(function () {
 });
 
 /*
+ * Permet d’afficher/cacher les illustrations cachées.
+ */
+$(function () {
+  $(".show-illus-btn").each(function () {
+    var $div = $(this);
+    var $illusDiv = $div.next();
+    // Hide button
+    $illusDiv.find(".hide-illus-btn").on("click", function () {
+      $div.show();
+      $illusDiv.hide();
+    });
+    // Show div
+    $div.on("click", function () {
+      $illusDiv.show();
+      $div.hide();
+    })
+  })
+})
+
+/*
  * Cette fonction remplace le lien des modèles d’ébauche (.stubedit) par le lien
  * de modification de la section supérieure la plus proche, pour éviter de
  * modifier toute la page.

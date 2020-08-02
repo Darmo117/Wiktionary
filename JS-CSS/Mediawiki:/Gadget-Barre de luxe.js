@@ -1,9 +1,17 @@
-// [[Catégorie:JavaScript du Wiktionnaire|Barre de luxe.js]]
-/*
+/**
+ * (fr)
+ * Ce gadget ajoute de nouveaux boutons à la barre d’outils.
+ * Page d’aide : [[Aide:Gadget-Barre de luxe]]
+ * Icones (OOUI): https://commons.wikimedia.org/wiki/OOUI_icons
+ * Icones (Monobook): http://commons.wikimedia.org/wiki/Category:MediaWiki_edit_toolbar
+ * ----
+ * (en)
  * This gadget adds new buttons for the edit toolbar.
- * Help page: [[Aide:Gadget-Barre de luxe]]
+ * Help page: [[Aide:Gadget-Barre de luxe]] (fr)
  * Icons (OOUI): https://commons.wikimedia.org/wiki/OOUI_icons
  * Icons (Monobook): http://commons.wikimedia.org/wiki/Category:MediaWiki_edit_toolbar
+ * ----
+ * [[Catégorie:JavaScript du Wiktionnaire|Barre de luxe.js]]
  */
 
 window.wikt.gadgets.barreDeLuxe = {
@@ -394,5 +402,18 @@ window.wikt.gadgets.barreDeLuxe = {
   if (["edit", "submit"].includes(mw.config.get("wgAction"))) {
     console.log("Chargement de Gadget-Barre_de_luxe.js…");
     wikt.gadgets.barreDeLuxe.init();
+    var username = mw.config.get("wgUserName");
+    var url = "https://fr.wiktionary.org/wiki/User:{0}/barreDeLuxe.js?action=raw&ctype=text/javascript".format(username);
+    var wg = wikt.gadgets;
+    wikt.loadScripts([url]).done(function () {
+      try {
+        if (buttons && buttons instanceof Array) {
+          wg.barreDeLuxe.addButtons(buttons); // Variable should be declared in user page.
+        }
+      }
+      catch (e) {
+        console.log("Gadget-Barre_de_luxe.js: Variable 'buttons' non définie.");
+      }
+    });
   }
 })();

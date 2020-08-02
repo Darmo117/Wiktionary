@@ -36,7 +36,7 @@ local function _example(text, transcription, meaning, source, heading, lang, scr
     if meaning then
       wikicode = wikicode .. meaning
     else
-      wikicode = wikicode .. frame:expandTemplate { title = "ébauche-trad-exe", args = { lang } }
+      wikicode = wikicode .. frame:expandTemplate { title = "trad-exe", args = { lang } }
     end
   end
 

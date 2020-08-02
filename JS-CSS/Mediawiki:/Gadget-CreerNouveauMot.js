@@ -15,6 +15,8 @@
  * v3.0 2013-02-28 tool integration into pages
  * v4.0 2014-01-22 support for new editable sections syntax
  * v5.0 2020-07-29 full rewrite, migration to OOUI
+ * v5.0.1 2020-08-01 using {{lien}} for links, reworked toolbar
+ * v5.0.2 2020-08-02 added missing sections
  * ------------------------------------------------------------------------------------
  * [[Catégorie:JavaScript du Wiktionnaire|CreerNouveauMot.js]]
  */
@@ -23,7 +25,7 @@ mw.loader.using(["oojs-ui-core", "oojs-ui-widgets", "oojs-ui-toolbars", "oojs-ui
   window.wikt.gadgets.creerNouveauMot = {
     NAME: "Créer nouveau mot",
 
-    VERSION: "5.0",
+    VERSION: "5.0.2",
 
     _COOKIE_NAME: "cnm_last_lang",
     /** Cookie duration in days. */
@@ -50,25 +52,35 @@ mw.loader.using(["oojs-ui-core", "oojs-ui-widgets", "oojs-ui-toolbars", "oojs-ui
      * @type {Array<Object<string, string|boolean>>}
      */
     _SECTIONS: [
-      {label: "Variantes orthographiques", code: "variantes orthographiques"},
-      {label: "Variantes", code: "variantes"},
-      {label: "Abréviations", code: "abréviations"},
-      {label: "Synonymes", code: "synonymes"},
-      {label: "Antonymes", code: "antonymes"},
-      {label: "Composés", code: "composés"},
-      {label: "Dérivés", code: "dérivés"},
-      {label: "Apparentés étymologiques", code: "apparentés étymologiques"},
-      {label: "Apparentés par le sens (vocabulaire)", code: "vocabulaire"},
-      {label: "Phrases et expressions", code: "phrases"},
-      {label: "Variantes dialectales", code: "variantes dialectales"},
-      {label: "Hyperonymes", code: "hyperonymes"},
-      {label: "Hyponymes", code: "hyponymes"},
-      {label: "Holonymes", code: "holonymes"},
-      {label: "Méronymes", code: "méronymes"},
-      {label: "Hyper-verbes", code: "hyper-verbes"},
-      {label: "Troponymes", code: "troponymes"},
-      {label: "Homophones", code: "homophones", section: "prononciation", needsLang: true},
-      {label: "Paronymes", code: "paronymes", section: "prononciation"},
+      {label: "Variantes orthographiques", code: "variantes orthographiques", level: 4},
+      {label: "Autre alphabet ou système d’écriture", code: "écriture", level: 4},
+      {label: "Variantes", code: "variantes", level: 4},
+      {label: "Transcriptions", code: "transcriptions", level: 4},
+      {label: "Abréviations", code: "abréviations", level: 4},
+      {label: "Augmentatifs", code: "augmentatifs", level: 4},
+      {label: "Diminutifs", code: "diminutifs", level: 4},
+      {label: "Synonymes", code: "synonymes", level: 4},
+      {label: "Quasi-synonymes", code: "quasi-synonymes", level: 4},
+      {label: "Gentilés", code: "gentilés", level: 4},
+      {label: "Antonymes", code: "antonymes", level: 4},
+      {label: "Composés", code: "composés", level: 4},
+      {label: "Dérivés", code: "dérivés", level: 4},
+      {label: "Apparentés étymologiques", code: "apparentés étymologiques", level: 4},
+      {label: "Vocabulaire", code: "vocabulaire", level: 4},
+      {label: "Phrases et expressions", code: "phrases", level: 4},
+      {label: "Variantes dialectales", code: "variantes dialectales", level: 4},
+      {label: "Hyperonymes", code: "hyperonymes", level: 4},
+      {label: "Hyponymes", code: "hyponymes", level: 4},
+      {label: "Holonymes", code: "holonymes", level: 4},
+      {label: "Méronymes", code: "méronymes", level: 4},
+      {label: "Hyper-verbes", code: "hyper-verbes", level: 4},
+      {label: "Troponymes", code: "troponymes", level: 4},
+      {label: "Traductions", code: "traductions", level: 4, hidden: true},
+      {label: "Dérivés dans d’autres langues", code: "dérivés autres langues", level: 4},
+      {label: "Faux-amis", code: "faux-amis", level: 4},
+      {label: "Homophones", code: "homophones", section: "prononciation", level: 4, needsLang: true},
+      {label: "Paronymes", code: "paronymes", section: "prononciation", level: 4},
+      {label: "Anagrammes", code: "anagrammes", level: 3},
     ],
 
     /**
@@ -230,7 +242,7 @@ mw.loader.using(["oojs-ui-core", "oojs-ui-widgets", "oojs-ui-toolbars", "oojs-ui
       }
       else {
         // trim() to remove trailing space(s) if no gender or number template.
-        wikicode += " " + "{{pron|{0}|{1}}} {2} {3}".format(pron, langCode, gender.template, number.template)
+        wikicode += " " + "{{pron|{0}|{1}}} {2} {3}".format(pron, langCode, gender.template.format(langCode), number.template)
             .replace(/\s+/g, " ").trim() + "\n";
       }
       wikicode += definition + "\n\n";
@@ -242,10 +254,10 @@ mw.loader.using(["oojs-ui-core", "oojs-ui-widgets", "oojs-ui-toolbars", "oojs-ui
           var line = lines[i];
 
           if (/^[^=#:;\[{\s][^\s]*/.test(line)) {
-            lines[i] = "* [[{0}#{1}|{0}]]\n".format(line.trim(), langCode);
+            lines[i] = "* {{lien|{0}|{1}}}".format(line.trim(), langCode);
           }
           else if (/^\*\s*[^\s]+/.test(line)) {
-            lines[i] = "* [[{0}#{1}|{0}]]\n".format(line.substring(1).trim(), langCode);
+            lines[i] = "* {{lien|{0}|{1}}}".format(line.substring(1).trim(), langCode);
           }
         }
 
@@ -254,23 +266,27 @@ mw.loader.using(["oojs-ui-core", "oojs-ui-widgets", "oojs-ui-toolbars", "oojs-ui
 
       for (var i = 0; i < this._SECTIONS.length; i++) {
         var section = this._SECTIONS[i];
-        var content = this._gui.getSectionContent(section.code);
-        var upperSection = section.section;
+        var sectionCode = section.code;
 
-        if (content) {
-          if (upperSection && !wikicode.includes("S|" + upperSection)) {
-            wikicode += "=== {{S|{0}}} ===\n".format(upperSection);
+        if (sectionCode !== "traductions" || langCode === "fr") {
+          var content = sectionCode !== "traductions"
+              ? this._gui.getSectionContent(section.code)
+              : "{{trad-début}}\n"
+              + "{{ébauche-trad}}\n"
+              + "{{trad-fin}}\n\n";
+          var upperSection = section.section;
+          var titleLevel;
+
+          if (content) {
+            if (upperSection && !wikicode.includes("S|" + upperSection)) {
+              titleLevel = Array(section.level).join("=");
+              wikicode += "{1} {{S|{0}}} {1}\n".format(upperSection, titleLevel);
+            }
+            titleLevel = Array(section.level + 1).join("=");
+            wikicode += "{2} {{S|{0}{1}}} {2}\n".format(section.code, section.needsLang ? ("|" + langCode) : "", titleLevel)
+                + linkify(content).trim() + "\n\n";
           }
-          wikicode += "==== {{S|{0}{1}}} ====\n".format(section.code, section.needsLang ? ("|" + langCode) : "")
-              + linkify(content).trim() + "\n\n";
         }
-      }
-
-      if (langCode === "fr") {
-        wikicode += "==== {{S|traductions}} ====\n"
-            + "{{trad-début}}\n"
-            + "{{ébauche-trad}}\n"
-            + "{{trad-fin}}\n\n";
       }
 
       var seeAlso = "";
@@ -689,19 +705,21 @@ mw.loader.using(["oojs-ui-core", "oojs-ui-widgets", "oojs-ui-toolbars", "oojs-ui
             rows: 4,
           });
 
-          // TODO réagencer par paires
           var fields = [];
           for (var i = 0; i < sections.length; i++) {
             var section = sections[i];
-            var field = new OO.ui.MultilineTextInputWidget({
-              rows: 4,
-              columns: 20,
-            });
-            self._otherSectionFields[section.code] = field;
-            fields.push(new OO.ui.FieldLayout(field, {
-              label: section.label,
-              align: "inline",
-            }));
+
+            if (!section.hidden) {
+              var field = new OO.ui.MultilineTextInputWidget({
+                rows: 4,
+                columns: 20,
+              });
+              self._otherSectionFields[section.code] = field;
+              fields.push(new OO.ui.FieldLayout(field, {
+                label: section.label,
+                align: "inline",
+              }));
+            }
           }
 
           return new OO.ui.FieldsetLayout({
@@ -876,14 +894,15 @@ mw.loader.using(["oojs-ui-core", "oojs-ui-widgets", "oojs-ui-toolbars", "oojs-ui
 
     /**
      * Adds a custom button to the tool factory.
+     * @param toolFactory The tool factory into which the tool will be registered.
      * @param name {string} Button’s name.
-     * @param icon {string} Buttons’s icon name.
+     * @param icon {string|null} Buttons’s icon name.
      * @param progressive {boolean} Wether the icon should be marked as progressive.
      * @param title {string} Button’s tooltip text.
      * @param onSelect {function} Callback for when the button is clicked.
      * @param onUpdateState {function?} Callback for when the button changes state (optional).
      */
-    function generateButton(name, icon, progressive, title, onSelect, onUpdateState) {
+    function generateButton(toolFactory, name, icon, progressive, title, onSelect, onUpdateState) {
       /** @constructor */
       function CustomTool() {
         CustomTool.super.apply(this, arguments);
@@ -891,11 +910,11 @@ mw.loader.using(["oojs-ui-core", "oojs-ui-widgets", "oojs-ui-toolbars", "oojs-ui
 
       OO.inheritClass(CustomTool, OO.ui.Tool);
       CustomTool.static.name = name;
-      if (icon) {
-        CustomTool.static.icon = icon;
-      }
+      CustomTool.static.icon = icon;
       CustomTool.static.title = title;
-      CustomTool.static.flags = progressive ? "progressive" : "";
+      if (progressive) {
+        CustomTool.static.flags = "progressive";
+      }
       CustomTool.prototype.onSelect = onSelect;
       CustomTool.prototype.onUpdateState = onUpdateState || function () {
         this.setActive(false);
@@ -905,7 +924,7 @@ mw.loader.using(["oojs-ui-core", "oojs-ui-widgets", "oojs-ui-toolbars", "oojs-ui
     }
 
     var hideBtn = "hide";
-    generateButton(hideBtn, "eyeClosed", false, "Masquer", function () {
+    generateButton(toolFactory, hideBtn, "eyeClosed", false, "Masquer", function () {
       // noinspection JSCheckFunctionSignatures
       tabsWidget.toggle();
       this.setTitle(tabsWidget.isVisible() ? "Masquer" : "Afficher");
@@ -913,32 +932,36 @@ mw.loader.using(["oojs-ui-core", "oojs-ui-widgets", "oojs-ui-toolbars", "oojs-ui
     });
 
     var helpBtn = "help";
-    generateButton(helpBtn, "help", false, "Aide (s’ouvre dans un nouvel onglet)", function () {
+    generateButton(toolFactory, helpBtn, "help", false, "Aide (s’ouvre dans un nouvel onglet)", function () {
       window.open("/wiki/Aide:Gadget-CreerNouveauMot");
     });
 
-    var insertWikicodeBtn = new OO.ui.ButtonWidget({
-      label: "Insérer le code",
-      flags: "progressive",
-    });
-    insertWikicodeBtn.on("click", onInsertWikicode);
+    var actionsToolbar = new OO.ui.Toolbar(toolFactory, toolGroupFactory);
+
+    var insertWikicodeBtn = "insert";
+    generateButton(toolFactory, insertWikicodeBtn, "articleCheck", true, "Insérer le code", onInsertWikicode);
+
+    actionsToolbar.setup([
+      {
+        type: "bar",
+        include: [insertWikicodeBtn],
+      },
+    ]);
 
     toolbar.setup([
       {
         type: "bar",
-        include: [hideBtn, helpBtn]
+        include: [hideBtn, helpBtn],
       },
     ]);
-    // TODO set as toolbar title
-    toolbar.$actions.append(insertWikicodeBtn.$element);
+    toolbar.$actions.append(actionsToolbar.$element);
 
     var gadgetBox = new OO.ui.PanelLayout({
       expanded: false,
-      framed: true
+      framed: true,
     });
     var contentFrame = new OO.ui.PanelLayout({
       expanded: false,
-      // padded: true
     });
 
     gadgetBox.$element.append(
@@ -1453,6 +1476,7 @@ mw.loader.using(["oojs-ui-core", "oojs-ui-widgets", "oojs-ui-toolbars", "oojs-ui
     VERB_GROUP1: new wikt.gadgets.creerNouveauMot.Gender("1<sup>er</sup> groupe", "{{conjugaison|fr|group=1}}"),
     VERB_GROUP2: new wikt.gadgets.creerNouveauMot.Gender("2<sup>ème</sup> groupe", "{{conjugaison|fr|group=2}}"),
     VERB_GROUP3: new wikt.gadgets.creerNouveauMot.Gender("3<sup>ème</sup> groupe", "{{conjugaison|fr|group=3}}"),
+    VERB: new wikt.gadgets.creerNouveauMot.Gender("verbe", "{{conjugaison|{0}}}"),
     REGULAR_VERB: new wikt.gadgets.creerNouveauMot.Gender("régulier"),
     IRREGULAR_VERB: new wikt.gadgets.creerNouveauMot.Gender("irrégulier"),
   };

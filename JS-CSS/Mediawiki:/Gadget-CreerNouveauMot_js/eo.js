@@ -20,6 +20,7 @@
 
   cnm.addLanguage(new cnm.Language(
       "eo",
+      "eo",
       "espéranto",
       [
         ["a", "e", "i", "o", "u"],
@@ -37,17 +38,18 @@
         new cnm.GrammaticalItem(cnm.grammaticalClasses.FIRST_NAME, [cnm.genders.NO_GENDER], [cnm.numbers.DIFF_SINGULAR_PLURAL], getModel),
         new cnm.GrammaticalItem(cnm.grammaticalClasses.PREPOSITION, [cnm.genders.NO_GENDER], [cnm.numbers.INVARIABLE], getModel),
         new cnm.GrammaticalItem(cnm.grammaticalClasses.PRONOUN, [cnm.genders.NO_GENDER], [cnm.numbers.INVARIABLE], getModel),
-        new cnm.GrammaticalItem(cnm.grammaticalClasses.VERB, [cnm.genders.VERB], null, getModel),
+        new cnm.GrammaticalItem(cnm.grammaticalClasses.VERB, [cnm.genders.VERB_NO_TEMPLATE], null, getModel),
       ],
       function (word) {
-        return word
+        return word.toLowerCase()
             .replace(/c/g, "t͡s")
             .replace(/ĉ/g, "t͡ʃ")
+            .replace(/g/g, "ɡ")
             .replace(/ĝ/g, "d͡ʒ")
             .replace(/ĥ/g, "x")
             .replace(/ĵ/g, "ʒ")
             .replace(/ŝ/g, "ʃ")
-            .replace(/ŭ/g, "w")
+            .replace(/ŭ/g, "w");
       }
   ));
 })();

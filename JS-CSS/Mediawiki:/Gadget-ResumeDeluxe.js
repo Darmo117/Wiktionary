@@ -40,7 +40,7 @@ mw.loader.using('user', function () {
       liensParDefaut = [
         ['nouvelle entrée', 'création d’une nouvelle entrée'],
         ['étymologie', 'modification de l’étymologie'],
-        ['image', 'ajout ou modification de l’image'],
+        ['imageName', 'ajout ou modification de l’image'],
         ['prononciation', 'ajout ou modification de la prononciation'],
         ['exemple', 'ajout ou modification d’un exemple'],
         ['synonyme/antonyme', 'modification concernant les synonymes, antonymes ou autres -nymes'],

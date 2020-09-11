@@ -17,18 +17,37 @@
 
   cnm.addLanguage(new cnm.Language(
       "en",
+      "en",
       "anglais",
       [
         ["i", "iː", "ɪ", "ɛ", "æ", "ə", "ɚ", "ɜː", "ɝ", "uː", "u", "ʊ", "ʌ", "ɔː", "ɑː", "ɒ"],
         ["aɪ", "aʊ", "ɔɪ", "eɪ", "əʊ", "oʊ", "ɪə", "eə", "ʊə", "uə", "ɔə"],
         ["b", "d", "f", "ɡ", "h", "k", "l", "m", "n", "ŋ", "ɲ", "p", "ɹ", "ɻ", "s", "ʃ", "t", "θ", "ð", "v", "z", "ʒ"],
         ["j", "w"],
-        [".", "ˌ", "ˈ", "ː"],
+        [".", "ˈ", "ˌ", "ː"],
       ],
       [
         new cnm.GrammaticalItem(cnm.grammaticalClasses.ADJECTIVE, [cnm.genders.NO_GENDER], [cnm.numbers.INVARIABLE], function (word, grammarClass, gender, number, pron) {
           return getModel(grammarClass, number, pron);
         }),
+        new cnm.GrammaticalItem(cnm.grammaticalClasses.ADVERB, [cnm.genders.NO_GENDER], [cnm.numbers.INVARIABLE], function (word, grammarClass, gender, number, pron) {
+          return getModel(grammarClass, number, pron);
+        }),
+        new cnm.GrammaticalItem(cnm.grammaticalClasses.NOUN, [cnm.genders.NO_GENDER], [cnm.numbers.DIFF_SINGULAR_PLURAL, cnm.numbers.SAME_SINGULAR_PLURAL, cnm.numbers.SINGULAR_ONLY, cnm.numbers.PLURAL_ONLY, cnm.numbers.INVARIABLE], function (word, grammarClass, gender, number, pron) {
+          if (number !== cnm.numbers.DIFF_SINGULAR_PLURAL.label) {
+            return getModel(grammarClass, number, pron);
+          }
+          return "{{en-nom-rég|{0}}}".format(pron);
+        }),
+        new cnm.GrammaticalItem(cnm.grammaticalClasses.PROPER_NOUN, [cnm.genders.NO_GENDER], [cnm.numbers.INVARIABLE], function (word, grammarClass, gender, number, pron) {
+          return getModel(grammarClass, number, pron);
+        }),
+        new cnm.GrammaticalItem(cnm.grammaticalClasses.VERB, [cnm.genders.REGULAR_VERB, cnm.genders.IRREGULAR_VERB], [], function (word, grammarClass, gender, number, pron) {
+          return gender === cnm.genders.REGULAR_VERB.label
+              ? "{{en-conj-rég|inf.pron={0}}}".format(pron)
+              : "{{en-conj-irrég|inf={0}|inf.pron={1}|<!-- Compléter -->}}".format(word, pron);
+        }),
+
         new cnm.GrammaticalItem(cnm.grammaticalClasses.INTERROGATIVE_ADJECTIVE, [cnm.genders.NO_GENDER], [cnm.numbers.INVARIABLE], function (word, grammarClass, gender, number, pron) {
           return getModel(grammarClass, number, pron);
         }),
@@ -36,9 +55,6 @@
           return getModel(grammarClass, number, pron);
         }),
         new cnm.GrammaticalItem(cnm.grammaticalClasses.POSSESSIVE_ADJECTIVE, [cnm.genders.NO_GENDER], [cnm.numbers.INVARIABLE], function (word, grammarClass, gender, number, pron) {
-          return getModel(grammarClass, number, pron);
-        }),
-        new cnm.GrammaticalItem(cnm.grammaticalClasses.ADVERB, [cnm.genders.NO_GENDER], [cnm.numbers.INVARIABLE], function (word, grammarClass, gender, number, pron) {
           return getModel(grammarClass, number, pron);
         }),
         new cnm.GrammaticalItem(cnm.grammaticalClasses.INTERROGATIVE_ADVERB, [cnm.genders.NO_GENDER], [cnm.numbers.INVARIABLE], function (word, grammarClass, gender, number, pron) {
@@ -62,16 +78,7 @@
         new cnm.GrammaticalItem(cnm.grammaticalClasses.INTERJECTION, [cnm.genders.NO_GENDER], [cnm.numbers.INVARIABLE], function (word, grammarClass, gender, number, pron) {
           return getModel(grammarClass, number, pron);
         }),
-        new cnm.GrammaticalItem(cnm.grammaticalClasses.NOUN, [cnm.genders.NO_GENDER], [cnm.numbers.DIFF_SINGULAR_PLURAL, cnm.numbers.SAME_SINGULAR_PLURAL, cnm.numbers.SINGULAR_ONLY, cnm.numbers.PLURAL_ONLY, cnm.numbers.INVARIABLE], function (word, grammarClass, gender, number, pron) {
-          if (number !== cnm.numbers.DIFF_SINGULAR_PLURAL.label) {
-            return getModel(grammarClass, number, pron);
-          }
-          return "{{en-nom-rég|{0}}}".format(pron);
-        }),
         new cnm.GrammaticalItem(cnm.grammaticalClasses.LAST_NAME, [cnm.genders.NO_GENDER], [cnm.numbers.INVARIABLE], function (word, grammarClass, gender, number, pron) {
-          return getModel(grammarClass, number, pron);
-        }),
-        new cnm.GrammaticalItem(cnm.grammaticalClasses.PROPER_NOUN, [cnm.genders.NO_GENDER], [cnm.numbers.INVARIABLE], function (word, grammarClass, gender, number, pron) {
           return getModel(grammarClass, number, pron);
         }),
         new cnm.GrammaticalItem(cnm.grammaticalClasses.PARTICLE, [cnm.genders.NO_GENDER], [cnm.numbers.INVARIABLE], function (word, grammarClass, gender, number, pron) {
@@ -109,11 +116,6 @@
           return getModel(grammarClass, number, pron);
         }),
         new cnm.GrammaticalItem(cnm.grammaticalClasses.SUFFIX, [cnm.genders.NO_GENDER]),
-        new cnm.GrammaticalItem(cnm.grammaticalClasses.VERB, [cnm.genders.REGULAR_VERB, cnm.genders.IRREGULAR_VERB], [], function (word, grammarClass, gender, number, pron) {
-          return gender === cnm.genders.REGULAR_VERB.label
-              ? "{{en-conj-rég|inf.pron={0}}}".format(pron)
-              : "{{en-conj-irrég|inf={0}|inf.pron={1}|<!-- Compléter -->}}".format(word, pron);
-        }),
       ]
   ));
 })();

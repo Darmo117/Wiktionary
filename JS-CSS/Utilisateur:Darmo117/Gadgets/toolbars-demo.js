@@ -195,7 +195,7 @@ Demo.static.pages.toolbars = function (demo) {
       name: 'list',
       type: 'list',
       label: 'List',
-      icon: 'image',
+      icon: 'imageName',
       include: [{group: 'listTools'}],
       allowCollapse: ['listTool1', 'listTool6']
     },
@@ -203,14 +203,14 @@ Demo.static.pages.toolbars = function (demo) {
       name: 'disabledList',
       type: 'disabledList',
       label: 'List',
-      icon: 'image',
+      icon: 'imageName',
       include: [{group: 'disabledListTools'}]
     },
     {
       name: 'autoDisabledList',
       type: 'list',
       label: 'Auto-disabling list',
-      icon: 'image',
+      icon: 'imageName',
       include: [{group: 'autoDisableListTools'}]
     },
     {
@@ -393,12 +393,12 @@ Demo.static.pages.toolbars = function (demo) {
   toolGroups = {
     // Parameters like in createTool() function above (starting with 'name')
     barTools: [
-      ['barTool', 'image', 'Basic tool in bar'],
-      ['disabledBarTool', 'image', 'Basic tool in bar disabled', null, setDisabled]
+      ['barTool', 'imageName', 'Basic tool in bar'],
+      ['disabledBarTool', 'imageName', 'Basic tool in bar disabled', null, setDisabled]
     ],
 
     disabledBarTools: [
-      ['barToolInDisabled', 'image', 'Basic tool in disabled bar']
+      ['barToolInDisabled', 'imageName', 'Basic tool in disabled bar']
     ],
 
     cite: [
@@ -437,7 +437,7 @@ Demo.static.pages.toolbars = function (demo) {
     ],
 
     insertTools: [
-      ['media', 'image', 'First basic tool in list'],
+      ['media', 'imageName', 'First basic tool in list'],
       ['template', 'puzzle', 'Template'],
       ['table', 'table', 'Table'],
       ['comment', 'speechBubble', 'Comment'],
@@ -457,39 +457,39 @@ Demo.static.pages.toolbars = function (demo) {
     ],
 
     listTools: [
-      ['listTool', 'image', 'First basic tool in list'],
-      ['listTool1', 'image', 'Basic tool in list'],
-      ['listTool3', 'image', 'Basic disabled tool in list', null, setDisabled],
-      ['listTool6', 'image', 'A final tool']
+      ['listTool', 'imageName', 'First basic tool in list'],
+      ['listTool1', 'imageName', 'Basic tool in list'],
+      ['listTool3', 'imageName', 'Basic disabled tool in list', null, setDisabled],
+      ['listTool6', 'imageName', 'A final tool']
     ],
 
     moreListTools: [
       ['listTool2', 'code', 'Another basic tool'],
-      ['listTool4', 'image', 'More basic tools'],
+      ['listTool4', 'imageName', 'More basic tools'],
       ['listTool5', 'ellipsis', 'And even more']
     ],
 
     disabledListTools: [
-      ['listToolInDisabled', 'image', 'Basic tool in disabled list']
+      ['listToolInDisabled', 'imageName', 'Basic tool in disabled list']
     ],
 
     autoDisableListTools: [
-      ['autoDisableListTool', 'image', 'Click to disable this tool', null, null, setDisabled]
+      ['autoDisableListTool', 'imageName', 'Click to disable this tool', null, null, setDisabled]
     ],
 
     menuTools: [
-      ['menuTool', 'image', 'Basic tool'],
+      ['menuTool', 'imageName', 'Basic tool'],
       ['iconlessMenuTool', null, 'Tool without an icon'],
-      ['disabledMenuTool', 'image', 'Basic tool disabled', null, setDisabled]
+      ['disabledMenuTool', 'imageName', 'Basic tool disabled', null, setDisabled]
     ],
 
     disabledMenuTools: [
-      ['menuToolInDisabled', 'image', 'Basic tool']
+      ['menuToolInDisabled', 'imageName', 'Basic tool']
     ],
 
     overflowTools: [
       ['meta', 'window', 'Options'],
-      ['categories', 'image', 'Categories'],
+      ['categories', 'imageName', 'Categories'],
       ['settings', 'pageSettings', 'Page settings'],
       ['advanced', 'advanced', 'Advanced settings'],
       ['textLanguage', 'language', 'Languages'],

@@ -24,6 +24,7 @@
 
   cnm.addLanguage(new cnm.Language(
       "it",
+      "it",
       "italien",
       [
         ["a", "e", "ɛ", "i", "o", "ɔ", "u"],
@@ -33,10 +34,16 @@
       ],
       [
         new cnm.GrammaticalItem(cnm.grammaticalClasses.ADJECTIVE, [cnm.genders.MASCULINE, cnm.genders.FEMININE, cnm.genders.FEMININE_MASCULINE], [cnm.numbers.DIFF_SINGULAR_PLURAL, cnm.numbers.SAME_SINGULAR_PLURAL, cnm.numbers.INVARIABLE], getModel),
+        new cnm.GrammaticalItem(cnm.grammaticalClasses.ADVERB, [cnm.genders.NO_GENDER], [cnm.numbers.INVARIABLE], getModel),
+        new cnm.GrammaticalItem(cnm.grammaticalClasses.NOUN, [cnm.genders.MASCULINE, cnm.genders.FEMININE, cnm.genders.FEMININE_MASCULINE], [cnm.numbers.DIFF_SINGULAR_PLURAL, cnm.numbers.SAME_SINGULAR_PLURAL, cnm.numbers.SINGULAR_ONLY, cnm.numbers.PLURAL_ONLY, cnm.numbers.INVARIABLE], function (word, grammarClass, gender, number, pron) {
+          return getModel(word, grammarClass, gender, number, pron);
+        }),
+        new cnm.GrammaticalItem(cnm.grammaticalClasses.PROPER_NOUN, [cnm.genders.NO_GENDER], [cnm.numbers.INVARIABLE], getModel),
+        new cnm.GrammaticalItem(cnm.grammaticalClasses.VERB, [cnm.genders.VERB_GROUP1, cnm.genders.VERB_GROUP2, cnm.genders.VERB_GROUP3]),
+
         new cnm.GrammaticalItem(cnm.grammaticalClasses.INTERROGATIVE_ADJECTIVE, [cnm.genders.MASCULINE, cnm.genders.FEMININE, cnm.genders.FEMININE_MASCULINE], [cnm.numbers.DIFF_SINGULAR_PLURAL, cnm.numbers.SAME_SINGULAR_PLURAL, cnm.numbers.INVARIABLE], getModel),
         new cnm.GrammaticalItem(cnm.grammaticalClasses.NUMERAL_ADJECTIVE, [cnm.genders.MASCULINE, cnm.genders.FEMININE, cnm.genders.FEMININE_MASCULINE], [cnm.numbers.DIFF_SINGULAR_PLURAL, cnm.numbers.SAME_SINGULAR_PLURAL, cnm.numbers.INVARIABLE], getModel),
         new cnm.GrammaticalItem(cnm.grammaticalClasses.POSSESSIVE_ADJECTIVE, [cnm.genders.MASCULINE, cnm.genders.FEMININE, cnm.genders.FEMININE_MASCULINE], [cnm.numbers.DIFF_SINGULAR_PLURAL, cnm.numbers.SAME_SINGULAR_PLURAL, cnm.numbers.INVARIABLE], getModel),
-        new cnm.GrammaticalItem(cnm.grammaticalClasses.ADVERB, [cnm.genders.NO_GENDER], [cnm.numbers.INVARIABLE], getModel),
         new cnm.GrammaticalItem(cnm.grammaticalClasses.INTERROGATIVE_ADVERB, [cnm.genders.NO_GENDER], [cnm.numbers.INVARIABLE], getModel),
         new cnm.GrammaticalItem(cnm.grammaticalClasses.DEFINITE_ARTICLE, [cnm.genders.MASCULINE, cnm.genders.FEMININE, cnm.genders.FEMININE_MASCULINE], [cnm.numbers.DIFF_SINGULAR_PLURAL, cnm.numbers.SAME_SINGULAR_PLURAL, cnm.numbers.SINGULAR_ONLY, cnm.numbers.PLURAL_ONLY, cnm.numbers.INVARIABLE], getModel),
         new cnm.GrammaticalItem(cnm.grammaticalClasses.INDEFINITE_ARTICLE, [cnm.genders.MASCULINE, cnm.genders.FEMININE, cnm.genders.FEMININE_MASCULINE], [cnm.numbers.DIFF_SINGULAR_PLURAL, cnm.numbers.SAME_SINGULAR_PLURAL, cnm.numbers.SINGULAR_ONLY, cnm.numbers.PLURAL_ONLY, cnm.numbers.INVARIABLE], getModel),
@@ -44,11 +51,7 @@
         new cnm.GrammaticalItem(cnm.grammaticalClasses.CONJUNCTION, [cnm.genders.NO_GENDER], [cnm.numbers.INVARIABLE], getModel),
         new cnm.GrammaticalItem(cnm.grammaticalClasses.COORDINATION_CONJUNCTION, [cnm.genders.NO_GENDER], [cnm.numbers.INVARIABLE], getModel),
         new cnm.GrammaticalItem(cnm.grammaticalClasses.INTERJECTION, [cnm.genders.NO_GENDER], [cnm.numbers.INVARIABLE], getModel),
-        new cnm.GrammaticalItem(cnm.grammaticalClasses.NOUN, [cnm.genders.MASCULINE, cnm.genders.FEMININE, cnm.genders.FEMININE_MASCULINE], [cnm.numbers.DIFF_SINGULAR_PLURAL, cnm.numbers.SAME_SINGULAR_PLURAL, cnm.numbers.SINGULAR_ONLY, cnm.numbers.PLURAL_ONLY, cnm.numbers.INVARIABLE], function (word, grammarClass, gender, number, pron) {
-          return getModel(word, grammarClass, gender, number, pron);
-        }),
         new cnm.GrammaticalItem(cnm.grammaticalClasses.LAST_NAME, [cnm.genders.NO_GENDER], [cnm.numbers.INVARIABLE], getModel),
-        new cnm.GrammaticalItem(cnm.grammaticalClasses.PROPER_NOUN, [cnm.genders.NO_GENDER], [cnm.numbers.INVARIABLE], getModel),
         new cnm.GrammaticalItem(cnm.grammaticalClasses.PARTICLE, [cnm.genders.NO_GENDER], [cnm.numbers.INVARIABLE], getModel),
         new cnm.GrammaticalItem(cnm.grammaticalClasses.POSTPOSITION, [cnm.genders.NO_GENDER], [cnm.numbers.INVARIABLE], getModel),
         new cnm.GrammaticalItem(cnm.grammaticalClasses.PREFIX, [cnm.genders.NO_GENDER]),
@@ -74,7 +77,6 @@
           return getModel(word, grammarClass, gender, number, pron);
         }),
         new cnm.GrammaticalItem(cnm.grammaticalClasses.SUFFIX, [cnm.genders.NO_GENDER]),
-        new cnm.GrammaticalItem(cnm.grammaticalClasses.VERB, [cnm.genders.VERB_GROUP1, cnm.genders.VERB_GROUP2, cnm.genders.VERB_GROUP3]),
       ]
   ));
 })();

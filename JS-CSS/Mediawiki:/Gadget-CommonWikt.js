@@ -409,8 +409,25 @@ wikt.page.addButtonAfterTitle = function (buttons) {
   }
 }
 
+/**
+ * Adds a listener to DOM changes for the current page.
+ * @param callback {function} Function to execute when mutations are observed.
+ * Parameters are the list of mutations and the observer which invoked the callback.
+ * @param node {HTMLElement?} The root element to monitor. If null, the body node will be used.
+ * @param options {object?} Custom options. Default: attributes, childList & subtree.
+ * (see https://developer.mozilla.org/en-US/docs/Web/API/MutationObserverInit for accepted values)
+ * @return {MutationObserver} The created observer instance.
+ */
+wikt.page.onDOMChanges = function (callback, node, options) {
+  var targetNode = node || document.body;
+  var config = options || {attributes: true, childList: true, subtree: true};
+  var observer = new MutationObserver(callback);
+  observer.observe(targetNode, config);
+  return observer;
+}
+
 /*
- * Utilisations :
+ * Utilisations :
  *
  * MediaWiki:Gadget-CreerFlexionFr.js
  * MediaWiki:Gadget-CreerNouveauMot.js
@@ -490,7 +507,7 @@ wikt.page.renderWikicode = function (wikicode, onlyFirstParagraph) {
 }
 
 /*
- * Utilisations :
+ * Utilisations :
  *
  * MediaWiki:Gadget-CreerNouveauMot.js
  *
@@ -523,7 +540,7 @@ function CommonWikt_AddTabMenu(link, title) {
 }
 
 /*
- * Utilisations :
+ * Utilisations :
  *
  * Utilisateur:GaAsBot/CreerConjugFr.js (2018)
  */
@@ -567,7 +584,7 @@ wikt.html.replacePageBody = function (doc, newHtml) {
 };
 
 /*
- * Utilisations :
+ * Utilisations :
  *
  * MediaWiki:Gadget-CreerNouveauMot.js
  *
@@ -595,7 +612,7 @@ wikt.html.deleteNode = CommonWikt_Delete;
  */
 
 /*
- * Utilisations :
+ * Utilisations :
  *
  * MediaWiki:Gadget-CreerNouveauMot.js
  *
@@ -620,7 +637,7 @@ function CommonWikt_AjouteCookie(name, value, days) {
 wikt.cookie.create = CommonWikt_AjouteCookie;
 
 /*
- * Utilisations :
+ * Utilisations :
  *
  * MediaWiki:Gadget-CreerNouveauMot.js
  *
@@ -652,7 +669,7 @@ function CommonWikt_LitCookie(name) {
 wikt.cookie.read = CommonWikt_LitCookie;
 
 /*
- * Utilisations :
+ * Utilisations :
  *
  * MediaWiki:Gadget-CreerNouveauMot.js
  */
@@ -671,7 +688,7 @@ wikt.cookie.delete = CommonWikt_SupprimeCookie;
  */
 
 /*
- * Utilisations :
+ * Utilisations :
  *
  * MediaWiki:Gadget-CreerFlexionFr.js TEMP en cours de refactor
  * MediaWiki:Gadget-CreerTrad.js

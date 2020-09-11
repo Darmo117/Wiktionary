@@ -1,0 +1,31 @@
+#ac-suggestion-box {
+  position: fixed;
+  top: 0;
+  left: 0;
+  border: black solid 1px;
+  background-color: #fdfdfd;
+  z-index: 999;
+}
+
+#ac-suggestion-box ul {
+  list-style-type: none;
+  margin-left: 0;
+}
+
+#ac-suggestion-box ul > li {
+  font-family: monospace;
+  padding: 0 5px;
+  cursor: pointer;
+}
+
+#ac-suggestion-box ul > li:hover {
+  background-color: #ccc;
+}
+
+#ac-suggestion-box ul > .ac-selected {
+  background-color: #999;
+}
+
+#ac-suggestion-box ul > li > .ac-highlight {
+  font-weight: bold;
+}

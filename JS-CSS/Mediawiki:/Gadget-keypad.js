@@ -181,7 +181,7 @@ function addKeyPadIcon() {
   var searchform = document.getElementById("searchform");
   if (!searchform) return; //not possible
   var keyPadButton = document.createElement('input');
-  keyPadButton.type = 'image';
+  keyPadButton.type = 'imageName';
   keyPadButton.src = '//upload.wikimedia.org/wikipedia/commons/thumb/e/e1/Keyboard-gray-old.jpg/60px-Keyboard-gray-old.jpg';
   keyPadButton.value = 'Keyboard';
   keyPadButton.title = 'Open keyboard window for entering special characters';

@@ -13,9 +13,9 @@
  ********************************************************************/
 
 window.wikt.gadgets.specialChars = {
-  NAME: "Special chars",
+  NAME: "Caractères spéciaux",
 
-  VERSION: "2.0d",
+  VERSION: "2.0",
 
   _TAGS: {
     "$ae": "æ",
@@ -39,13 +39,15 @@ window.wikt.gadgets.specialChars = {
     "$è": "È",
     "$ç": "Ç",
     "$.": "·",
-    "$-": "– ", // En dash
-    "$_": "— ", // Em dash
+    "$-": "–", // En dash
+    "$_": "—", // Em dash
     "<<": "«\u00a0",
     ">>": "\u00a0»",
     "$ù": "Ù",
     "$,": "ʻ",
   },
+
+  _elements: [],
 
   init: function () {
     var self = this;
@@ -54,18 +56,59 @@ window.wikt.gadgets.specialChars = {
       self.parse($(e.target))
     }
 
-    console.log(wikt.edit.isCodeMirrorEnabled());
+    function fetchTextInput(nodeTree) {
+      var $element = $(nodeTree);
+      var tagName = $element.prop("tagName");
+      var elements = [];
+
+      if (tagName === "TEXTAREA" || tagName === "INPUT" && ["text", "search"].includes($element.attr("type"))) {
+        elements.push($element);
+      }
+
+      for (var i = 0; i < nodeTree.children.length; i++) {
+        if ($element = fetchTextInput(nodeTree.children[i])) {
+          elements.concat($element);
+        }
+      }
+
+      return elements;
+    }
+
     if (wikt.edit.isCodeMirrorEnabled()) {
       wikt.edit.getCodeMirror().on("keyup", function () {
-        onKeyUp(wikt.edit.getEditBox());
+        console.log("cm keyup"); // DEBUG
+        self.parse(wikt.edit.getEditBox());
       });
     }
-    $("input[type=text]").on("keyup", onKeyUp);
-    $("textarea").on("keyup", onKeyUp);
+    $("input[type=text]").keyup(onKeyUp).each(function (e) {
+      self._elements.push(e);
+    });
+    $("input[type=search]").keyup(onKeyUp).each(function (e) {
+      self._elements.push(e);
+    });
+    $("textarea").keyup(onKeyUp).each(function (e) {
+      self._elements.push(e);
+    });
+    console.log(self._elements); // DEBUG
+    wikt.page.onDOMChanges(function (mutationsList) {
+      mutationsList.forEach(function (mutation) {
+        if (mutation.type === "childList") {
+          console.log(mutation.target); // DEBUG
+          fetchTextInput(mutation.target).forEach(function ($element) {
+            console.log($element); // DEBUG
+            if ($element && !self._elements.includes($element[0])) {
+              $element.keyup(onKeyUp);
+              self._elements.push($element[0]);
+            }
+          });
+        }
+      });
+    }, document.body, {subtree: true, childList: true});
     this._previousText = {};
   },
 
   parse: function ($input) {
+    console.log($input); // DEBUG
     var text = wikt.edit.getText($input);
 
     if (text !== this._previousText[$input]) {
@@ -133,7 +176,7 @@ window.wikt.gadgets.specialChars = {
   var isModule = wikt.page.hasNamespaceIn(["Module"]);
 
   if (!isJsPage && !isCssPage && !isModule) {
-    console.log("Chargement de Gadget-specialchars.js…");
+    console.log("Chargement de Gadget-specialchars-dev.js…");
     wikt.gadgets.specialChars.init();
   }
 })();

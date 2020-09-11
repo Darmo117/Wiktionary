@@ -126,7 +126,7 @@ window.bklCheck = {
         || bklCheck.getLinks('mw_contentholder') || bklCheck.getLinks('article');
     if (!links) return;
     for (var i = 0; i < links.length; i++) {
-      if (links[i].className === 'image' || links[i].className.indexOf('external') !== -1) continue; // Don't mess with images or external links!
+      if (links[i].className === 'imageName' || links[i].className.indexOf('external') !== -1) continue; // Don't mess with images or external links!
       var title = links[i].title || (links[i].childNodes[0] && links[i].childNodes[0].nodeValue);
       if (title) title = title.charAt(0).toUpperCase() + title.slice(1); // make first character uppercase
       var cat = bklCheck.titles[title];

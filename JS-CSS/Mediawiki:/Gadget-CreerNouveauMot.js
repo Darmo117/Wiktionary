@@ -17,6 +17,14 @@
  * v5.0 2020-07-29 full rewrite, migration to OOUI
  * v5.0.1 2020-08-01 using {{lien}} for links, reworked toolbar
  * v5.0.2 2020-08-02 added missing sections
+ * v5.0.3 2020-08-05 added date template in etymology section
+ * v5.0.4 2020-08-05 reordering level 4 sections
+ * v5.0.5 2020-08-10 sister projects search links now update on language selection
+ * v5.0.6 2020-08-11 inserting : and # if missing
+ * v5.0.7 2020-08-20 added default grammatical classes for undefined languages
+ * v5.0.8 2020-08-25 added {{type}} template to verbs, fields to insert an image,
+ *                   field to add categories; removed lang parameter for some
+ *                   interwiki templates
  * ------------------------------------------------------------------------------------
  * [[Catégorie:JavaScript du Wiktionnaire|CreerNouveauMot.js]]
  */
@@ -25,7 +33,7 @@ mw.loader.using(["oojs-ui-core", "oojs-ui-widgets", "oojs-ui-toolbars", "oojs-ui
   window.wikt.gadgets.creerNouveauMot = {
     NAME: "Créer nouveau mot",
 
-    VERSION: "5.0.2",
+    VERSION: "5.0.8",
 
     _COOKIE_NAME: "cnm_last_lang",
     /** Cookie duration in days. */
@@ -36,15 +44,29 @@ mw.loader.using(["oojs-ui-core", "oojs-ui-widgets", "oojs-ui-toolbars", "oojs-ui
      * @type {Object<string, Object<string, string>>}
      */
     _OTHER_PROJECTS: {
-      w: {label: "Wikipédia", templateName: "WP", urlDomain: "fr.wikipedia.org"},
-      s: {label: "Wikisource", templateName: "WS", urlDomain: "fr.wikisource.org"},
-      q: {label: "Wikiquote", templateName: "WQ", urlDomain: "fr.wikiquote.org"},
-      v: {label: "Wikiversité", templateName: "WV", urlDomain: "fr.wikiversity.org"},
-      l: {label: "Wikilivres", templateName: "WL", urlDomain: "fr.wikibooks.org"},
+      w: {label: "Wikipédia", templateName: "WP", urlDomain: "{0}.wikipedia.org"},
+      s: {label: "Wikisource", templateName: "WS", urlDomain: "{0}.wikisource.org"},
+      q: {label: "Wikiquote", templateName: "WQ", urlDomain: "{0}.wikiquote.org"},
+      v: {label: "Wikiversité", templateName: "WV", urlDomain: "{0}.wikiversity.org"},
+      l: {label: "Wikilivres", templateName: "WL", urlDomain: "{0}.wikibooks.org"},
       species: {label: "Wikispecies", templateName: "WSP", urlDomain: "wikispecies.org"},
-      voy: {label: "Wikivoyage", templateName: "VOY", urlDomain: "fr.wikivoyage.org"},
-      n: {label: "Wikinews", templateName: "WN", urlDomain: "fr.wikinews.org"},
+      voy: {label: "Wikivoyage", templateName: "VOY", urlDomain: "{0}.wikivoyage.org"},
+      n: {label: "Wikinews", templateName: "WN", urlDomain: "{0}.wikinews.org"},
+      d: {label: "Data", templateName: "WD", urlDomain: "wikidata.org"},
       c: {label: "Commons", templateName: "Commons", urlDomain: "commons.wikimedia.org"},
+      vikidia: {
+        label: "Vikidia",
+        templateName: "Vikidia",
+        urlDomain: "{0}.vikidia.org",
+        showOnlyForLangs: ["fr", "ca", "de", "el", "en", "es", "eu", "it", "ru", "scn", "hy"],
+      },
+      dicoado: {
+        label: "Le Dico des Ados",
+        templateName: "Dicoado",
+        urlDomain: "dicoado.org",
+        urlBase: "wiki/index.php?search=",
+        showOnlyForLangs: ["fr"],
+      },
     },
 
     /**
@@ -52,8 +74,8 @@ mw.loader.using(["oojs-ui-core", "oojs-ui-widgets", "oojs-ui-toolbars", "oojs-ui
      * @type {Array<Object<string, string|boolean>>}
      */
     _SECTIONS: [
-      {label: "Variantes orthographiques", code: "variantes orthographiques", level: 4},
       {label: "Autre alphabet ou système d’écriture", code: "écriture", level: 4},
+      {label: "Variantes orthographiques", code: "variantes orthographiques", level: 4},
       {label: "Variantes", code: "variantes", level: 4},
       {label: "Transcriptions", code: "transcriptions", level: 4},
       {label: "Abréviations", code: "abréviations", level: 4},
@@ -61,11 +83,11 @@ mw.loader.using(["oojs-ui-core", "oojs-ui-widgets", "oojs-ui-toolbars", "oojs-ui
       {label: "Diminutifs", code: "diminutifs", level: 4},
       {label: "Synonymes", code: "synonymes", level: 4},
       {label: "Quasi-synonymes", code: "quasi-synonymes", level: 4},
-      {label: "Gentilés", code: "gentilés", level: 4},
       {label: "Antonymes", code: "antonymes", level: 4},
+      {label: "Gentilés", code: "gentilés", level: 4},
       {label: "Composés", code: "composés", level: 4},
       {label: "Dérivés", code: "dérivés", level: 4},
-      {label: "Apparentés étymologiques", code: "apparentés étymologiques", level: 4},
+      {label: "Apparentés étymologiques", code: "apparentés", level: 4},
       {label: "Vocabulaire", code: "vocabulaire", level: 4},
       {label: "Phrases et expressions", code: "phrases", level: 4},
       {label: "Variantes dialectales", code: "variantes dialectales", level: 4},
@@ -209,7 +231,7 @@ mw.loader.using(["oojs-ui-core", "oojs-ui-widgets", "oojs-ui-toolbars", "oojs-ui
       var word = this._word;
       var langCode = this._selectedLanguage.code;
       var isDraft = this._gui.isDraft;
-      var etymology = this._gui.etymology || ": {{ébauche-étym|{0}}}".format(langCode);
+      var etymology = this._gui.etymology || ": {{date|lang={0}}} {{ébauche-étym|{0}}}".format(langCode);
       var pron = this._gui.pronunciation;
       var isConv = langCode === "conv";
 
@@ -218,11 +240,37 @@ mw.loader.using(["oojs-ui-core", "oojs-ui-widgets", "oojs-ui-toolbars", "oojs-ui
       var number = grammarItem.getNumber(this._gui.number);
       var grammarClass = grammarItem.grammaticalClass;
       var inflectionsTemplate = grammarItem.getInflectionsTemplate(word, gender.label, number.label, pron);
+      var imageName = this._gui.imageName;
+      var imageDescription = this._gui.imageDescription;
 
       var definition = this._gui.definition || "# {{ébauche-déf|{0}}}".format(langCode);
 
-      if (!definition.includes("#*")) {
-        definition += "\n#* {{ébauche-exe|{0}}}".format(langCode);
+      // Add : at the beginning of each line
+      etymology = etymology.replace(/(^|\n)(?!:)/g, "$1: ");
+
+      function parseDefinition(definition) {
+        var def = "";
+        var defLines = definition.split("\n");
+
+        for (var i = 0; i < defLines.length; i++) {
+          var line = defLines[i];
+          var defFound = false;
+
+          if (line.charAt(0) !== "#") {
+            def += "# " + line + "\n";
+            defFound = true;
+          }
+          else {
+            def += line + "\n";
+            defFound = line.charAt(1) !== "*";
+          }
+
+          if (defFound && (i === defLines.length - 1 || defLines[i + 1].substr(0, 2) !== "#*")) {
+            def += "#* {{ébauche-exe|{0}}}\n".format(langCode);
+          }
+        }
+
+        return def.trim();
       }
 
       var references = this._gui.references;
@@ -236,16 +284,19 @@ mw.loader.using(["oojs-ui-core", "oojs-ui-widgets", "oojs-ui-toolbars", "oojs-ui
           + etymology + "\n\n"
           + "=== {{S|{0}|{1}}} ===\n".format(grammarClass.sectionCode, langCode)
           + (inflectionsTemplate ? inflectionsTemplate + "\n" : "");
+      if (imageName) {
+        wikicode += "[[Image:{0}|vignette|{1}]]\n".format(imageName, imageDescription);
+      }
       wikicode += "'''{0}'''".format(word);
       if (isConv) {
         wikicode += "\n";
       }
       else {
         // trim() to remove trailing space(s) if no gender or number template.
-        wikicode += " " + "{{pron|{0}|{1}}} {2} {3}".format(pron, langCode, gender.template.format(langCode), number.template)
+        wikicode += " " + "{{pron|{0}|{1}}} {2} {3}".format(pron, langCode, gender.template.format(langCode), number.template.format(langCode))
             .replace(/\s+/g, " ").trim() + "\n";
       }
-      wikicode += definition + "\n\n";
+      wikicode += parseDefinition(definition) + "\n\n";
 
       function linkify(content) {
         var lines = content.split("\n");
@@ -301,7 +352,8 @@ mw.loader.using(["oojs-ui-core", "oojs-ui-widgets", "oojs-ui-toolbars", "oojs-ui
             if (seeAlso === "") {
               seeAlso = "=== {{S|voir aussi}} ===\n";
             }
-            seeAlso += "* {{{0}{1}|lang={2}}}\n".format(templateName, projectModelParams ? "|" + projectModelParams : "", langCode);
+            var langParam = this._OTHER_PROJECTS[projectCode].urlDomain.includes("{0}") ? "|lang=" + langCode : "";
+            seeAlso += "* {{{0}{1}{2}}}\n".format(templateName, projectModelParams ? "|" + projectModelParams : "", langParam);
           }
         }
       }
@@ -331,6 +383,10 @@ mw.loader.using(["oojs-ui-core", "oojs-ui-widgets", "oojs-ui-toolbars", "oojs-ui
 
       wikicode += (sortingKey !== word ? "{{clé de tri|{0}}}\n".format(sortingKey) : "");
 
+      this._gui.categories.forEach(function (category) {
+        wikicode += "[[Catégorie:{0}]]\n".format(category);
+      });
+
       wikt.edit.insertText(wikt.edit.getCursorLocation(), wikicode);
 
       var $summaryFld = wikt.edit.getEditSummaryField();
@@ -340,6 +396,9 @@ mw.loader.using(["oojs-ui-core", "oojs-ui-widgets", "oojs-ui-toolbars", "oojs-ui
       if (!summary.includes(comment)) {
         $summaryFld.val(comment + " " + summary);
       }
+
+      // Collapse gadget after inserting wikicode.
+      // $(".oo-ui-tool-name-hide > a")[0].click(); // FIXME not triggered
     },
 
     /**
@@ -354,10 +413,12 @@ mw.loader.using(["oojs-ui-core", "oojs-ui-widgets", "oojs-ui-toolbars", "oojs-ui
         var language = this.getLanguage(languageCode);
 
         if (!language) {
-          language = new this.Language(languageCode, languageCode, [], [
-            new wikt.gadgets.creerNouveauMot.GrammaticalItem(
-                new wikt.gadgets.creerNouveauMot.GrammaticalClass("<em>indisponible</em>", "<!-- À compléter -->")
-            )
+          language = new wikt.gadgets.creerNouveauMot.Language(languageCode, null, languageCode, [], [
+            new wikt.gadgets.creerNouveauMot.GrammaticalItem(wikt.gadgets.creerNouveauMot.grammaticalClasses.ADJECTIVE),
+            new wikt.gadgets.creerNouveauMot.GrammaticalItem(wikt.gadgets.creerNouveauMot.grammaticalClasses.ADVERB),
+            new wikt.gadgets.creerNouveauMot.GrammaticalItem(wikt.gadgets.creerNouveauMot.grammaticalClasses.NOUN),
+            new wikt.gadgets.creerNouveauMot.GrammaticalItem(wikt.gadgets.creerNouveauMot.grammaticalClasses.PROPER_NOUN),
+            new wikt.gadgets.creerNouveauMot.GrammaticalItem(wikt.gadgets.creerNouveauMot.grammaticalClasses.VERB),
           ]);
         }
         this._selectedLanguage = language;
@@ -395,16 +456,19 @@ mw.loader.using(["oojs-ui-core", "oojs-ui-widgets", "oojs-ui-toolbars", "oojs-ui
   /**
    * This class encapsulates data and behaviors specific to the given language.
    * @param code {string} Language code defined in [[Module:langues/data]].
-   * @param name {string} Language’s name.
+   * @param wikimediaCode {string?} Language code used by WikiMedia projects.
+   * @param name {string} Language’s name (in French).
    * @param ipaSymbols {Array<Array<string>>?} An optional list of common IPA symbols for the language.
    * @param grammarItems {Array<wikt.gadgets.creerNouveauMot.GrammaticalItem>?} An optional list of grammatical items.
    * @param pronGenerator {Function?} An optional function that generates an approximate pronunciation
    * based on the word.
    * @constructor
    */
-  wikt.gadgets.creerNouveauMot.Language = function (code, name, ipaSymbols, grammarItems, pronGenerator) {
+  wikt.gadgets.creerNouveauMot.Language = function (code, wikimediaCode, name, ipaSymbols, grammarItems, pronGenerator) {
     /** @type {string} */
     this._code = code;
+    /** @type {string} */
+    this._wikimediaCode = wikimediaCode;
     /** @type {string} */
     this._name = name;
     /** @type {Array<Array<string>>} */
@@ -425,10 +489,17 @@ mw.loader.using(["oojs-ui-core", "oojs-ui-widgets", "oojs-ui-toolbars", "oojs-ui
 
   wikt.gadgets.creerNouveauMot.Language.prototype = {
     /**
-     * @return {string} This language code.
+     * @return {string} This language’s code.
      */
     get code() {
       return this._code;
+    },
+
+    /**
+     * @return {string} This language’s WikiMedia code.
+     */
+    get wikimediaCode() {
+      return this._wikimediaCode;
     },
 
     /**
@@ -514,10 +585,12 @@ mw.loader.using(["oojs-ui-core", "oojs-ui-widgets", "oojs-ui-toolbars", "oojs-ui
 
     var $target = $(this.TARGET_ELEMENT);
 
-    $target.html(('<div class="center" style="margin-bottom: 5px"><span id="cnm-open-ui" class="mw-ui-button mw-ui-progressive">Ouvrir le gadget {0}</span></div>'
-        + '<strong><em>{0}</em></strong> est un outil qui vous aide à ajouter des mots sur le Wiktionnaire '
-        + 'sans avoir besoin de tout comprendre à la syntaxe wiki. '
-        + 'Voir <a href="/wiki/Aide:Gadget-CreerNouveauMot" target="_blank">l’aide</a> pour plus d’explications.').format(gadgetName));
+    var headerText = '<div class="center" style="margin-bottom: 5px">' +
+        '<span id="cnm-open-ui" class="mw-ui-button mw-ui-progressive">' +
+        'Ouvrir le gadget {0}'.format(gadgetName) +
+        '</span>' +
+        '</div>';
+    $target.html(headerText);
     $target.find("#cnm-open-ui").on("click", onActivateGadget);
   };
 
@@ -538,6 +611,7 @@ mw.loader.using(["oojs-ui-core", "oojs-ui-widgets", "oojs-ui-toolbars", "oojs-ui
   wikt.gadgets.creerNouveauMot.MainGui = function (word, languages, sections, onLanguageSelect, onClassSelect, onInsertWikicode, otherProjects) {
     wikt.gadgets.creerNouveauMot.Gui.call(this);
 
+    this._word = word;
     /**
      * Tabs list.
      * @type {Array<wikt.gadgets.creerNouveauMot.Tab>}
@@ -546,12 +620,15 @@ mw.loader.using(["oojs-ui-core", "oojs-ui-widgets", "oojs-ui-toolbars", "oojs-ui
     this._languageFld = null;
     this._languageSelectFld = null;
     this._languageBnt = null;
-    this._pronunciationFld = null;
-    this._pronunciationPnl = null;
     this._grammarClassSelectFld = null;
     this._gendersFld = null;
     this._numbersFld = null;
+    this._imageFld = null;
+    this._imageDescriptionFld = null;
+    this._pronunciationFld = null;
+    this._pronunciationPnl = null;
     this._definitionFld = null;
+    this._categoriesWidget = null;
     this._etymologyFld = null;
     this._referencesFld = null;
     this._sourcesFld = null;
@@ -564,6 +641,7 @@ mw.loader.using(["oojs-ui-core", "oojs-ui-widgets", "oojs-ui-toolbars", "oojs-ui
     this._draftChk = null;
     this._seeOtherProjectsChk = {};
     this._sortKeyFld = null;
+    this._otherProjects = otherProjects;
 
     // Deleting all content above edit box.
     $("#nouvel-article").parent().remove();
@@ -625,6 +703,19 @@ mw.loader.using(["oojs-ui-core", "oojs-ui-widgets", "oojs-ui-toolbars", "oojs-ui
             label: "Choisissez",
           });
 
+          var imageSectionLabel = new OO.ui.HtmlSnippet(
+              'Image &mdash; <a href="https://commons.wikimedia.org/w/index.php?search={0}" '.format(word) +
+              'target="_blank" title="S’ouvre dans un nouvel onglet">Rechercher sur Commons</a>'
+          );
+          self._imageFld = new OO.ui.TextInputWidget({
+            id: "cnm-image-field",
+            placeholder: "Nom du fichier",
+          });
+          self._imageDescriptionFld = new OO.ui.TextInputWidget({
+            id: "cnm-image-description-field",
+            placeholder: "Légende",
+          });
+
           self._pronunciationFld = new OO.ui.TextInputWidget({
             id: "cnm-pronunciation-field",
           });
@@ -634,6 +725,11 @@ mw.loader.using(["oojs-ui-core", "oojs-ui-widgets", "oojs-ui-toolbars", "oojs-ui
 
           self._definitionFld = new OO.ui.MultilineTextInputWidget({
             rows: 4,
+          });
+
+          self._categoriesWidget = new OO.ui.TagMultiselectWidget({
+            inputPosition: 'inline',
+            allowArbitrary: true,
           });
 
           return new OO.ui.FieldsetLayout({
@@ -670,6 +766,16 @@ mw.loader.using(["oojs-ui-core", "oojs-ui-widgets", "oojs-ui-toolbars", "oojs-ui
                 ],
               }),
               new OO.ui.FieldsetLayout({
+                label: imageSectionLabel,
+                items: [
+                  self._imageFld,
+                  self._imageDescriptionFld,
+                ],
+                help: "Indiquer seulement le nom de l’image, " +
+                    "sans «\u00a0File:\u00a0», «\u00a0Fichier:\u00a0» ni «\u00a0Image:\u00a0».",
+                helpInline: true,
+              }),
+              new OO.ui.FieldsetLayout({
                 label: "Prononciation",
                 items: [
                   self._pronunciationPnl,
@@ -683,6 +789,15 @@ mw.loader.using(["oojs-ui-core", "oojs-ui-widgets", "oojs-ui-toolbars", "oojs-ui
                     align: "inline",
                   }),
                 ],
+              }),
+              new OO.ui.FieldsetLayout({
+                label: "Catégories",
+                items: [
+                  self._categoriesWidget,
+                ],
+                help: "Indiquer seulement les noms des catégories (sans «\u00a0Catégorie:\u00a0»), " +
+                    "en respectant la casse (majuscules/minuscules).",
+                helpInline: true,
               }),
             ],
           });
@@ -778,14 +893,13 @@ mw.loader.using(["oojs-ui-core", "oojs-ui-widgets", "oojs-ui-toolbars", "oojs-ui
           var otherProjectsFields = [];
           var linksEnabled = false;
 
-          for (var projectCode in otherProjects) {
-            if (otherProjects.hasOwnProperty(projectCode)) {
+          for (var projectCode in self._otherProjects) {
+            if (self._otherProjects.hasOwnProperty(projectCode)) {
               // * DO NOT REMOVE FUNCTION *
               // This function in necessary to avoid “textFld”
               // changing value in checkbox.on() after each iteration.
               (function () {
-                var projectName = otherProjects[projectCode].label;
-                var projectDomain = otherProjects[projectCode].urlDomain;
+                var projectName = self._otherProjects[projectCode].label;
                 var checkbox = new OO.ui.CheckboxInputWidget({
                   value: projectCode,
                   selected: linksEnabled,
@@ -804,17 +918,13 @@ mw.loader.using(["oojs-ui-core", "oojs-ui-widgets", "oojs-ui-toolbars", "oojs-ui
                   "textfield": textFld,
                 };
 
-                var url = "https://{0}/wiki/{1}".format(projectDomain, encodeURI(word));
-                // noinspection HtmlUnknownTarget
-                var label = new OO.ui.HtmlSnippet('<a href="{0}" target="_blank">Rechercher</a>'.format(url));
-
                 otherProjectsFields.push(new OO.ui.ActionFieldLayout(
                     checkbox,
                     textFld,
                     {
                       align: "inline",
-                      id: "sister-project-{0}".format(projectCode),
-                      label: label,
+                      id: "cnm-sister-project-{0}".format(projectCode),
+                      label: new OO.ui.HtmlSnippet('<a href="#" target="_blank">Rechercher</a>'),
                     }
                 ));
               })();
@@ -978,10 +1088,10 @@ mw.loader.using(["oojs-ui-core", "oojs-ui-widgets", "oojs-ui-toolbars", "oojs-ui
     // Allows layout taking all available width.
     // gadgetBox.$element.removeClass("oo-ui-fieldLayout-align-left");
 
-    for (var projectCode in otherProjects) {
-      if (otherProjects.hasOwnProperty(projectCode)) {
-        $("#sister-project-{0} span.oo-ui-actionFieldLayout-button".format(projectCode)).attr("style", "width: 100%");
-        $("#sister-project-{0} span.oo-ui-fieldLayout-field".format(projectCode)).attr("style", "width: 100%");
+    for (var projectCode in self._otherProjects) {
+      if (self._otherProjects.hasOwnProperty(projectCode)) {
+        $("#cnm-sister-project-{0} span.oo-ui-actionFieldLayout-button".format(projectCode)).attr("style", "width: 100%");
+        $("#cnm-sister-project-{0} span.oo-ui-fieldLayout-field".format(projectCode)).attr("style", "width: 100%");
       }
     }
 
@@ -991,8 +1101,6 @@ mw.loader.using(["oojs-ui-core", "oojs-ui-widgets", "oojs-ui-toolbars", "oojs-ui
         '"Segoe UI","Calibri","DejaVu Sans","Charis SIL","Doulos SIL",' +
         '"Gentium Plus","Gentium","GentiumAlt","Lucida Grande",' +
         '"Arial Unicode MS",sans-serif !important');
-    // Remove class as to remove the gap between the tabs panel and the frame.
-    // $("#cnm-tabs-widget").parent().removeClass("oo-ui-panelLayout-padded");
   };
 
   wikt.gadgets.creerNouveauMot.MainGui.prototype = Object.create(wikt.gadgets.creerNouveauMot.Gui.prototype);
@@ -1022,6 +1130,7 @@ mw.loader.using(["oojs-ui-core", "oojs-ui-widgets", "oojs-ui-toolbars", "oojs-ui
       })], 0);
     }
     this._updateFields(language);
+    this._updateSisterProjectsLinks(language);
     this._languageSelectFld.getMenu().selectItemByData(language.code);
     this._pronunciationPnl.setLabel(this._formatApi(language.ipaSymbols));
   };
@@ -1071,6 +1180,38 @@ mw.loader.using(["oojs-ui-core", "oojs-ui-widgets", "oojs-ui-toolbars", "oojs-ui
 
     this._pronunciationFld.setDisabled(language.code === "conv");
   };
+
+  /**
+   * Updates the link search links to sister projects based on the selected language.
+   * @param language {wikt.gadgets.creerNouveauMot.Language} The selected language.
+   * @private
+   */
+  wikt.gadgets.creerNouveauMot.MainGui.prototype._updateSisterProjectsLinks = function (language) {
+    for (var projectCode in this._otherProjects) {
+      if (this._otherProjects.hasOwnProperty(projectCode)) {
+        var forLangs = this._otherProjects[projectCode].showOnlyForLangs || [];
+        var disabled = forLangs.length !== 0 && !forLangs.includes(language.code);
+        var checkbox = this._seeOtherProjectsChk[projectCode]["checkbox"];
+
+        var projectDomain = this._otherProjects[projectCode].urlDomain;
+        var urlBase = this._otherProjects[projectCode].urlBase || "w/index.php?search=";
+
+        var $link = $("#cnm-sister-project-{0} a".format(projectCode));
+        var url = this._generateProjectLink(projectDomain, urlBase, language.wikimediaCode, this._word);
+
+        checkbox.setDisabled(disabled);
+        // Unselect if disabled
+        checkbox.setSelected(checkbox.isSelected() && !disabled);
+        $link.attr("href", url);
+        if (url === "#" || disabled) {
+          $link.hide();
+        }
+        else {
+          $link.show();
+        }
+      }
+    }
+  }
 
   // noinspection JSValidateJSDoc
   /**
@@ -1146,6 +1287,22 @@ mw.loader.using(["oojs-ui-core", "oojs-ui-widgets", "oojs-ui-toolbars", "oojs-ui
 
     return $links;
   };
+
+  /**
+   * Generates the URL to the given sister project’s search page.
+   * @param projectDomain {string} Project’s domain name.
+   * @param urlBase {string} The base URL (usually wiki).
+   * @param langCode {string} Project’s domain language code.
+   * @param word {string} The word to search for.
+   * @return {string} The search URL.
+   */
+  wikt.gadgets.creerNouveauMot.MainGui.prototype._generateProjectLink = function (projectDomain, urlBase, langCode, word) {
+    if (langCode) {
+      projectDomain = projectDomain.format(langCode);
+      return "https://{0}/{1}{2}".format(projectDomain, urlBase, encodeURI(word));
+    }
+    return "#";
+  }
 
   /*
    * Getters & setters
@@ -1256,6 +1413,42 @@ mw.loader.using(["oojs-ui-core", "oojs-ui-widgets", "oojs-ui-toolbars", "oojs-ui
     },
   });
 
+  Object.defineProperty(wikt.gadgets.creerNouveauMot.MainGui.prototype, "imageName", {
+    /**
+     * @return {string} The image name.
+     */
+    get: function () {
+      // noinspection JSCheckFunctionSignatures
+      return this._imageFld.getValue().trim();
+    },
+
+    /**
+     * Sets the image name.
+     * @param imageName {string} The image name.
+     */
+    set: function (imageName) {
+      this._imageFld.setValue(imageName.trim());
+    },
+  });
+
+  Object.defineProperty(wikt.gadgets.creerNouveauMot.MainGui.prototype, "imageDescription", {
+    /**
+     * @return {string} The image description.
+     */
+    get: function () {
+      // noinspection JSCheckFunctionSignatures
+      return this._imageDescriptionFld.getValue().trim();
+    },
+
+    /**
+     * Sets the image description.
+     * @param imageDesc {string} The image description.
+     */
+    set: function (imageDesc) {
+      this._imageDescriptionFld.setValue(imageDesc.trim());
+    },
+  });
+
   Object.defineProperty(wikt.gadgets.creerNouveauMot.MainGui.prototype, "pronunciation", {
     /**
      * @return {string} The pronunciation.
@@ -1290,6 +1483,24 @@ mw.loader.using(["oojs-ui-core", "oojs-ui-widgets", "oojs-ui-toolbars", "oojs-ui
     set: function (def) {
       this._definitionFld.setValue(def.trim());
     }
+  });
+
+  Object.defineProperty(wikt.gadgets.creerNouveauMot.MainGui.prototype, "categories", {
+    /**
+     * @return {Array<string>} The categories.
+     */
+    get: function () {
+      // noinspection JSCheckFunctionSignatures
+      return this._categoriesWidget.getValue();
+    },
+
+    /**
+     * Sets the categories.
+     * @param categories {Array<string>} The image categories.
+     */
+    set: function (categories) {
+      this._categoriesWidget.setValue(categories);
+    },
   });
 
   Object.defineProperty(wikt.gadgets.creerNouveauMot.MainGui.prototype, "etymology", {
@@ -1434,9 +1645,9 @@ mw.loader.using(["oojs-ui-core", "oojs-ui-widgets", "oojs-ui-toolbars", "oojs-ui
   wikt.gadgets.creerNouveauMot.numbers = {
     DIFF_SINGULAR_PLURAL: new wikt.gadgets.creerNouveauMot.Number("sing. et plur. différents"),
     SAME_SINGULAR_PLURAL: new wikt.gadgets.creerNouveauMot.Number("sing. et plur. identiques", "{{sp}}"),
-    SINGULAR_ONLY: new wikt.gadgets.creerNouveauMot.Number("singulier uniquement", "{{au singulier uniquement}}"),
-    PLURAL_ONLY: new wikt.gadgets.creerNouveauMot.Number("pluriel uniquement", "{{au pluriel uniquement}}"),
-    INVARIABLE: new wikt.gadgets.creerNouveauMot.Number("invariable", "{{invar}}"),
+    SINGULAR_ONLY: new wikt.gadgets.creerNouveauMot.Number("singulier uniquement", "{{au singulier uniquement|{0}}}"),
+    PLURAL_ONLY: new wikt.gadgets.creerNouveauMot.Number("pluriel uniquement", "{{au pluriel uniquement|{0}}}"),
+    INVARIABLE: new wikt.gadgets.creerNouveauMot.Number("invariable", "{{invariable}}"),
   };
 
   /**
@@ -1467,7 +1678,7 @@ mw.loader.using(["oojs-ui-core", "oojs-ui-widgets", "oojs-ui-toolbars", "oojs-ui
   }
 
   /**
-   * Defines all available grammatical genders.
+   * Defines all available grammatical genders/verb groups.
    * @type {Object<string, wikt.gadgets.creerNouveauMot.Gender>}
    */
   wikt.gadgets.creerNouveauMot.genders = {
@@ -1475,12 +1686,13 @@ mw.loader.using(["oojs-ui-core", "oojs-ui-widgets", "oojs-ui-toolbars", "oojs-ui
     FEMININE: new wikt.gadgets.creerNouveauMot.Gender("féminin", "{{f}}"),
     FEMININE_MASCULINE: new wikt.gadgets.creerNouveauMot.Gender("masc. et fém. identiques", "{{mf}}"),
     NO_GENDER: new wikt.gadgets.creerNouveauMot.Gender("pas de genre"),
-    VERB_GROUP1: new wikt.gadgets.creerNouveauMot.Gender("1<sup>er</sup> groupe", "{{conjugaison|fr|group=1}}"),
-    VERB_GROUP2: new wikt.gadgets.creerNouveauMot.Gender("2<sup>ème</sup> groupe", "{{conjugaison|fr|group=2}}"),
-    VERB_GROUP3: new wikt.gadgets.creerNouveauMot.Gender("3<sup>ème</sup> groupe", "{{conjugaison|fr|group=3}}"),
-    VERB: new wikt.gadgets.creerNouveauMot.Gender("verbe", "{{conjugaison|{0}}}"),
-    REGULAR_VERB: new wikt.gadgets.creerNouveauMot.Gender("régulier"),
-    IRREGULAR_VERB: new wikt.gadgets.creerNouveauMot.Gender("irrégulier"),
+    VERB_GROUP1: new wikt.gadgets.creerNouveauMot.Gender("1<sup>er</sup> groupe", "{{type|{0}}} {{conjugaison|fr|group=1}}"),
+    VERB_GROUP2: new wikt.gadgets.creerNouveauMot.Gender("2<sup>ème</sup> groupe", "{{type|{0}}} {{conjugaison|fr|group=2}}"),
+    VERB_GROUP3: new wikt.gadgets.creerNouveauMot.Gender("3<sup>ème</sup> groupe", "{{type|{0}}} {{conjugaison|fr|group=3}}"),
+    VERB: new wikt.gadgets.creerNouveauMot.Gender("verbe", "{{type|{0}}} {{conjugaison|{0}}}"),
+    VERB_NO_TEMPLATE: new wikt.gadgets.creerNouveauMot.Gender("verbe", "{{type|{0}}}"),
+    REGULAR_VERB: new wikt.gadgets.creerNouveauMot.Gender("régulier", "{{type|{0}}}"),
+    IRREGULAR_VERB: new wikt.gadgets.creerNouveauMot.Gender("irrégulier", "{{type|{0}}}"),
   };
 
   /**

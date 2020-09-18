@@ -18,6 +18,7 @@
   cnm.addLanguage(new cnm.Language(
       "zh",
       "chinois",
+      "", // TODO
       [
         // TODO
       ],

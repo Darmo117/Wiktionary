@@ -35,6 +35,7 @@
   cnm.addLanguage(new cnm.Language(
       "fr",
       "fr",
+      "fra",
       "français",
       [
         ["a", "ɑ", "ɑ̃", "ə", "œ", "ø", "e", "ɛ", "i", "ɛ̃", "œ̃", "o", "ɔ", "ɔ̃", "y", "u"],

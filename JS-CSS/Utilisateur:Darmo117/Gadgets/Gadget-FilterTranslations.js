@@ -27,7 +27,7 @@ window.wikt.gadgets.filterTranslations = {
       var match = /trad-(\w+)/.exec($item.find("span").prop("class"));
 
       if (match && !whitelistedLangs.includes(match[1])) {
-        $item.hide();
+        $item.hide(); // TODO permettre de réafficher les traductions cachées
       }
     });
   },

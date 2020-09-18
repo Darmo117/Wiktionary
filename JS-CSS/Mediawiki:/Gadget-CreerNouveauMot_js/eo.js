@@ -21,6 +21,7 @@
   cnm.addLanguage(new cnm.Language(
       "eo",
       "eo",
+      "epo",
       "espéranto",
       [
         ["a", "e", "i", "o", "u"],

@@ -25,15 +25,17 @@
  * v5.0.8 2020-08-25 added {{type}} template to verbs, fields to insert an image,
  *                   field to add categories; removed lang parameter for some
  *                   interwiki templates
+ * v5.0.9 2020-09-16 added pronunciation section field; removed sources section
  * ------------------------------------------------------------------------------------
  * [[Catégorie:JavaScript du Wiktionnaire|CreerNouveauMot.js]]
  */
 
+// TODO ajouter liens vers pages d’aide
 mw.loader.using(["oojs-ui-core", "oojs-ui-widgets", "oojs-ui-toolbars", "oojs-ui-windows"], function () {
   window.wikt.gadgets.creerNouveauMot = {
     NAME: "Créer nouveau mot",
 
-    VERSION: "5.0.8",
+    VERSION: "5.0.9",
 
     _COOKIE_NAME: "cnm_last_lang",
     /** Cookie duration in days. */
@@ -100,9 +102,7 @@ mw.loader.using(["oojs-ui-core", "oojs-ui-widgets", "oojs-ui-toolbars", "oojs-ui
       {label: "Traductions", code: "traductions", level: 4, hidden: true},
       {label: "Dérivés dans d’autres langues", code: "dérivés autres langues", level: 4},
       {label: "Faux-amis", code: "faux-amis", level: 4},
-      {label: "Homophones", code: "homophones", section: "prononciation", level: 4, needsLang: true},
-      {label: "Paronymes", code: "paronymes", section: "prononciation", level: 4},
-      {label: "Anagrammes", code: "anagrammes", level: 3},
+      {label: "Anagrammes", code: "anagrammes", level: 3}, // TODO déplacer la section sous Prononciation
     ],
 
     /**
@@ -274,7 +274,6 @@ mw.loader.using(["oojs-ui-core", "oojs-ui-widgets", "oojs-ui-toolbars", "oojs-ui
       }
 
       var references = this._gui.references;
-      var sources = this._gui.sources;
       var bibliography = this._gui.bibliography;
       var sortingKey = this._gui.sortingKey;
 
@@ -312,7 +311,7 @@ mw.loader.using(["oojs-ui-core", "oojs-ui-widgets", "oojs-ui-toolbars", "oojs-ui
           }
         }
 
-        return lines.join("\n");
+        return lines.join("\n").trim();
       }
 
       for (var i = 0; i < this._SECTIONS.length; i++) {
@@ -322,9 +321,7 @@ mw.loader.using(["oojs-ui-core", "oojs-ui-widgets", "oojs-ui-toolbars", "oojs-ui
         if (sectionCode !== "traductions" || langCode === "fr") {
           var content = sectionCode !== "traductions"
               ? this._gui.getSectionContent(section.code)
-              : "{{trad-début}}\n"
-              + "{{ébauche-trad}}\n"
-              + "{{trad-fin}}\n\n";
+              : "{{trad-début}}\n{{trad-fin}}\n\n";
           var upperSection = section.section;
           var titleLevel;
 
@@ -335,10 +332,29 @@ mw.loader.using(["oojs-ui-core", "oojs-ui-widgets", "oojs-ui-toolbars", "oojs-ui
             }
             titleLevel = Array(section.level + 1).join("=");
             wikicode += "{2} {{S|{0}{1}}} {2}\n".format(section.code, section.needsLang ? ("|" + langCode) : "", titleLevel)
-                + linkify(content).trim() + "\n\n";
+                + linkify(content) + "\n\n";
           }
         }
       }
+
+      var pronSection = "";
+      var pronunciationContent = this._gui.pronunciationSection;
+      var homophones = this._gui.homophones;
+      var paronyms = this._gui.paronyms;
+
+      if (pronunciationContent || homophones || paronyms) {
+        pronSection = "=== {{S|prononciation}} ===\n";
+        if (pronunciationContent) {
+          pronSection += "{0}\n\n".format(pronunciationContent);
+        }
+        if (homophones) {
+          pronSection += "==== {{S|homophones|{0}}} ====\n{1}\n\n".format(langCode, linkify(homophones));
+        }
+        if (paronyms) {
+          pronSection += "==== {{S|paronymes}}} ====\n{0}\n\n".format(linkify(paronyms));
+        }
+      }
+      wikicode += pronSection;
 
       var seeAlso = "";
       for (var projectCode in this._OTHER_PROJECTS) {
@@ -365,7 +381,7 @@ mw.loader.using(["oojs-ui-core", "oojs-ui-widgets", "oojs-ui-toolbars", "oojs-ui
       var containsRefTemplates = /{{(R|RÉF|réf)\||<ref>.+<\/ref>/gm.test(wikicode);
 
       if (containsRefTemplates || references || bibliography) {
-        var insertSourcesSection = containsRefTemplates || sources;
+        var insertSourcesSection = containsRefTemplates;
 
         if (references || insertSourcesSection || bibliography) {
           wikicode += "=== {{S|références}} ===\n";
@@ -374,7 +390,7 @@ mw.loader.using(["oojs-ui-core", "oojs-ui-widgets", "oojs-ui-toolbars", "oojs-ui
           }
         }
         if (insertSourcesSection) {
-          wikicode += "==== {{S|sources}} ====\n{{Références}}" + (sources ? "\n" : "") + sources + "\n\n";
+          wikicode += "==== {{S|sources}} ====\n{{Références}}\n\n";
         }
         if (bibliography) {
           wikicode += "==== {{S|bibliographie}} ====\n" + bibliography + "\n\n";
@@ -457,6 +473,7 @@ mw.loader.using(["oojs-ui-core", "oojs-ui-widgets", "oojs-ui-toolbars", "oojs-ui
    * This class encapsulates data and behaviors specific to the given language.
    * @param code {string} Language code defined in [[Module:langues/data]].
    * @param wikimediaCode {string?} Language code used by WikiMedia projects.
+   * @param iso6393Code {string} ISO 639-3 language code.
    * @param name {string} Language’s name (in French).
    * @param ipaSymbols {Array<Array<string>>?} An optional list of common IPA symbols for the language.
    * @param grammarItems {Array<wikt.gadgets.creerNouveauMot.GrammaticalItem>?} An optional list of grammatical items.
@@ -464,11 +481,13 @@ mw.loader.using(["oojs-ui-core", "oojs-ui-widgets", "oojs-ui-toolbars", "oojs-ui
    * based on the word.
    * @constructor
    */
-  wikt.gadgets.creerNouveauMot.Language = function (code, wikimediaCode, name, ipaSymbols, grammarItems, pronGenerator) {
+  wikt.gadgets.creerNouveauMot.Language = function (code, wikimediaCode, iso6393Code, name, ipaSymbols, grammarItems, pronGenerator) {
     /** @type {string} */
     this._code = code;
     /** @type {string} */
     this._wikimediaCode = wikimediaCode;
+    /** @type {string} */
+    this._iso6393Code = iso6393Code;
     /** @type {string} */
     this._name = name;
     /** @type {Array<Array<string>>} */
@@ -500,6 +519,13 @@ mw.loader.using(["oojs-ui-core", "oojs-ui-widgets", "oojs-ui-toolbars", "oojs-ui
      */
     get wikimediaCode() {
       return this._wikimediaCode;
+    },
+
+    /**
+     * @return {string} This language’s ISO 639-3 code.
+     */
+    get iso6393Code() {
+      return this._iso6393Code;
     },
 
     /**
@@ -630,8 +656,10 @@ mw.loader.using(["oojs-ui-core", "oojs-ui-widgets", "oojs-ui-toolbars", "oojs-ui
     this._definitionFld = null;
     this._categoriesWidget = null;
     this._etymologyFld = null;
+    this._pronunciationSectionFld = null;
+    this._homophonesFld = null;
+    this._paronymsFld = null;
     this._referencesFld = null;
-    this._sourcesFld = null;
     this._bibliographyFld = null;
     /**
      * Word type sub-sections list.
@@ -810,10 +838,20 @@ mw.loader.using(["oojs-ui-core", "oojs-ui-widgets", "oojs-ui-toolbars", "oojs-ui
             rows: 4,
             autofocus: true,
           });
-          self._referencesFld = new OO.ui.MultilineTextInputWidget({
+          var pronSectionLabel = new OO.ui.HtmlSnippet(
+              'Prononciation (section) &mdash; <a id="cnm-commons-audio-link" href="#" ' +
+              'target="_blank" title="S’ouvre dans un nouvel onglet">Rechercher des fichiers audio sur Commons</a>'
+          );
+          self._pronunciationSectionFld = new OO.ui.MultilineTextInputWidget({
             rows: 4,
           });
-          self._sourcesFld = new OO.ui.MultilineTextInputWidget({
+          self._homophonesFld = new OO.ui.MultilineTextInputWidget({
+            rows: 4,
+          });
+          self._paronymsFld = new OO.ui.MultilineTextInputWidget({
+            rows: 4,
+          });
+          self._referencesFld = new OO.ui.MultilineTextInputWidget({
             rows: 4,
           });
           self._bibliographyFld = new OO.ui.MultilineTextInputWidget({
@@ -854,14 +892,27 @@ mw.loader.using(["oojs-ui-core", "oojs-ui-widgets", "oojs-ui-toolbars", "oojs-ui
                 helpInline: true,
               }),
               new OO.ui.FieldsetLayout({
+                label: pronSectionLabel,
+                items: [
+                  new OO.ui.FieldLayout(self._pronunciationSectionFld, {
+                    label: self._createLinks(specialChars, self._pronunciationSectionFld),
+                    align: "inline",
+                  }),
+                  new OO.ui.FieldLayout(self._homophonesFld, {
+                    label: self._createLinks(specialChars, self._homophonesFld, "", "Homophones"),
+                    align: "inline",
+                  }),
+                  new OO.ui.FieldLayout(self._paronymsFld, {
+                    label: self._createLinks(specialChars, self._paronymsFld, "", "Paronymes"),
+                    align: "inline",
+                  }),
+                ],
+              }),
+              new OO.ui.FieldsetLayout({
                 label: "Références",
                 items: [
                   new OO.ui.FieldLayout(self._referencesFld, {
                     label: self._createLinks(specialChars, self._referencesFld),
-                    align: "inline",
-                  }),
-                  new OO.ui.FieldLayout(self._sourcesFld, {
-                    label: self._createLinks(specialChars, self._sourcesFld, "", "Sources"),
                     align: "inline",
                   }),
                   new OO.ui.FieldLayout(self._bibliographyFld, {
@@ -1131,6 +1182,9 @@ mw.loader.using(["oojs-ui-core", "oojs-ui-widgets", "oojs-ui-toolbars", "oojs-ui
     }
     this._updateFields(language);
     this._updateSisterProjectsLinks(language);
+    var commonsAudioUrl = 'https://commons.wikimedia.org/w/index.php?search={0}.wav+incategory:"Lingua+Libre+pronunciation-{1}"'
+        .format(this._word.replace(" ", "_"), language.iso6393Code);
+    $("#cnm-commons-audio-link").attr("href", commonsAudioUrl);
     this._languageSelectFld.getMenu().selectItemByData(language.code);
     this._pronunciationPnl.setLabel(this._formatApi(language.ipaSymbols));
   };
@@ -1521,6 +1575,60 @@ mw.loader.using(["oojs-ui-core", "oojs-ui-widgets", "oojs-ui-toolbars", "oojs-ui
     }
   });
 
+  Object.defineProperty(wikt.gadgets.creerNouveauMot.MainGui.prototype, "pronunciationSection", {
+    /**
+     * @return {string} The pronunciation section.
+     */
+    get: function () {
+      // noinspection JSCheckFunctionSignatures
+      return this._pronunciationSectionFld.getValue().trim();
+    },
+
+    /**
+     * Sets the pronunciation section content.
+     * @param pronunciationSection {string} The pronunciation section content.
+     */
+    set: function (pronunciationSection) {
+      this._pronunciationSectionFld.setValue(pronunciationSection.trim());
+    },
+  });
+
+  Object.defineProperty(wikt.gadgets.creerNouveauMot.MainGui.prototype, "homophones", {
+    /**
+     * @return {string} The homophones.
+     */
+    get: function () {
+      // noinspection JSCheckFunctionSignatures
+      return this._homophonesFld.getValue().trim();
+    },
+
+    /**
+     * Sets the homophones.
+     * @param homophones {string} The homophones.
+     */
+    set: function (homophones) {
+      this._homophonesFld.setValue(homophones.trim());
+    },
+  });
+
+  Object.defineProperty(wikt.gadgets.creerNouveauMot.MainGui.prototype, "paronyms", {
+    /**
+     * @return {string} The paronyms.
+     */
+    get: function () {
+      // noinspection JSCheckFunctionSignatures
+      return this._paronymsFld.getValue().trim();
+    },
+
+    /**
+     * Sets the paronyms.
+     * @param paronyms {string} The paronyms.
+     */
+    set: function (paronyms) {
+      this._paronymsFld.setValue(paronyms.trim());
+    },
+  });
+
   Object.defineProperty(wikt.gadgets.creerNouveauMot.MainGui.prototype, "references", {
     /**
      * @return {string} The references.
@@ -1536,24 +1644,6 @@ mw.loader.using(["oojs-ui-core", "oojs-ui-widgets", "oojs-ui-toolbars", "oojs-ui
      */
     set: function (references) {
       this._referencesFld.setValue(references.trim());
-    },
-  });
-
-  Object.defineProperty(wikt.gadgets.creerNouveauMot.MainGui.prototype, "sources", {
-    /**
-     * @return {string} The sources.
-     */
-    get: function () {
-      // noinspection JSCheckFunctionSignatures
-      return this._sourcesFld.getValue().trim();
-    },
-
-    /**
-     * Sets the sources.
-     * @param sources {string} The sources.
-     */
-    set: function (sources) {
-      this._sourcesFld.setValue(sources.trim());
     },
   });
 

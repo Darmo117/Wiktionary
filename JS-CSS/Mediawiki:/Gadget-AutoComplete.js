@@ -65,6 +65,7 @@ $(function () {
         });
 
         $(document.body).keyup(function (event) {
+          console.log(self._suggestMode);
           if (!self._suggestMode) {
             if (event.ctrlKey && event.code === "Space") {
               if (self._suggest()) {
@@ -108,6 +109,9 @@ $(function () {
               editBox.focus(); // FIXME marche pas avec CodeMirror
             }
           }
+          else {
+            self._enableSuggestions(false);
+          }
         });
 
         this._$suggestionBox = $('<div id="ac-suggestion-box"><ul></ul></div>');
@@ -142,7 +146,7 @@ $(function () {
       /**
        * Fetches the current template the cursor is in then adds
        * the relevent suggestions to the list.
-       * @return {boolean} True if the cursor is in an template and there are suggestions for it.
+       * @return {boolean} True if the cursor is in a template and there are suggestions for it.
        * @private
        */
       _suggest: function () {

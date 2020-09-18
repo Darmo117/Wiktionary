@@ -18,6 +18,7 @@
   cnm.addLanguage(new cnm.Language(
       "en",
       "en",
+      "eng",
       "anglais",
       [
         ["i", "iː", "ɪ", "ɛ", "æ", "ə", "ɚ", "ɜː", "ɝ", "uː", "u", "ʊ", "ʌ", "ɔː", "ɑː", "ɒ"],

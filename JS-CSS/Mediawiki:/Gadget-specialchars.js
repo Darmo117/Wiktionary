@@ -47,7 +47,7 @@ window.wikt.gadgets.specialChars = {
     "$,": "ʻ",
   },
 
-  _elements: [],
+  codeMirrorActive: false,
 
   init: function () {
     var self = this;
@@ -67,40 +67,46 @@ window.wikt.gadgets.specialChars = {
 
       for (var i = 0; i < nodeTree.children.length; i++) {
         if ($element = fetchTextInput(nodeTree.children[i])) {
-          elements.concat($element);
+          elements = elements.concat($element);
         }
       }
 
       return elements;
     }
 
-    if (wikt.edit.isCodeMirrorEnabled()) {
-      wikt.edit.getCodeMirror().on("keyup", function () {
-        console.log("cm keyup"); // DEBUG
-        self.parse(wikt.edit.getEditBox());
-      });
+    function mark($element) {
+      $element.data("sc-marked", true);
     }
-    $("input[type=text]").keyup(onKeyUp).each(function (e) {
-      self._elements.push(e);
+
+    function isMarked($element) {
+      return !!$element.data("sc-marked");
+    }
+
+    $("input[type=text]").keyup(onKeyUp).each(function (_, e) {
+      mark($(e));
     });
-    $("input[type=search]").keyup(onKeyUp).each(function (e) {
-      self._elements.push(e);
+    $("input[type=search]").keyup(onKeyUp).each(function (_, e) {
+      mark($(e));
     });
-    $("textarea").keyup(onKeyUp).each(function (e) {
-      self._elements.push(e);
+    $("textarea").keyup(onKeyUp).each(function (_, e) {
+      mark($(e));
     });
-    console.log(self._elements); // DEBUG
     wikt.page.onDOMChanges(function (mutationsList) {
       mutationsList.forEach(function (mutation) {
         if (mutation.type === "childList") {
-          console.log(mutation.target); // DEBUG
           fetchTextInput(mutation.target).forEach(function ($element) {
-            console.log($element); // DEBUG
-            if ($element && !self._elements.includes($element[0])) {
+            if (!isMarked($element)) {
               $element.keyup(onKeyUp);
-              self._elements.push($element[0]);
+              mark($element);
             }
           });
+
+          if (!self.codeMirrorActive && wikt.edit.isCodeMirrorEnabled()) {
+            wikt.edit.getCodeMirror().on("keyup", function () {
+              self.parse(wikt.edit.getEditBox());
+            });
+            self.codeMirrorActive = true;
+          }
         }
       });
     }, document.body, {subtree: true, childList: true});
@@ -108,7 +114,6 @@ window.wikt.gadgets.specialChars = {
   },
 
   parse: function ($input) {
-    console.log($input); // DEBUG
     var text = wikt.edit.getText($input);
 
     if (text !== this._previousText[$input]) {
@@ -170,13 +175,6 @@ window.wikt.gadgets.specialChars = {
 };
 
 (function () {
-  // Do not enable gadget on JS, CSS nor module pages.
-  var isJsPage = mw.config.get("wgTitle").endsWith(".js");
-  var isCssPage = mw.config.get("wgTitle").endsWith(".css");
-  var isModule = wikt.page.hasNamespaceIn(["Module"]);
-
-  if (!isJsPage && !isCssPage && !isModule) {
-    console.log("Chargement de Gadget-specialchars-dev.js…");
-    wikt.gadgets.specialChars.init();
-  }
+  console.log("Chargement de Gadget-specialchars-dev.js…");
+  wikt.gadgets.specialChars.init();
 })();

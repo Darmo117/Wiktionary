@@ -30,6 +30,7 @@
   cnm.addLanguage(new cnm.Language(
       "it",
       "it",
+      "ita",
       "italien",
       [
         ["a", "e", "ɛ", "i", "o", "ɔ", "u"],

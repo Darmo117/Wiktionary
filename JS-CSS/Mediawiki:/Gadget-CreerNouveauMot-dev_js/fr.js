@@ -1,3 +1,8 @@
+/*
+ * French language definition.
+ * ----
+ * [[Catégorie:Sous-page de CreerNouveauMot-dev|fr]]
+ */
 (function () {
   var cnm = wikt.gadgets.creerNouveauMot;
 

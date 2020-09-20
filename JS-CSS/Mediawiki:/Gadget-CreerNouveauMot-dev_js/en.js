@@ -1,3 +1,8 @@
+/*
+ * English language definition.
+ * ----
+ * [[Catégorie:Sous-page de CreerNouveauMot-dev|en]]
+ */
 (function () {
   var cnm = wikt.gadgets.creerNouveauMot;
 
@@ -79,8 +84,11 @@
         new cnm.GrammaticalItem(cnm.grammaticalClasses.INTERJECTION, [cnm.genders.NO_GENDER], [cnm.numbers.INVARIABLE], function (word, grammarClass, gender, number, pron) {
           return getModel(grammarClass, number, pron);
         }),
-        new cnm.GrammaticalItem(cnm.grammaticalClasses.LAST_NAME, [cnm.genders.NO_GENDER], [cnm.numbers.INVARIABLE], function (word, grammarClass, gender, number, pron) {
-          return getModel(grammarClass, number, pron);
+        new cnm.GrammaticalItem(cnm.grammaticalClasses.LAST_NAME, [cnm.genders.NO_GENDER], [cnm.numbers.DIFF_SINGULAR_PLURAL, cnm.numbers.SAME_SINGULAR_PLURAL, cnm.numbers.INVARIABLE], function (word, grammarClass, gender, number, pron) {
+          if (number !== cnm.numbers.DIFF_SINGULAR_PLURAL.label) {
+            return getModel(grammarClass, number, pron);
+          }
+          return "{{en-nom-rég|{0}}}".format(pron);
         }),
         new cnm.GrammaticalItem(cnm.grammaticalClasses.PARTICLE, [cnm.genders.NO_GENDER], [cnm.numbers.INVARIABLE], function (word, grammarClass, gender, number, pron) {
           return getModel(grammarClass, number, pron);
@@ -89,8 +97,11 @@
           return getModel(grammarClass, number, pron);
         }),
         new cnm.GrammaticalItem(cnm.grammaticalClasses.PREFIX, [cnm.genders.NO_GENDER]),
-        new cnm.GrammaticalItem(cnm.grammaticalClasses.FIRST_NAME, [cnm.genders.NO_GENDER], [cnm.numbers.INVARIABLE], function (word, grammarClass, gender, number, pron) {
-          return getModel(grammarClass, number, pron);
+        new cnm.GrammaticalItem(cnm.grammaticalClasses.FIRST_NAME, [cnm.genders.NO_GENDER], [cnm.numbers.DIFF_SINGULAR_PLURAL, cnm.numbers.SAME_SINGULAR_PLURAL, cnm.numbers.INVARIABLE], function (word, grammarClass, gender, number, pron) {
+          if (number !== cnm.numbers.DIFF_SINGULAR_PLURAL.label) {
+            return getModel(grammarClass, number, pron);
+          }
+          return "{{en-nom-rég|{0}}}".format(pron);
         }),
         new cnm.GrammaticalItem(cnm.grammaticalClasses.PREPOSITION, [cnm.genders.NO_GENDER], [cnm.numbers.INVARIABLE], function (word, grammarClass, gender, number, pron) {
           return getModel(grammarClass, number, pron);

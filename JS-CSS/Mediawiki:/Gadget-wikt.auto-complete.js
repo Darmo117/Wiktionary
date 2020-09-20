@@ -2,7 +2,7 @@ $(function () {
   "use strict";
 
   if (["edit", "submit"].includes(mw.config.get("wgAction"))) {
-    console.log("Chargement de Gadget-AutoComplete.js…");
+    console.log("Chargement de Gadget-wikt.auto-complete.js…");
 
     window.wikt.gadgets.autoComplete = {
       NAME: "Auto-complétion du wikicode",
@@ -187,6 +187,7 @@ $(function () {
         var self = this;
 
         values.filter(function (v) {
+          // noinspection JSUnresolvedFunction
           return v.toLowerCase().startsWith(value.toLowerCase());
         }).forEach(function (v, i) {
           var prefix = v.substr(0, value.length);

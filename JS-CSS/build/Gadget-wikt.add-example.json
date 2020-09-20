@@ -1,0 +1,10 @@
+{
+  "root": "Mediawiki:",
+  "namespace": 8,
+  "page_names": [
+    "Gadget-wikt.add-example.js"
+  ],
+  "dependencies": [
+    "Gadget-CommonWikt.js"
+  ]
+}

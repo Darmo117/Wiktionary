@@ -1,0 +1,32 @@
+{
+  "root": "Mediawiki:",
+  "namespace": 8,
+  "page_names": [
+    "Gadget-CreerNouveauMot.js",
+    "Gadget-CreerNouveauMot.js/conv.js",
+    "Gadget-CreerNouveauMot.js/en.js",
+    "Gadget-CreerNouveauMot.js/eo.js",
+    "Gadget-CreerNouveauMot.js/fr.js",
+    "Gadget-CreerNouveauMot.js/it.js",
+    "Gadget-CreerNouveauMot.css"
+  ],
+  "dependencies": [
+    "Gadget-CommonWikt.js"
+  ],
+  "build": {
+    "copy": {
+      "filename_rules": [
+        {
+          "pattern": "CreerNouveauMot",
+          "repl": "CreerNouveauMot-dev"
+        }
+      ],
+      "content_rules": [
+        {
+          "pattern": "CreerNouveauMot",
+          "repl": "CreerNouveauMot-dev"
+        }
+      ]
+    }
+  }
+}

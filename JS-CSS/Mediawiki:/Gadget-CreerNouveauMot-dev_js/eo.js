@@ -1,3 +1,8 @@
+/*
+ * Esperanto language definition.
+ * ----
+ * [[Catégorie:Sous-page de CreerNouveauMot-dev|eo]]
+ */
 (function () {
   var cnm = wikt.gadgets.creerNouveauMot;
 

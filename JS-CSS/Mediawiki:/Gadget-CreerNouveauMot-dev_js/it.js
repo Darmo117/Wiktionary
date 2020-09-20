@@ -1,3 +1,8 @@
+/*
+ * Italian language definition.
+ * ----
+ * [[Catégorie:Sous-page de CreerNouveauMot-dev|it]]
+ */
 (function () {
   var cnm = wikt.gadgets.creerNouveauMot;
 

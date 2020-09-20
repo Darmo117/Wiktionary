@@ -46,7 +46,7 @@ mw.loader.using(["jquery.ui"], function () {
             }
 
             // On parcours les lexèmes
-            for (var i = 0; i < result.results.bindings.lenght; i++) {
+            for (var i = 0; i < result.results.bindings.length; i++) {
               var item = result.results.bindings[i];
               var href = item[variable].value;
               var lexeme = href.substring(href.lastIndexOf("/") + 1);

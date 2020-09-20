@@ -87,7 +87,7 @@ wikt.text.toUpperCaseFirst = function (string) {
 
 /**
  * Returns the edit box as a jQuery object.
- * @return {Object|null} The jQuery element corresponding
+ * @return {{wikiEditor: function}|null} The jQuery element corresponding
  * to the edit box or null if it could not be found.
  */
 wikt.edit.getEditBox = function () {
@@ -148,8 +148,7 @@ wikt.edit.getCursorLocation = function ($textInput) {
   if ($editBox) {
     if (this._isCodeMirrorInput($editBox) && this.isCodeMirrorEnabled()) {
       return this.getCodeMirror().indexFromPos(this.getCodeMirror().getCursor());
-    }
-    else {
+    } else {
       return $editBox.get(0).selectionStart;
     }
   }
@@ -166,8 +165,7 @@ wikt.edit.setCursorLocation = function (position, $textInput) {
   if ($editBox) {
     if (this._isCodeMirrorInput($editBox) && this.isCodeMirrorEnabled()) {
       this.getCodeMirror().setCursor(this.getCodeMirror().posFromIndex());
-    }
-    else {
+    } else {
       $editBox.get(0).selectionStart = position;
       $editBox.get(0).selectionEnd = position;
     }
@@ -184,8 +182,7 @@ wikt.edit.getSelectedText = function ($textInput) {
 
   if (this._isCodeMirrorInput($editBox) && this.isCodeMirrorEnabled()) {
     return this.getCodeMirror().getSelection();
-  }
-  else {
+  } else {
     var start = $editBox.get(0).selectionStart;
     var end = $editBox.get(0).selectionEnd;
     return $editBox.val().substring(start, end);
@@ -203,8 +200,7 @@ wikt.edit.replaceSelectedText = function (replacement, $textInput) {
 
   if (this._isCodeMirrorInput($editBox) && this.isCodeMirrorEnabled()) {
     this.getCodeMirror().replaceSelection(replacement);
-  }
-  else {
+  } else {
     var start = $editBox.get(0).selectionStart;
     var end = $editBox.get(0).selectionEnd;
     var text = $editBox.val();
@@ -494,12 +490,11 @@ wikt.page.renderWikicode = function (wikicode, onlyFirstParagraph) {
       var $text = $(data.responseJSON["parse"]["text"]["*"]);
       if (onlyFirstParagraph) {
         html = $text.find("p:first").html();
-      }
-      else {
+      } else {
         html = $text;
       }
     },
-    dataType: "json"
+    dataType: "json",
   });
 
   // noinspection JSUnusedAssignment
@@ -556,8 +551,7 @@ function CommonWikt_Screen() {
   if (userAgent.includes("msie") && userAgent.includes("opera")) {
     size.largeur = screen.width;
     size.hauteur = screen.height;
-  }
-  else {
+  } else {
     size.largeur = window.innerWidth;
     size.hauteur = window.innerHeight;
   }
@@ -720,16 +714,13 @@ var CommonWikt_ajax = {
     var xmlhttp;
     try {
       xmlhttp = new XMLHttpRequest();
-    }
-    catch (e) {
+    } catch (e) {
       try {
         xmlhttp = new ActiveXObject("Msxml2.XMLHTTP");
-      }
-      catch (e) {
+      } catch (e) {
         try {
           xmlhttp = new ActiveXObject("Microsoft.XMLHTTP");
-        }
-        catch (e) {
+        } catch (e) {
           xmlhttp = false;
         }
       }
@@ -745,8 +736,7 @@ var CommonWikt_ajax = {
         for (var field in bundle.headers) {
           try {
             xmlhttp.setRequestHeader(field, bundle.headers[field]);
-          }
-          catch (err) {
+          } catch (err) {
           }
         }
       }
@@ -759,8 +749,7 @@ var CommonWikt_ajax = {
       if (bundle.onSuccess) {
         bundle.onSuccess(xmlhttp, bundle);
       }
-    }
-    else if (bundle.onFailure) {
+    } else if (bundle.onFailure) {
       bundle.onFailure(xmlhttp, bundle);
     }
   }

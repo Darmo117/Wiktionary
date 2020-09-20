@@ -1,0 +1,11 @@
+{
+  "root": "Mediawiki:",
+  "namespace": 8,
+  "page_names": [
+    "Gadget-wikt.highlight-missing-sections.js",
+    "Gadget-wikt.highlight-missing-sections.css"
+  ],
+  "dependencies": [
+    "Gadget-CommonWikt.js"
+  ]
+}

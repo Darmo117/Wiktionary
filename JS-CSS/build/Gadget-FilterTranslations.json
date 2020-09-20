@@ -1,0 +1,10 @@
+{
+  "root": "Mediawiki:",
+  "namespace": 8,
+  "page_names": [
+    "Gadget-FilterTranslations.js"
+  ],
+  "dependencies": [
+    "Gadget-CommonWikt.js"
+  ]
+}

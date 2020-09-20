@@ -1,0 +1,212 @@
+/*
+ * Console Scribunto
+ */
+
+.mw-scribunto-print, .mw-scribunto-normalOutput, .mw-scribunto-input, .mw-scribunto-error {
+  font-family: monospace;
+}
+
+.mw-scribunto-input::before {
+  content: "$ ";
+}
+
+/*
+ * Wikicode
+ */
+
+.cm-mw-comment {
+  color: #808080;
+}
+
+/* Couleurs de fond */
+
+.cm-mw-ext-ground, .cm-mw-template-ground, .cm-mw-link-ground {
+  background-color: #333;
+}
+
+.cm-mw-template2-ground, .cm-mw-template-ext-ground {
+  background-color: #533;
+}
+
+/* Mots magiques */
+
+.cm-mw-doubleUnderscore {
+  color: #38ef89;
+}
+
+/* Modèles */
+
+.cm-mw-template {
+  color: #e6db74;
+}
+
+.cm-mw-template-bracket, .cm-mw-template-delimiter {
+  color: #ff80ff;
+  font-weight: bold;
+}
+
+.cm-mw-template-name {
+  color: #1290c3;
+}
+
+.cm-mw-template-argument-name {
+  color: #79abff;
+  font-weight: normal;
+}
+
+/* Parser functions */
+
+.cm-mw-parserfunction {
+  color: #e6db74;
+}
+
+.cm-mw-parserfunction-bracket, .cm-mw-parserfunction-delimiter {
+  color: #ff80ff;
+  font-weight: bold;
+}
+
+.cm-mw-parserfunction-name {
+  color: #a7ec21;
+  font-weight: normal;
+}
+
+/* Liens */
+
+.cm-mw-link {
+  color: #ff80ff;
+  font-weight: bold;
+  font-style: italic;
+}
+
+.cm-mw-link-bracket, .cm-mw-link-delimiter, .cm-mw-extlink-bracket {
+  color: #ff80ff;
+  font-weight: bold;
+}
+
+.cm-mw-link-tosection {
+  color: #e6db74;
+  font-style: italic;
+}
+
+.cm-mw-link-text {
+  color: #e6db74;
+}
+
+/* Tables */
+
+.cm-mw-table-bracket, .cm-mw-table-delimiter {
+  color: #ff7802;
+  font-weight: bold;
+}
+
+.cm-mw-table-definition {
+  color: #66fff8;
+  font-weight: normal;
+}
+
+/* Variables de modèles */
+
+.cm-mw-templatevariable-bracket, .cm-mw-templatevariable-delimiter {
+  color: #ffbf26;
+  font-weight: bold;
+}
+
+.cm-mw-templatevariable-name {
+  color: #ffbf26;
+  font-weight: normal;
+}
+
+.cm-mw-templatevariable {
+  color: #e6db74;
+  font-weight: normal;
+}
+
+/* Tags HTML */
+
+.cm-mw-htmltag-bracket, .cm-mw-exttag-bracket {
+  color: #ff7802;
+  font-weight: bold;
+}
+
+.cm-mw-htmltag-name, .cm-mw-exttag-name {
+  color: #ff7802;
+}
+
+.cm-mw-htmltag-attribute, .cm-mw-exttag-attribute {
+  color: #66fff8;
+}
+
+.cm-mw-mnemonic {
+  color: #2888f8;
+  font-style: italic;
+}
+
+/*
+ * LUA & JavaScript
+ */
+
+.ace_keyword, .ace_type, .kd, .kr, .k, .cp {
+  color: #dd2867 !important;
+  font-weight: bold;
+}
+
+.cpt {
+  color: #1290c3;
+  font-weight: bold;
+}
+
+.ace_identifier, .n, .nx, .cpn {
+  color: #ffbf26 !important;
+}
+
+.ace_parameter {
+  color: #79abff !important;
+}
+
+.ace_operator, .ace_paren, .p, .o, .ow {
+  color: #ff80ff !important;
+  font-weight: bold;
+}
+
+.ace_library {
+  color: #38ef89 !important;
+  font-style: italic;
+}
+
+.ace_function, .nb {
+  color: #a7ec21 !important;
+}
+
+.nf {
+  color: #1eb540 !important;
+  font-weight: bold;
+}
+
+.ace_string, .s, .s1, .s2, .sa, .sb, .sd, .sx {
+  color: #e6db74 !important;
+  font-style: normal !important;
+}
+
+.se {
+  color: #ff9ec2 !important;
+  font-weight: normal !important;
+}
+
+.ace_numeric, .ace_language, .ace_constant, .kc, .mh, .mi, .mf {
+  color: #ae81ff !important;
+  font-weight: normal !important;
+}
+
+.ace_comment, .c, .c1, .cm {
+  color: #808080 !important;
+  font-style: normal !important;
+}
+
+.cd {
+  color: #408080 !important;
+}
+
+.ct {
+  color: #9a8c7c;
+  font-weight: bold;
+}

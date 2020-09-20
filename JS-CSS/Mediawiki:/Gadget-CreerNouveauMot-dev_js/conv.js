@@ -1,3 +1,8 @@
+/*
+ * International conventions "language" definition.
+ * ----
+ * [[Catégorie:Sous-page de CreerNouveauMot-dev|conv]]
+ */
 (function () {
   var cnm = wikt.gadgets.creerNouveauMot;
 

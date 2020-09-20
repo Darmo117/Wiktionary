@@ -25,11 +25,11 @@
  * v5.0.8 2020-08-25 added {{type}} template to verbs, fields to insert an image,
  *                   field to add categories; removed lang parameter for some
  *                   interwiki templates
- * v5.0.9 2020-09-16 added pronunciation section field; removed sources section
+ * v5.1 2020-09-20 added pronunciation section field; added ISO 639-3 code to Language
+ *                 class; removed sources section; added help bubbles to some fields
  * ------------------------------------------------------------------------------------
  * [[Catégorie:JavaScript du Wiktionnaire|CreerNouveauMot-dev.js]]
  */
-
 
 $(function () {
   "use strict";
@@ -38,12 +38,11 @@ $(function () {
   if (wikt.page.hasNamespaceIn([""]) && ["edit", "submit"].includes(mw.config.get("wgAction"))) {
     console.log("Chargement de Gadget-CreerNouveauMot-dev.js…");
 
-    // TODO ajouter liens vers pages d’aide
     mw.loader.using(["oojs-ui-core", "oojs-ui-widgets", "oojs-ui-toolbars", "oojs-ui-windows"], function () {
       window.wikt.gadgets.creerNouveauMot = {
         NAME: "Créer nouveau mot",
 
-        VERSION: "5.0.9",
+        VERSION: "5.1",
 
         _COOKIE_NAME: "cnm_last_lang",
         /** Cookie duration in days. */
@@ -111,7 +110,7 @@ $(function () {
           {
             label: "Abréviations",
             code: "abréviations",
-            help: "",
+            help: "Aide:Abréviations, sigles et acronymes",
             level: 4,
           },
           {
@@ -240,7 +239,7 @@ $(function () {
             help: "",
             level: 4,
           },
-          { // TODO déplacer la section sous Prononciation
+          {
             label: "Anagrammes",
             code: "anagrammes",
             help: "Aide:Anagrammes",
@@ -296,11 +295,9 @@ $(function () {
           this._languages.sort(function (a, b) {
             if (a.code === "fr") {
               return -1;
-            }
-            else if (b.code === "fr") {
+            } else if (b.code === "fr") {
               return 1;
-            }
-            else {
+            } else {
               return a.name.localeCompare(b.name);
             }
           });
@@ -388,8 +385,9 @@ $(function () {
 
           var definition = this._gui.definition || "# {{ébauche-déf|{0}}}".format(langCode);
 
-          // Add : at the beginning of each line
-          etymology = etymology.replace(/(^|\n)(?!:)/g, "$1: ");
+          var references = this._gui.references;
+          var bibliography = this._gui.bibliography;
+          var sortingKey = this._gui.sortingKey;
 
           function parseDefinition(definition) {
             var def = "";
@@ -402,8 +400,7 @@ $(function () {
               if (line.charAt(0) !== "#") {
                 def += "# " + line + "\n";
                 defFound = true;
-              }
-              else {
+              } else {
                 def += line + "\n";
                 defFound = line.charAt(1) !== "*";
               }
@@ -416,9 +413,8 @@ $(function () {
             return def.trim();
           }
 
-          var references = this._gui.references;
-          var bibliography = this._gui.bibliography;
-          var sortingKey = this._gui.sortingKey;
+          // Add : at the beginning of each line
+          etymology = etymology.replace(/(^|\n)(?!:)/g, "$1: ");
 
           var wikicode = "== {{langue|{0}}} ==\n".format(langCode)
               + (isDraft ? "{{ébauche|{0}}}\n".format(langCode) : "")
@@ -432,8 +428,7 @@ $(function () {
           wikicode += "'''{0}'''".format(word);
           if (isConv) {
             wikicode += "\n";
-          }
-          else {
+          } else {
             // trim() to remove trailing space(s) if no gender or number template.
             wikicode += " " + "{{pron|{0}|{1}}} {2} {3}".format(pron, langCode, gender.template.format(langCode), number.template.format(langCode))
                 .replace(/\s+/g, " ").trim() + "\n";
@@ -448,8 +443,7 @@ $(function () {
 
               if (/^[^=#:;\[{\s][^\s]*/.test(line)) {
                 lines[i] = "* {{lien|{0}|{1}}}".format(line.trim(), langCode);
-              }
-              else if (/^\*\s*[^\s]+/.test(line)) {
+              } else if (/^\*\s*[^\s]+/.test(line)) {
                 lines[i] = "* {{lien|{0}|{1}}}".format(line.substring(1).trim(), langCode);
               }
             }
@@ -457,25 +451,36 @@ $(function () {
             return lines.join("\n").trim();
           }
 
+          var anagramsSection = "";
+
           for (var i = 0; i < this._SECTIONS.length; i++) {
             var section = this._SECTIONS[i];
             var sectionCode = section.code;
+            var sectionLevel = section.level;
 
             if (sectionCode !== "traductions" || langCode === "fr") {
               var content = sectionCode !== "traductions"
-                  ? this._gui.getSectionContent(section.code)
+                  ? this._gui.getSectionContent(sectionCode)
                   : "{{trad-début}}\n{{trad-fin}}\n\n";
               var upperSection = section.section;
               var titleLevel;
 
               if (content) {
+                var temp = "";
+
                 if (upperSection && !wikicode.includes("S|" + upperSection)) {
-                  titleLevel = Array(section.level).join("=");
-                  wikicode += "{1} {{S|{0}}} {1}\n".format(upperSection, titleLevel);
+                  titleLevel = Array(sectionLevel).join("=");
+                  temp += "{1} {{S|{0}}} {1}\n".format(upperSection, titleLevel);
                 }
-                titleLevel = Array(section.level + 1).join("=");
-                wikicode += "{2} {{S|{0}{1}}} {2}\n".format(section.code, section.needsLang ? ("|" + langCode) : "", titleLevel)
+                titleLevel = Array(sectionLevel + 1).join("=");
+                temp += "{2} {{S|{0}{1}}} {2}\n".format(sectionCode, section.needsLang ? ("|" + langCode) : "", titleLevel)
                     + linkify(content) + "\n\n";
+
+                if (sectionCode === "anagrammes") {
+                  anagramsSection = temp;
+                } else {
+                  wikicode += temp;
+                }
               }
             }
           }
@@ -499,7 +504,9 @@ $(function () {
           }
           wikicode += pronSection;
 
-          var seeAlso = "";
+          wikicode += anagramsSection;
+
+          var seeAlsoSection = "";
           for (var projectCode in this._OTHER_PROJECTS) {
             if (this._OTHER_PROJECTS.hasOwnProperty(projectCode)) {
               var addLink = this._gui.hasAddLinkToProject(projectCode);
@@ -508,18 +515,18 @@ $(function () {
                 var projectModelParams = this._gui.getProjectLinkParams(projectCode);
                 var templateName = this._OTHER_PROJECTS[projectCode].templateName;
 
-                if (seeAlso === "") {
-                  seeAlso = "=== {{S|voir aussi}} ===\n";
+                if (seeAlsoSection === "") {
+                  seeAlsoSection = "=== {{S|voir aussi}} ===\n";
                 }
                 var langParam = this._OTHER_PROJECTS[projectCode].urlDomain.includes("{0}") ? "|lang=" + langCode : "";
-                seeAlso += "* {{{0}{1}{2}}}\n".format(templateName, projectModelParams ? "|" + projectModelParams : "", langParam);
+                seeAlsoSection += "* {{{0}{1}{2}}}\n".format(templateName, projectModelParams ? "|" + projectModelParams : "", langParam);
               }
             }
           }
-          if (seeAlso) {
-            seeAlso += "\n";
+          if (seeAlsoSection) {
+            seeAlsoSection += "\n";
           }
-          wikicode += seeAlso;
+          wikicode += seeAlsoSection;
 
           var containsRefTemplates = /{{(R|RÉF|réf)\||<ref>.+<\/ref>/gm.test(wikicode);
 
@@ -608,7 +615,7 @@ $(function () {
          * @private
          */
         _editComment: function () {
-          return "Ajout d’un mot assisté par [[Aide:Gadget-CreerNouveauMot|Gadget-CreerNouveauMot]] (v{0})".format(this.VERSION);
+          return "Ajout d’un mot assisté par [[Aide:Gadget-CreerNouveauMot-dev|Gadget-CreerNouveauMot-dev]] (v{0})".format(this.VERSION);
         },
       };
 
@@ -1254,6 +1261,7 @@ $(function () {
           }
           CustomTool.static.displayBothIconAndLabel = !!displayBothIconAndLabel;
           CustomTool.prototype.onSelect = onSelect;
+          // noinspection JSUnusedGlobalSymbols
           CustomTool.prototype.onUpdateState = onUpdateState || function () {
             this.setActive(false);
           };
@@ -1271,7 +1279,7 @@ $(function () {
 
         var helpBtn = "help";
         generateButton(toolFactory, helpBtn, "help", false, "Aide (s’ouvre dans un nouvel onglet)", function () {
-          window.open("/wiki/Aide:Gadget-CreerNouveauMot");
+          window.open("/wiki/Aide:Gadget-CreerNouveauMot-dev");
         });
 
         var actionsToolbar = new OO.ui.Toolbar(toolFactory, toolGroupFactory);
@@ -1362,8 +1370,7 @@ $(function () {
           commonsAudioUrl = 'https://commons.wikimedia.org/w/index.php?search={0}.wav+incategory:"Lingua+Libre+pronunciation-{1}"'
               .format(this._word.replace(" ", "_"), language.iso6393Code);
           $span.show();
-        }
-        else {
+        } else {
           $span.hide();
         }
         $link.attr("href", commonsAudioUrl);
@@ -1441,8 +1448,7 @@ $(function () {
             $link.attr("href", url);
             if (url === "#" || disabled) {
               $link.hide();
-            }
-            else {
+            } else {
               $link.show();
             }
           }
@@ -1554,6 +1560,7 @@ $(function () {
         return this._otherSectionFields[sectionCode].getValue().trim();
       };
 
+      // noinspection JSUnusedGlobalSymbols
       /**
        * Sets the contents of the given section.
        * @param sectionCode {string} Sections’s code.

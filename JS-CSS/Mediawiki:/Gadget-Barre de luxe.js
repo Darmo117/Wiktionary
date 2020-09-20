@@ -1,7 +1,7 @@
 /**
  * (fr)
  * Ce gadget ajoute de nouveaux boutons à la barre d’outils.
- * Page d’aide : [[Aide:Gadget-Barre de luxe]]
+ * Page d’aide : [[Aide:Gadget-Barre de luxe]]
  * Icones (OOUI): https://commons.wikimedia.org/wiki/OOUI_icons
  * Icones (Monobook): http://commons.wikimedia.org/wiki/Category:MediaWiki_edit_toolbar
  * ----

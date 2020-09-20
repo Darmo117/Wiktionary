@@ -1,0 +1,11 @@
+{
+  "root": "Mediawiki:",
+  "namespace": 8,
+  "page_names": [
+    "Gadget-wikt.create-inflection-dev.js",
+    "Gadget-wikt.create-inflection-dev.js/fr.js"
+  ],
+  "dependencies": [
+    "Gadget-CommonWikt.js"
+  ]
+}

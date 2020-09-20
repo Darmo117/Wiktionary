@@ -26,6 +26,7 @@ $(function () {
     "Questions_sur_les_mots",
     "Questions_techniques",
     "Wikidémie",
+    "Boîte_à_idées",
   ];
 
   if (
@@ -60,6 +61,7 @@ if (window.location.hash) {
  */
 $(function () {
   // links are only replaced in p-lang
+  // noinspection JSUnresolvedVariable
   if (typeof window.disableFeaturedInterwikiLinks !== "undefined") {
     return;
   }
@@ -104,8 +106,7 @@ $(function () {
     if (realTitle && $h1) {
       if (realTitle === "") {
         $($h1).hide();
-      }
-      else {
+      } else {
         $($h1).html(realTitle);
         // noinspection JSValidateTypes
         if (mw.config.get("wgAction") === "view" && $realTitle.children().length === 0) {
@@ -165,6 +166,7 @@ $(function stubeditLink() {
     var $hall = $ol.prevAll("h2, h3, h4");
     if ($hall.length > 0) {
       var href = "";
+      // noinspection JSUnresolvedFunction
       $hall.each(function () {
         var $modif = $(this).find(".mw-editsection a");
         href = $modif.attr("href");

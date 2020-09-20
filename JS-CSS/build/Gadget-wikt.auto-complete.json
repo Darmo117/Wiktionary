@@ -1,0 +1,11 @@
+{
+  "root": "Mediawiki:",
+  "namespace": 8,
+  "page_names": [
+    "Gadget-wikt.auto-complete.js",
+    "Gadget-wikt.auto-complete.css"
+  ],
+  "dependencies": [
+    "Gadget-CommonWikt.js"
+  ]
+}

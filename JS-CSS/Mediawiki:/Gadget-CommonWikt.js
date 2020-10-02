@@ -350,7 +350,7 @@ wikt.page.getFullPageName = function (namespaceId, pageName) {
 
 /**
  * Returns all the subpages of the given base page that match the given CirrusSearch pattern.
- * Sends an AJAX request to WikiMedia’s servers.
+ * Sends an AJAX request to WikiMedia’s servers.
  * @param namespaceId {number} The page’s namespace ID.
  * @param basePageName {string} The page’s name.
  * @param subPagesPattern {string} The CirrusSearch pattern subpages’ names must match.
@@ -487,6 +487,7 @@ wikt.page.renderWikicode = function (wikicode, onlyFirstParagraph) {
     },
     async: false,
     complete: function (data) {
+      // noinspection JSUnresolvedVariable
       var $text = $(data.responseJSON["parse"]["text"]["*"]);
       if (onlyFirstParagraph) {
         html = $text.find("p:first").html();
@@ -625,6 +626,7 @@ wikt.html.deleteNode = CommonWikt_Delete;
 function CommonWikt_AjouteCookie(name, value, days) {
   var date = new Date();
   date.setTime(date.getTime() + days * 86400000);
+  // noinspection JSUnresolvedFunction
   document.cookie = "{0}={1}; expires={2}; path=/".format(name, value, date.toGMTString());
 }
 

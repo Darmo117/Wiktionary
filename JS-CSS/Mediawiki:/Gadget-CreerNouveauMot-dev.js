@@ -473,7 +473,7 @@ $(function () {
                   temp += "{1} {{S|{0}}} {1}\n".format(upperSection, titleLevel);
                 }
                 titleLevel = Array(sectionLevel + 1).join("=");
-                temp += "{2} {{S|{0}{1}}} {2}\n".format(sectionCode, section.needsLang ? ("|" + langCode) : "", titleLevel)
+                temp += "{1} {{S|{0}}} {1}\n".format(sectionCode, titleLevel)
                     + linkify(content) + "\n\n";
 
                 if (sectionCode === "anagrammes") {
@@ -615,7 +615,7 @@ $(function () {
          * @private
          */
         _editComment: function () {
-          return "Ajout d’un mot assisté par [[Aide:Gadget-CreerNouveauMot-dev|Gadget-CreerNouveauMot-dev]] (v{0})".format(this.VERSION);
+          return "Ajout d’un mot assisté par [[Aide:Gadget-CreerNouveauMot-dev|{0}]] (v{1})".format(this.NAME, this.VERSION);
         },
       };
 
@@ -735,6 +735,7 @@ $(function () {
        * Sets this tab as active.
        */
       wikt.gadgets.creerNouveauMot.Tab.prototype.select = function () {
+        // noinspection JSUnresolvedFunction
         this.setActive(true);
       };
 
@@ -833,7 +834,6 @@ $(function () {
         // Alias to avoid confusion inside nested functions.
         var self = this;
 
-        // noinspection JSValidateJSDoc
         /**
          * Returns the help link for the given help page name.
          * @param pageName {string} The page name.
@@ -1455,13 +1455,13 @@ $(function () {
         }
       }
 
-      // noinspection JSValidateJSDoc
       /**
        * Sets the values of the given OOUI dropdown widget.
        * @param values {Array<wikt.gadgets.creerNouveauMot.Gender|wikt.gadgets.creerNouveauMot.Number>} The list of values.
        * @param field {OO.ui.DropdownWidget} The OOUI widget.
        */
       wikt.gadgets.creerNouveauMot.MainGui.prototype._setListValues = function (values, field) {
+        // noinspection JSUnresolvedFunction
         field.getMenu().clearItems();
         var items = [];
         for (var i = 0; i < values.length; i++) {
@@ -1471,7 +1471,9 @@ $(function () {
             label: new OO.ui.HtmlSnippet(value.label),
           }));
         }
+        // noinspection JSUnresolvedFunction
         field.getMenu().addItems(items);
+        // noinspection JSUnresolvedFunction
         field.getMenu().selectItem(items[0]);
       };
 

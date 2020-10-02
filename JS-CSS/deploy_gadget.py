@@ -1,8 +1,8 @@
-import typing as typ
 import json
 import os
-import sys
 import re
+import sys
+import typing as typ
 
 import pywikibot as pwb
 
@@ -43,7 +43,7 @@ if build_chore not in messages:
     raise ValueError(f'illegal chore type "{build_chore}"')
 
 
-def handle_file(name: str):
+def handle_file(name: str, commit_message: str):
     def get_file_content() -> str:
         with open(path, mode='r', encoding='UTF-8') as f_in:
             return ''.join(f_in.readlines())
@@ -56,7 +56,7 @@ def handle_file(name: str):
     if push_gadget:
         page = pwb.Page(site, title=name, ns=namespace)
         page.text = get_file_content()
-        page.save(summary='Déploiement automatique')
+        page.save(summary="(Déploiement automatique) " + commit_message)
     elif pull_gadget:
         page = pwb.Page(site, title=name, ns=namespace)
         with open(path, mode='w', encoding='UTF-8') as f_out:
@@ -76,9 +76,16 @@ def handle_file(name: str):
     print('Done.')
 
 
+if push_gadget:
+    commit_message = input('Commit message: ')
+else:
+    commit_message = ''
+
 for file_name in files:
-    handle_file(file_name)
+    handle_file(file_name, commit_message)
 
 if push_gadget and push_dependencies:
     for file_name in dependencies:
-        handle_file(file_name)
+        handle_file(file_name, commit_message)
+
+print('Finished.')

@@ -31,6 +31,7 @@ window.wikt.gadgets.barreDeLuxe = {
 
   sectionId: "advanced",
 
+  /** @type {Array<Object<string, string>>} */
   defaultButtons: [
     {
       tagOpen: "’",

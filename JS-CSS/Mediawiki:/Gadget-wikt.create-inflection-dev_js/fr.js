@@ -1,4 +1,4 @@
-wikt.gadgets.creerFlexion.addLanguageData(new wikt.gadgets.creerFlexion.LanguageData(
+wikt.gadgets.createInflection.addLanguageData(new wikt.gadgets.createInflection.LanguageData(
     "fr",
     "flextable-fr-mfsp",
     [

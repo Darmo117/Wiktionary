@@ -10,11 +10,11 @@
  * v1.0 2013-06-13
  * v2.0 2020-11-01 Full rewrite.
  *******************************************************************************************
- * [[Catégorie:JavaScript du Wiktionnaire|CreerTrad]]
+ * [[Catégorie:JavaScript du Wiktionnaire|CreerTrad-dev]]
  *******************************************************************************************/
 
 $(function () {
-  console.log("Chargement de Gadget-CreerTrad.js…");
+  console.log("Chargement de Gadget-CreerTrad-dev.js…");
 
   if (wikt.page.hasNamespaceIn([""]) && mw.config.get("wgAction") === "view") {
     window.wikt.gadgets.createTranslation = {
@@ -263,7 +263,7 @@ $(function () {
         }
         document.body.innerHTML = data;
         document.getElementById("wpTextbox1").value = this._generatedWikicode;
-        document.getElementById("wpSummary").value = "Création avec [[Aide:Gadget-CreerTrad|Gadget-CreerTrad]].";
+        document.getElementById("wpSummary").value = "Création avec [[Aide:Gadget-CreerTrad-dev|Gadget-CreerTrad-dev]].";
       },
 
       /**

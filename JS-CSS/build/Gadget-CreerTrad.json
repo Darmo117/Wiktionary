@@ -1,0 +1,26 @@
+{
+  "root": "Mediawiki:",
+  "namespace": 8,
+  "page_names": [
+    "Gadget-CreerTrad.js"
+  ],
+  "dependencies": [
+    "Gadget-CommonWikt.js"
+  ],
+  "build": {
+    "copy": {
+      "filename_rules": [
+        {
+          "pattern": "CreerTrad",
+          "repl": "CreerTrad-dev"
+        }
+      ],
+      "content_rules": [
+        {
+          "pattern": "CreerTrad",
+          "repl": "CreerTrad-dev"
+        }
+      ]
+    }
+  }
+}

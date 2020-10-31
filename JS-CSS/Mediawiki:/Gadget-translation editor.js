@@ -12,7 +12,7 @@
  * [[Catégorie:JavaScript du Wiktionnaire|translation editor]]
  */
 
-/* global jQuery, mediaWiki, editor, silentFailStorage, CrTr_ChangerLiensRouges, wgPageName */
+/* global jQuery, mediaWiki, editor, silentFailStorage, wikt.gadgets.createTranslation.init, wgPageName */
 
 (function (mw, $) { // Closure (fermée à la toute fin du script)
   'use strict';
@@ -792,7 +792,7 @@
             // Si le gadget de création de traductions est activé,
             // on colore directement en bleu les traductions à créer
             // pour éviter d'avoir à recharger la page
-            if (window.CrTr_ChangerLiensRouges) window.CrTr_ChangerLiensRouges();
+            if (window.wikt.gadgets.createTranslation) window.wikt.gadgets.createTranslation.init();
           },
           undo: function () {
             added_elem.remove();

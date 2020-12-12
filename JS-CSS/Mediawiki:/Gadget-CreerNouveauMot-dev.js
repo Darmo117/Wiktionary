@@ -579,7 +579,7 @@ $(function () {
             var language = this.getLanguage(languageCode);
 
             if (!language) {
-              language = new wikt.gadgets.creerNouveauMot.Language(languageCode, null, languageCode, [], [
+              language = new wikt.gadgets.creerNouveauMot.Language(languageCode, null, null, languageCode, [], [
                 new wikt.gadgets.creerNouveauMot.GrammaticalItem(wikt.gadgets.creerNouveauMot.grammaticalClasses.ADJECTIVE),
                 new wikt.gadgets.creerNouveauMot.GrammaticalItem(wikt.gadgets.creerNouveauMot.grammaticalClasses.ADVERB),
                 new wikt.gadgets.creerNouveauMot.GrammaticalItem(wikt.gadgets.creerNouveauMot.grammaticalClasses.NOUN),

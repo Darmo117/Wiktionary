@@ -2,8 +2,8 @@
   "root": "Mediawiki:",
   "namespace": 8,
   "page_names": [
-    "Gadget-wikt.auto-complete.js",
-    "Gadget-wikt.auto-complete.css"
+    "Gadget-wikt.auto-complete-dev.js",
+    "Gadget-wikt.auto-complete-dev.css"
   ],
   "dependencies": [
     "Gadget-CommonWikt.js"
@@ -12,14 +12,14 @@
     "copy": {
       "filename_rules": [
         {
-          "pattern": "auto-complete",
-          "repl": "auto-complete-dev"
+          "pattern": "auto-complete-dev",
+          "repl": "auto-complete"
         }
       ],
       "content_rules": [
         {
-          "pattern": "auto-complete",
-          "repl": "auto-complete-dev"
+          "pattern": "auto-complete-dev",
+          "repl": "auto-complete"
         }
       ]
     }

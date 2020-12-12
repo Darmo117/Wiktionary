@@ -9,7 +9,7 @@
  * Pensé pour les caractères absents du clavier AZERTY français pour
  * écrire le français.
  ********************************************************************
- * [[Catégorie:JavaScript du Wiktionnaire|specialchars.js]]
+ * [[Catégorie:JavaScript du Wiktionnaire|specialchars-dev.js]]
  ********************************************************************/
 
 window.wikt.gadgets.specialChars = {
@@ -144,6 +144,6 @@ window.wikt.gadgets.specialChars = {
 };
 
 (function () {
-  console.log("Chargement de Gadget-specialchars.js…");
+  console.log("Chargement de Gadget-specialchars-dev.js…");
   wikt.gadgets.specialChars.init();
 })();

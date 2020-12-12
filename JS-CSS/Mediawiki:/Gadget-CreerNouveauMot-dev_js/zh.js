@@ -53,7 +53,7 @@
         new cnm.GrammaticalItem(cnm.grammaticalClasses.PRONOUN, [cnm.genders.NO_GENDER], [cnm.numbers.INVARIABLE], function (word, grammarClass, gender, number, pron) {
           return getModel(grammarClass, number, pron);
         }),
-        new cnm.GrammaticalItem(cnm.grammaticalClasses.VERB, [], [cnm.numbers.INVARIABLE], function (word, grammarClass, gender, number, pron) {
+        new cnm.GrammaticalItem(cnm.grammaticalClasses.VERB, null, [cnm.numbers.INVARIABLE], function (word, grammarClass, gender, number, pron) {
           return gender.label === cnm.genders.REGULAR_VERB.label
               ? "{{en-conj-rég|inf.pron={0}}}".format(pron)
               : "{{en-conj-irrég|inf={0}|inf.pron={1}|<!-- Compléter -->}}".format(word, pron);

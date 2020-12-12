@@ -157,21 +157,25 @@ end
 --- @param param table La définition du paramètre.
 --- @param processedArgs table Les paramètres en cours de traitement.
 --- @param argName string Le nom du paramètre.
---- @return string|nil Le nom du paramètre à utiliser ou nil si le paramètre
----                    est un alias dont l’argument de base a déjà une valeur.
-local function extractArgumentKey(param, processedArgs, argName)
+--- @param processedArgs table La définition des paramètres.
+--- @return string|nil,table|nil Le nom du paramètre à utiliser et le paramètre réel ou nil si le paramètre
+---                              est un alias dont l’argument de base a déjà une valeur.
+local function extractArgumentKey(param, processedArgs, argName, definedParameters)
   local key
+  local outParam
 
   if param.alias_of then
     -- L’alias n’écrase pas la valeur du paramètre de base.
-    if processedArgs[param.alias_of] == nil then
+    if not processedArgs[param.alias_of] then
       key = param.alias_of
+      outParam = definedParameters[param.alias_of]
     end
   else
     key = argName
+    outParam = param
   end
 
-  return key
+  return key, outParam
 end
 
 --- Extrait la valeur de l’argument donné.
@@ -197,7 +201,7 @@ local function extractArgumentValue(param, key, argName, argValue, processedArgs
 
   if argValue then
     -- Récupération de la valeur après transtypage éventuel.
-    local value, frTypeName = getValue(param.type, argValue, key, p.INVALID_VALUE)
+    local value, frTypeName = getValue(param.type, argValue, argName, p.INVALID_VALUE)
     -- Vérification des contraintes d’énumération ou de la précondition.
     if type(param.enum) == "table" and not m_table.contains(param.enum, value) then
       error(buildErrorMessage(p.VALUE_NOT_IN_ENUM, argName, value))
@@ -219,9 +223,9 @@ local function parseArguments(args, definedParameters)
     local param = definedParameters[argName]
 
     if param then
-      local key = extractArgumentKey(param, processedArgs, argName)
+      local key, actualParam = extractArgumentKey(param, processedArgs, argName, definedParameters)
       if key then
-        extractArgumentValue(param, key, argName, argValue, processedArgs)
+        extractArgumentValue(actualParam, key, argName, argValue, processedArgs)
       end
     else
       -- Les paramètres non définis lancent une erreur.
@@ -251,7 +255,7 @@ end
 --- Pour plus de détails, voir la documentation du module.
 --- @param args table Les arguments du module appelant.
 --- @param definedParameters table Les paramètres définis.
---- @param silentErrors boolean Si true, les paramètres problématiques sont retournés au lieu de lancer une erreur ; ne devrait être utilisé que dans le cas où un comportement précis est nécessaire.
+--- @param silentErrors boolean Si true, les paramètres problématiques sont retournés au lieu de lancer une erreur ; ne devrait être utilisé que dans le cas où un comportement précis est nécessaire.
 --- @return table|string|number,boolean Une table contenant les paramètres traités ou le nom du paramètre ayant déclanché une erreur et un booléen indiquant le statut.
 function p.process(args, definedParameters, silentErrors)
   local success, result = pcall(function()

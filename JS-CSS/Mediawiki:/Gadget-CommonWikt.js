@@ -122,8 +122,8 @@ wikt.edit.setText = function (text, $textInput) {
 
 /**
  * Inserts the given text at the specified position in the edit area.
- * @param index {number} The index at which the text is to be inserted.
  * Supports syntax coloring.
+ * @param index {number} The index at which the text is to be inserted.
  * @param text {string} The text to insert.
  * @param $textInput {Object?} The text input or textarea to use instead of the main edit box.
  */
@@ -138,6 +138,24 @@ wikt.edit.insertText = function (index, text, $textInput) {
 };
 
 /**
+ * Replaces the text between the given positions in the edit area.
+ * Supports syntax coloring.
+ * @param startIndex {number} The start index at which the text is to be inserted.
+ * @param endIndex {number} The end index at which the text is to be inserted.
+ * @param text {string} The text to insert.
+ * @param $textInput {Object?} The text input or textarea to use instead of the main edit box.
+ */
+wikt.edit.replaceText = function (startIndex, endIndex, text, $textInput) {
+  var $editBox = $textInput || this.getEditBox();
+
+  if ($editBox) {
+    var currentText = $editBox.val();
+    var newText = currentText.substring(0, startIndex) + text + currentText.substring(endIndex);
+    $editBox.val(newText);
+  }
+};
+
+/**
  * Fetches then returns the current location of the text cursor inside the edit box.
  * @param $textInput {Object?} The text input or textarea to use instead of the main edit box.
  * @return {number} The index from the start of the text.
@@ -147,6 +165,7 @@ wikt.edit.getCursorLocation = function ($textInput) {
 
   if ($editBox) {
     if (this._isCodeMirrorInput($editBox) && this.isCodeMirrorEnabled()) {
+      // noinspection JSUnresolvedFunction
       return this.getCodeMirror().indexFromPos(this.getCodeMirror().getCursor());
     } else {
       return $editBox.get(0).selectionStart;
@@ -164,7 +183,8 @@ wikt.edit.setCursorLocation = function (position, $textInput) {
 
   if ($editBox) {
     if (this._isCodeMirrorInput($editBox) && this.isCodeMirrorEnabled()) {
-      this.getCodeMirror().setCursor(this.getCodeMirror().posFromIndex());
+      // noinspection JSUnresolvedFunction
+      this.getCodeMirror().setCursor(this.getCodeMirror().posFromIndex(position));
     } else {
       $editBox.get(0).selectionStart = position;
       $editBox.get(0).selectionEnd = position;
@@ -199,6 +219,7 @@ wikt.edit.replaceSelectedText = function (replacement, $textInput) {
   var $editBox = $textInput || this.getEditBox();
 
   if (this._isCodeMirrorInput($editBox) && this.isCodeMirrorEnabled()) {
+    // noinspection JSUnresolvedFunction
     this.getCodeMirror().replaceSelection(replacement);
   } else {
     var start = $editBox.get(0).selectionStart;

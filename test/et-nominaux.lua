@@ -28,7 +28,7 @@ function p.show(frame)
   end
 
   if args["nopl"] then
-    table.insert(data.categories, "et-decl with nopl")
+    table.insert(data.categories, "Noms indénombrables en estonien")
   end
 
   if args["type"] then
@@ -171,10 +171,10 @@ end
 
 inflections["ohutu"] = function(args, data)
   data.title = "Type ÕS [[Annexe:Déclinaison nominale estonienne|1/ohutu]], sans gradation"
-  table.insert(data.categories, "Estonian de type ohutu")
+  table.insert(data.categories, "Formes nominales en estonien de type ohutu")
 
   local params = get_params(args, 1)
-  local i_stem = mw.ustring.str(params.base, "i$", "e")
+  local i_stem = mw.ustring.gsub(params.base, "i$", "e")
 
   local stems = {}
   stems["nom_sg"] = { params.base }
@@ -190,10 +190,10 @@ end
 
 inflections["õpik"] = function(args, data)
   data.title = "Type ÕS [[Annexe:Déclinaison nominale estonienne|2/õpik]], sans gradation"
-  table.insert(data.categories, "Estonian de type õpik")
+  table.insert(data.categories, "Formes nominales en estonien de type õpik")
 
   local params = get_params(args, 3)
-  local i_stem = mw.ustring.str(params.base .. params.final, "i$", "e")
+  local i_stem = mw.ustring.gsub(params.base .. params.final, "i$", "e")
 
   local stems = {}
   stems["nom_sg"] = { params.base .. params.final_nom_sg }
@@ -209,7 +209,7 @@ end
 
 inflections["vaher"] = function(args, data)
   data.title = "Type ÕS [[Annexe:Déclinaison nominale estonienne|3/vaher]]"
-  table.insert(data.categories, "Estonian de type vaher")
+  table.insert(data.categories, "Formes nominales en estonien de type vaher")
 
   local params = get_params(args, 5, true)
   local i_stem = mw.ustring.gsub(params.base .. params.strong .. params.final, "i$", "e")
@@ -233,8 +233,8 @@ inflections["vaher"] = function(args, data)
 end
 
 inflections["ase"] = function(args, data)
-  data.title = "ÕS type [[Annexe:Déclinaison nominale estonienne|4/ase]], sans gradation"
-  table.insert(data.categories, "Estonian ase-type nominals")
+  data.title = "Type ÕS [[Annexe:Déclinaison nominale estonienne|4/ase]], sans gradation"
+  table.insert(data.categories, "Formes nominales en estonien de type ase")
 
   local params = get_params(args, 2)
 
@@ -251,8 +251,8 @@ inflections["ase"] = function(args, data)
 end
 
 inflections["liige"] = function(args, data)
-  data.title = "ÕS type [[Annexe:Déclinaison nominale estonienne]]"
-  table.insert(data.categories, "Estonian liige-type nominals")
+  data.title = "Type ÕS [[Annexe:Déclinaison nominale estonienne]]"
+  table.insert(data.categories, "Formes nominales en estonien de type liige")
 
   local params = get_params(args, 5, true)
   local i_stem = mw.ustring.gsub(params.base .. params.strong .. params.final, "i$", "e")
@@ -276,8 +276,8 @@ inflections["liige"] = function(args, data)
 end
 
 inflections["mõte"] = function(args, data)
-  data.title = "ÕS type [[Appendix:Estonian nominal inflection|6/mõte]]"
-  table.insert(data.categories, "Estonian mõte-type nominals")
+  data.title = "Type ÕS [[Annexe:Déclinaison nominale estonienne|6/mõte]]"
+  table.insert(data.categories, "Formes nominales en estonien de type mõte")
 
   local params = get_params(args, 4, true)
 
@@ -300,8 +300,8 @@ inflections["mõte"] = function(args, data)
 end
 
 inflections["kallas"] = function(args, data)
-  data.title = "ÕS type [[Appendix:Estonian nominal inflection|7/kallas]]"
-  table.insert(data.categories, "Estonian kallas-type nominals")
+  data.title = "Type ÕS [[Annexe:Déclinaison nominale estonienne|7/kallas]]"
+  table.insert(data.categories, "Formes nominales en estonien de type kallas")
 
   local params = get_params(args, 5, true)
   local i_stem = mw.ustring.gsub(params.base .. params.strong .. params.final, "i$", "e")
@@ -325,8 +325,8 @@ inflections["kallas"] = function(args, data)
 end
 
 inflections["küünal"] = function(args, data)
-  data.title = "ÕS type [[Appendix:Estonian nominal inflection|8/küünal]]"
-  table.insert(data.categories, "Estonian küünal-type nominals")
+  data.title = "Type ÕS [[Annexe:Déclinaison nominale estonienne|8/küünal]]"
+  table.insert(data.categories, "Formes nominales en estonien de type küünal")
 
   local params = get_params(args, 5, true)
 
@@ -349,8 +349,8 @@ inflections["küünal"] = function(args, data)
 end
 
 inflections["katus"] = function(args, data)
-  data.title = "ÕS type [[Appendix:Estonian nominal inflection|9/katus]], no gradation"
-  table.insert(data.categories, "Estonian katus-type nominals")
+  data.title = "Type ÕS [[Annexe:Déclinaison nominale estonienne|9/katus]], sans gradation"
+  table.insert(data.categories, "Formes nominales en estonien de type katus")
 
   local params = get_params(args, 1)
 
@@ -367,8 +367,8 @@ inflections["katus"] = function(args, data)
 end
 
 inflections["soolane"] = function(args, data)
-  data.title = "ÕS type [[Appendix:Estonian nominal inflection|10/soolane]], no gradation"
-  table.insert(data.categories, "Estonian soolane-type nominals")
+  data.title = "Type ÕS [[Annexe:Déclinaison nominale estonienne|10/soolane]], sans gradation"
+  table.insert(data.categories, "Formes nominales en estonien de type soolane")
 
   local params = get_params(args, 2)
 
@@ -385,8 +385,8 @@ inflections["soolane"] = function(args, data)
 end
 
 inflections["harjutus"] = function(args, data)
-  data.title = "ÕS type [[Appendix:Estonian nominal inflection|11/harjutus]], no gradation"
-  table.insert(data.categories, "Estonian harjutus-type nominals")
+  data.title = "Type ÕS [[Annexe:Déclinaison nominale estonienne|11/harjutus]], sans gradation"
+  table.insert(data.categories, "Formes nominales en estonien de type harjutus")
 
   local params = get_params(args, 1)
 
@@ -403,8 +403,8 @@ inflections["harjutus"] = function(args, data)
 end
 
 inflections["oluline"] = function(args, data)
-  data.title = "ÕS type [[Appendix:Estonian nominal inflection|12/oluline]], no gradation"
-  table.insert(data.categories, "Estonian oluline-type nominals")
+  data.title = "Type ÕS [[Annexe:Déclinaison nominale estonienne|12/oluline]], sans gradation"
+  table.insert(data.categories, "Formes nominales en estonien de type oluline")
 
   local params = get_params(args, 2)
 
@@ -421,8 +421,8 @@ inflections["oluline"] = function(args, data)
 end
 
 inflections["suur"] = function(args, data)
-  data.title = "ÕS type [[Appendix:Estonian nominal inflection|13/suur]], length gradation"
-  table.insert(data.categories, "Estonian suur-type nominals")
+  data.title = "Type ÕS [[Annexe:Déclinaison nominale estonienne|13/suur]], gradation en lingueur"
+  table.insert(data.categories, "Formes nominales en estonien de type suur")
 
   local params = get_params(args, 1)
 
@@ -439,8 +439,8 @@ inflections["suur"] = function(args, data)
 end
 
 inflections["uus"] = function(args, data)
-  data.title = "ÕS type [[Appendix:Estonian nominal inflection|14/uus]]"
-  table.insert(data.categories, "Estonian uus-type nominals")
+  data.title = "Type ÕS [[Annexe:Déclinaison nominale estonienne|14/uus]]"
+  table.insert(data.categories, "Formes nominales en estonien de type uus")
 
   local params = get_params(args, 2)
   local s_stem = mw.ustring.gsub(params.base .. params.final, "n$", "")
@@ -464,8 +464,8 @@ inflections["uus"] = function(args, data)
 end
 
 inflections["käsi"] = function(args, data)
-  data.title = "ÕS type [[Appendix:Estonian nominal inflection|15/käsi]], ''d/t-ø-s'' gradation"
-  table.insert(data.categories, "Estonian käsi-type nominals")
+  data.title = "Type ÕS [[Annexe:Déclinaison nominale estonienne|15/käsi]], ''d/t-ø-s'' gradation"
+  table.insert(data.categories, "Formes nominales en estonien de type käsi")
 
   local params = get_params(args, 1)
   local weak_stem = params.base
@@ -488,8 +488,8 @@ inflections["käsi"] = function(args, data)
 end
 
 inflections["pere"] = function(args, data)
-  data.title = "ÕS type [[Annexe:Déclinaison nominale estonienne|16/pere]], sans gradation"
-  table.insert(data.categories, "Estonian de type pere")
+  data.title = "Type ÕS [[Annexe:Déclinaison nominale estonienne|16/pere]], sans gradation"
+  table.insert(data.categories, "Formes nominales en estonien de type pere")
 
   local params = get_params(args, 1)
   local ill_sg_stem = params.base
@@ -511,8 +511,8 @@ inflections["pere"] = function(args, data)
 end
 
 inflections["elu"] = function(args, data)
-  data.title = "ÕS type [[Appendix:Estonian nominal inflection|17/elu]], no gradation"
-  table.insert(data.categories, "Estonian elu-type nominals")
+  data.title = "Type ÕS [[Annexe:Déclinaison nominale estonienne|17/elu]], sans gradation"
+  table.insert(data.categories, "Formes nominales en estonien de type elu")
 
   local params = get_params(args, 1)
   local ill_sg_stem = params.base
@@ -544,8 +544,8 @@ inflections["elu"] = function(args, data)
 end
 
 inflections["kivi"] = function(args, data)
-  data.title = "ÕS type [[Appendix:Estonian nominal inflection|17e/kivi]], no gradation"
-  table.insert(data.categories, "Estonian kivi-type nominals")
+  data.title = "Type ÕS [[Annexe:Déclinaison nominale estonienne|17e/kivi]], sans gradation"
+  table.insert(data.categories, "Formes nominales en estonien de type kivi")
 
   local params = get_params(args, 1)
   local pl_stem = mw.ustring.gsub(params.base, "[aeiouõäöü]$", "e")
@@ -568,8 +568,8 @@ inflections["kivi"] = function(args, data)
 end
 
 inflections["pesa"] = function(args, data)
-  data.title = "ÕS type [[Appendix:Estonian nominal inflection|17i/pesa]], no gradation"
-  table.insert(data.categories, "Estonian pesa-type nominals")
+  data.title = "Type ÕS [[Annexe:Déclinaison nominale estonienne|17i/pesa]], sans gradation"
+  table.insert(data.categories, "Formes nominales en estonien de type pesa")
 
   local params = get_params(args, 1)
   local pl_stem = mw.ustring.gsub(params.base, "[aeiouõäöü]$", "i")
@@ -592,8 +592,8 @@ inflections["pesa"] = function(args, data)
 end
 
 inflections["sõna"] = function(args, data)
-  data.title = "ÕS type [[Appendix:Estonian nominal inflection|17u/sõna]], no gradation"
-  table.insert(data.categories, "Estonian sõna-type nominals")
+  data.title = "Type ÕS [[Annexe:Déclinaison nominale estonienne|17u/sõna]], sans gradation"
+  table.insert(data.categories, "Formes nominales en estonien de type sõna")
 
   local params = get_params(args, 1)
   local pl_stem = mw.ustring.gsub(params.base, "[aeiouõäöü]$", "u")
@@ -622,13 +622,13 @@ inflections["sõna"] = function(args, data)
 end
 
 inflections["nägu"] = function(args, data)
-  data.title = "ÕS type [[Appendix:Estonian nominal inflection|18/nägu]]"
-  table.insert(data.categories, "Estonian nägu-type nominals")
+  data.title = "Type ÕS [[Annexe:Déclinaison nominale estonienne|18/nägu]]"
+  table.insert(data.categories, "Formes nominales en estonien de type nägu")
 
   local params = get_params(args, 4, true)
 
   if params.strong == params.weak then
-    data.title = data.title .. ", no gradation"
+    data.title = data.title .. ", sans gradation"
   else
     data.title = data.title .. ", ''" .. params.strong .. "-" .. (params.weak == "" and "ø" or params.weak) .. "'' gradation"
   end
@@ -664,13 +664,13 @@ inflections["nägu"] = function(args, data)
 end
 
 inflections["tuba"] = function(args, data)
-  data.title = "ÕS type [[Appendix:Estonian nominal inflection|18e/tuba]]"
-  table.insert(data.categories, "Estonian tuba-type nominals")
+  data.title = "Type ÕS [[Annexe:Déclinaison nominale estonienne|18e/tuba]]"
+  table.insert(data.categories, "Formes nominales en estonien de type tuba")
 
   local params = get_params(args, 4, true)
 
   if params.strong == params.weak then
-    data.title = data.title .. ", no gradation"
+    data.title = data.title .. ", sans gradation"
   else
     data.title = data.title .. ", ''" .. params.strong .. "-" .. (params.weak == "" and "ø" or params.weak) .. "'' gradation"
   end
@@ -708,13 +708,13 @@ inflections["tuba"] = function(args, data)
 end
 
 inflections["sõda"] = function(args, data)
-  data.title = "ÕS type [[Appendix:Estonian nominal inflection|18u/sõda]]"
-  table.insert(data.categories, "Estonian sõda-type nominals")
+  data.title = "Type ÕS [[Annexe:Déclinaison nominale estonienne|18u/sõda]]"
+  table.insert(data.categories, "Formes nominales en estonien de type sõda")
 
   local params = get_params(args, 4, true)
 
   if params.strong == params.weak then
-    data.title = data.title .. ", no gradation"
+    data.title = data.title .. ", sans gradation"
   else
     data.title = data.title .. ", ''" .. params.strong .. "-" .. (params.weak == "" and "ø" or params.weak) .. "'' gradation"
   end
@@ -755,8 +755,8 @@ inflections["sõda"] = function(args, data)
 end
 
 inflections["seminar"] = function(args, data)
-  data.title = "ÕS type [[Appendix:Estonian nominal inflection|19/seminar]], no gradation"
-  table.insert(data.categories, "Estonian seminar-type nominals")
+  data.title = "Type ÕS [[Annexe:Déclinaison nominale estonienne|19/seminar]], sans gradation"
+  table.insert(data.categories, "Formes nominales en estonien de type seminar")
 
   local params = get_params(args, 1)
 
@@ -773,8 +773,8 @@ inflections["seminar"] = function(args, data)
 end
 
 inflections["süli"] = function(args, data)
-  data.title = "ÕS type [[Appendix:Estonian nominal inflection|20/süli]], no gradation"
-  table.insert(data.categories, "Estonian süli-type nominals")
+  data.title = "Type ÕS [[Annexe:Déclinaison nominale estonienne|20/süli]], sans gradation"
+  table.insert(data.categories, "Formes nominales en estonien de type süli")
 
   local params = get_params(args, 1)
   local ill_sg_stem = params.base
@@ -797,8 +797,8 @@ inflections["süli"] = function(args, data)
 end
 
 inflections["jõgi"] = function(args, data)
-  data.title = "ÕS type [[Appendix:Estonian nominal inflection|21/jõgi]]"
-  table.insert(data.categories, "Estonian jõgi-type nominals")
+  data.title = "Type ÕS [[Annexe:Déclinaison nominale estonienne|21/jõgi]]"
+  table.insert(data.categories, "Formes nominales en estonien de type jõgi")
 
   local params = get_params(args, 3, true)
   local extra_strong = params.strong
@@ -826,8 +826,8 @@ inflections["jõgi"] = function(args, data)
 end
 
 inflections["õnnelik"] = function(args, data)
-  data.title = "ÕS type [[Appendix:Estonian nominal inflection|25/õnnelik]], ''kk-k'' gradation"
-  table.insert(data.categories, "Estonian õnnelik-type nominals")
+  data.title = "Type ÕS [[Annexe:Déclinaison nominale estonienne|25/õnnelik]], ''kk-k'' gradation"
+  table.insert(data.categories, "Formes nominales en estonien de type õnnelik")
 
   local params = get_params(args, 1)
 
@@ -844,8 +844,8 @@ inflections["õnnelik"] = function(args, data)
 end
 
 inflections["koi"] = function(args, data)
-  data.title = "ÕS type [[Appendix:Estonian nominal inflection|26/koi]], no gradation"
-  table.insert(data.categories, "Estonian koi-type nominals")
+  data.title = "Type ÕS [[Annexe:Déclinaison nominale estonienne|26/koi]], sans gradation"
+  table.insert(data.categories, "Formes nominales en estonien de type koi")
 
   local params = get_params(args, 1)
   local par_sg = args["par_sg"];
@@ -866,8 +866,8 @@ inflections["koi"] = function(args, data)
 end
 
 inflections["idee"] = function(args, data)
-  data.title = "ÕS type [[Appendix:Estonian nominal inflection|26i/idee]], no gradation"
-  table.insert(data.categories, "Estonian idee-type nominals")
+  data.title = "Type ÕS [[Annexe:Déclinaison nominale estonienne|26i/idee]], sans gradation"
+  table.insert(data.categories, "Formes nominales en estonien de type idee")
 
   local params = get_params(args, 1)
   local ill_sg2 = args["ill_sg2"];
@@ -926,12 +926,12 @@ function postprocess(args, data)
   end
 
   if n == "pl" then
-    table.insert(data.categories, "Estonian pluralia tantum")
+    table.insert(data.categories, "Formes nominales en estonien de type pluralia tantum")
   end
 
   -- TODO: This says "nouns", but this module is also used for adjectives!
   if n == "sg" then
-    table.insert(data.categories, "Estonian uncountable nouns")
+    table.insert(data.categories, "Formes nominales en estonien de type uncountable nouns")
   end
 
   for key, form in pairs(data.forms) do
@@ -945,7 +945,7 @@ function postprocess(args, data)
 
   -- Check if the lemma form matches the page name
   if data.forms[n == "pl" and "nom_pl" or "nom_sg"][1] ~= mw.title.getCurrentTitle().text then
-    table.insert(data.categories, "Estonian entries with inflection not matching pagename")
+    table.insert(data.categories, "Mots en estonien dont la déclinaison ne correspond pas au titre de la page")
   end
 end
 
@@ -977,8 +977,10 @@ function make_table(data)
     end
   end
 
-  local wikicode = [=[<div class="NavFrame" style="width: 40%">
-{| class="wikitable centre"
+  local wikicode = [=[<div class="inflection-table {{#if:{{{appendix|}}}{{{nonav|}}}||mw-collapsible}}" style="float: right; max-width: 50%; min-width: 20%; overflow-x: auto; border: 1px solid #aaa; background: white;">
+<div style="background:#DDF; text-align: center; font-weight: bold;">Déclinaison</div>
+<div class="mw-collapsible-content">
+{| class="flextable" style="margin: 0 auto; float: none;"
 |+ Déclinaison de {{{lemma}}}{{{info}}}
 ! Cas
 ! Singulier
@@ -1044,7 +1046,10 @@ function make_table(data)
 | {{{com_sg}}}
 | {{{com_pl}}}
 |}
+</div>
+
 </div>]=]
+
   return mw.ustring.gsub(wikicode, "{{{([a-z0-9_]+)}}}", repl)
 end
 

@@ -2,8 +2,7 @@
   "root": "Mediawiki:",
   "namespace": 8,
   "page_names": [
-    "Gadget-wikt.auto-complete.js",
-    "Gadget-wikt.auto-complete.css"
+    "Gadget-CreerTrad.js"
   ],
   "dependencies": [
     "Gadget-CommonWikt.js"
@@ -12,14 +11,14 @@
     "copy": {
       "filename_rules": [
         {
-          "pattern": "auto-complete",
-          "repl": "auto-complete-dev"
+          "pattern": "CreerTrad",
+          "repl": "CreerTrad-dev"
         }
       ],
       "content_rules": [
         {
-          "pattern": "auto-complete",
-          "repl": "auto-complete-dev"
+          "pattern": "CreerTrad",
+          "repl": "CreerTrad-dev"
         }
       ]
     }

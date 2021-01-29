@@ -15,13 +15,13 @@
  * liste est mise à jour à chaque fois que l’utilisateur appuie sur une
  * touche.
  * ----------------------------------------------------------------------
- * [[Catégorie:JavaScript du Wiktionnaire|auto-complete]]
+ * [[Catégorie:JavaScript du Wiktionnaire|auto-complete-dev]]
  */
 $(function () {
   "use strict";
 
   if (["edit", "submit"].includes(mw.config.get("wgAction"))) {
-    console.log("Chargement de Gadget-wikt.auto-complete.js…");
+    console.log("Chargement de Gadget-wikt.auto-complete-dev.js…");
 
     window.wikt.gadgets.autoComplete = {
       NAME: "Auto-complétion de modèles",

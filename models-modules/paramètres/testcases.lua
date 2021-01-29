@@ -648,6 +648,32 @@ function tests:testCheckerNumberInvalid()
   handleError(self, "Checker, valeur invalide, nombre", args, p, 'Valeur invalide pour le paramètre « 1 » ("-1") de type nombre', { 1, m_params.INVALID_VALUE })
 end
 
+function tests:testCheckerThroughAlias()
+  local p = {
+    [1] = { checker = function(n)
+      return n == "a"
+    end },
+    ["test"] = { alias_of = 1 }
+  }
+  local args = {
+    ["test"] = "b"
+  }
+
+  handleError(self, "Checker, valeur invalide, alias", args, p, 'Valeur invalide pour le paramètre « test » ("b") de type chaine', { "test", m_params.INVALID_VALUE })
+end
+
+function tests:testTypeThroughAlias()
+  local p = {
+    [1] = { type = m_params.INT },
+    ["test"] = { alias_of = 1 }
+  }
+  local args = {
+    ["test"] = "test"
+  }
+
+  handleError(self, "Type, valeur invalide, alias", args, p, 'Valeur invalide pour le paramètre « test » ("test") de type entier', { "test", m_params.INVALID_VALUE })
+end
+
 function tests:testListPositionalLastMissing()
   tests:ignore()
   local p = {

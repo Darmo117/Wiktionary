@@ -97,9 +97,7 @@ function p.getScriptForText(text)
   local commonFound = false
   local res
 
-  for i = 1, mw.ustring.len(text) do
-    local c = mw.ustring.sub(text, i, i)
-    local script = p.getScriptForChar(c)
+  for _, script in pairs(p.getScriptsForText(text)) do
     local name = script.code
 
     if not commonFound and name == "Common" then
@@ -109,8 +107,8 @@ function p.getScriptForText(text)
     elseif name ~= "Common" and name ~= "Inherited" then
       if res == nil or res.code == "Unknown" then
         res = script
-      elseif res ~= nil and script.code ~= "Unknown" and script.code ~= res.code then
-        return p.getScript("Common")
+      elseif res and script.code ~= "Unknown" and script.code ~= res.code then
+        return p.getScript("Unknown")
       end
     end
   end
@@ -126,14 +124,73 @@ function p.getScriptForText(text)
   return res
 end
 
---- Indicates wether the given text is in the given Unicode script.
+--- Returns the Unicode scripts for the given text.
 --- @param text string The text.
---- @param scriptCode string The scripts code.
---- @return boolean True if the code exists and the text is in this script,
+--- @param getRanges boolean If true, ranges for each script will be returned
+--- @return table|(table,table) The list of scripts (unsorted).
+function p.getScriptsForText(text, getRanges)
+  local res = {}
+  local scriptsRanges = {}
+
+  local i = 1
+  while i <= mw.ustring.len(text) do
+    local c = mw.ustring.sub(text, i, i)
+
+    -- Skip HTML tags
+    local skip = false
+    if c == "<" then
+      local j = mw.ustring.find(text, ">", i, true)
+      if j ~= nil then
+        table.insert(scriptsRanges, { script = nil, from = i, to = j })
+        i = j
+        skip = true
+      end
+    end
+
+    if not skip then
+      local script = p.getScriptForChar(c)
+      local name = script.code
+
+      if not res[name] then
+        res[name] = script
+        table.insert(scriptsRanges, { script = name, from = i, to = i })
+      else
+        local lastRange = scriptsRanges[#scriptsRanges]
+        if lastRange.script == name and lastRange.to + 1 == i then
+          lastRange.to = i
+        else
+          table.insert(scriptsRanges, { script = name, from = i, to = i })
+        end
+      end
+    end
+
+    i = i + 1
+  end
+
+  if getRanges then
+    return res, scriptsRanges
+  end
+  return res
+end
+
+--- Indicates whether the given text contains characters in the given Unicode script.
+--- @param text string The text.
+--- @param scriptCode string The script’s code.
+--- @return boolean True if the code exists and the text contains characters in this script,
 ---                 false otherwise.
 function p.textHasScript(text, scriptCode)
   local script = p.getScript(scriptCode)
-  return script ~= nil and p.getScriptForText(text).code == script.code
+  return script ~= nil and p.getScriptsForText(text)[script.code] ~= nil
+end
+
+--- Indicates whether the given text should be in italics, based on the different character scripts.
+--- A text should be in italics if and only if p.getScriptForText(text) returns either Latin, Common or Inherit;
+--- in all other cases, it should not.
+--- @param text string The text.
+--- @return boolean True if the text should be in italics.
+function p.shouldItalicize(text)
+  local name = p.getScriptForText(text).code
+  return name == "Latin" or name == "Common" or name == "Inherited"
 end
 
 local directionToCss = {
@@ -144,13 +201,61 @@ local directionToCss = {
   ["m"] = "inherit",
 }
 
---- Sets the writing direction for the given text, based on its Unicode script,
---- by inserting it inside a span tag.
---- @param text string The text.
---- @return string The text, included in a span tag with the writing-mode CSS rule.
+local directionToDir = {
+  ["lr"] = "ltr",
+  ["rl"] = "rtl",
+  ["tb"] = "ltr",
+}
+
+--- Sets the writing direction for the given text, based on its Unicode scripts,
+--- by inserting span tags.
+--- @param text string The text.
+--- @return string The text which contains span tags with the writing-mode CSS rule and dir attribute.
 function p.setWritingDirection(text)
-  local script = p.getScriptForText(text)
-  return mw.ustring.format('<span style="writing-mode:%s">%s</span>', directionToCss[script.direction or "i"], text)
+  local res = ""
+  local scripts, intervals = p.getScriptsForText(text, true)
+
+  local prevScript
+  local inSpan = false
+  for _, interval in ipairs(intervals) do
+    local substr = mw.ustring.sub(text, interval.from, interval.to)
+
+    if interval.script then
+      local script = scripts[interval.script]
+      local scriptName = script.name
+      local scriptDir = script.direction or "i"
+
+      if inSpan and scriptDir ~= "i" and scriptDir ~= "m" and scriptName ~= prevScript then
+        res = res .. "</span>"
+        inSpan = false
+      end
+
+      if scriptDir == "lr" or scriptDir == "i" or scriptDir == "m" or prevScript == scriptName then
+        res = res .. substr
+      else
+        local dir = directionToDir[scriptDir]
+        local dirAttr = dir and ('dir="' .. dir .. '"') or ''
+        local writingMode = directionToCss[scriptDir]
+        res = res .. mw.ustring.format('<span %s style="writing-mode:%s">', dirAttr, writingMode) .. substr
+        prevScript = scriptName
+        inSpan = true
+      end
+
+    else
+      if inSpan then
+        res = res .. "</span>"
+        inSpan = false
+      end
+      res = res .. substr
+      prevScript = nil
+    end
+  end
+
+  if inSpan then
+    res = res .. "</span>"
+  end
+
+  return res
 end
 
 -----------------------------
@@ -169,23 +274,23 @@ function p.blockReference(frame)
   local blockCode = args[1]
   local block
 
-  if blockCode ~= nil then
+  if blockCode then
     block = p.getBlock(blockCode)
   else
     block = p.getBlockForChar(mw.title.getCurrentTitle().text)
   end
 
-  if block ~= nil then
+  if block then
     return mw.ustring.format("Unicode, Inc., ''[%s %s]'', The Unicode Standard, version %s, %d",
         block.url, block.name.en, block.version, block.year)
   end
 
-  error("Bloc Unicode incorrect")
+  error(mw.ustring.format("Bloc Unicode «&nbsp;%s&nbsp;» invalide", blockCode))
 end
 
 --- Sets the writing direction for the given text, based on its Unicode script,
 --- by inserting it inside a span tag.
----  frame.args[1] (string): The text.
+---  frame.args[1] (string): The text.
 --- @return string The text, included in a span tag with the writing-mode CSS rule.
 function p.writingDirection(frame)
   local args = m_params.process(frame.args, {

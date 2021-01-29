@@ -11,27 +11,27 @@ end
 local p = {}
 
 --- Fonction destinée aux modèles {{sigle}}, {{abréviation}}, {{acronyme}}, etc.
----  frame.args["terme"] (chaine) : Le nom du procédé étymologique (sigle, verlan, etc.).
----  frame.args["terme-pluriel"] (chaine, optionnel) : Le pluriel du paramètre précédent ;
----    s’il n’est pas renseigné, le pluriel sera formé en ajoutant un « s » à la fin du terme.
----  frame.args["de"] (chaine, optionnel) : Le mot ou la locution à l’origine du mot vedette.
----  frame.args["de2"] (chaine, optionnel) : Le deuxième mot ou locution à l’origine du mot vedette.
----  frame.args["texte"] (chaine, optionnel) : Le texte à afficher à la place du paramètre « de »
+---  frame.args["terme"] (chaine) : Le nom du procédé étymologique (sigle, verlan, etc.).
+---  frame.args["terme-pluriel"] (chaine, optionnel) : Le pluriel du paramètre précédent ;
+---    s’il n’est pas renseigné, le pluriel sera formé en ajoutant un « s » à la fin du terme.
+---  frame.args["de"] (chaine, optionnel) : Le mot ou la locution à l’origine du mot vedette.
+---  frame.args["de2"] (chaine, optionnel) : Le deuxième mot ou locution à l’origine du mot vedette.
+---  frame.args["texte"] (chaine, optionnel) : Le texte à afficher à la place du paramètre « de »
 ---    dans le lien.
----  frame.args["texte2"] (chaine, optionnel) : Le texte à afficher à la place du paramètre « de2 »
+---  frame.args["texte2"] (chaine, optionnel) : Le texte à afficher à la place du paramètre « de2 »
 ---    dans le lien.
----  frame.args["adjectif"] (chaine, requis si nocat est false) : L’adjectif à ajouter entre
----    le « terme » et le « de ».
----  frame.args["lang"] (chaine, requis si nocat est false) : Le code de langue du mot vedette.
----  frame.args["lang-lien"] (chaine, optionnel) : Le code langue du mot lié (« de ») ; s’il
----    n’est pas renseigné, la paramètre « lang » sera utilisé.
----  frame.args["m"] (chaine, optionnel) : Si vrai, le premier terme aura une majuscule.
----  frame.args["nolien"] (booléen, optionnel) : Si vrai, aucun lien ne sera fait vers le mot
----    lié (« de »).
----  frame.args["nocat"] (booléen, optionnel) : Si vrai, la page ne sera pas catégorisée.
----  frame.args["clé"] (chaine, optionnel) : La clé de tri pour la catégorie.
----  frame.args["nom-cat"] (chaine, optionnel) : Le nom complet de la catégorie.
----  frame.args["nom-cat2"] (chaine, optionnel) : Le début du nom de la deuxième catégorie.
+---  frame.args["adjectif"] (chaine, requis si nocat est false) : L’adjectif à ajouter entre
+---    le « terme » et le « de ».
+---  frame.args["lang"] (chaine, requis si nocat est false) : Le code de langue du mot vedette.
+---  frame.args["lang-lien"] (chaine, optionnel) : Le code langue du mot lié (« de ») ; s’il
+---    n’est pas renseigné, la paramètre « lang » sera utilisé.
+---  frame.args["m"] (chaine, optionnel) : Si vrai, le premier terme aura une majuscule.
+---  frame.args["nolien"] (booléen, optionnel) : Si vrai, aucun lien ne sera fait vers le mot
+---    lié (« de »).
+---  frame.args["nocat"] (booléen, optionnel) : Si vrai, la page ne sera pas catégorisée.
+---  frame.args["clé"] (chaine, optionnel) : La clé de tri pour la catégorie.
+---  frame.args["nom-cat"] (chaine, optionnel) : Le nom complet de la catégorie.
+---  frame.args["nom-cat2"] (chaine, optionnel) : Le début du nom de la deuxième catégorie.
 --- @return string Le texte formaté et la catégorie éventuelle.
 function p.modele_etym(frame)
   local params = {
@@ -143,7 +143,7 @@ local function getLanguageName(langCode)
 end
 
 local function italicIfLatinScript(text)
-  return m_Unicode_data.textHasScript(text, 'Latin') and mw.ustring.format("''%s''", text) or text
+  return m_Unicode_data.shouldItalicize(text) and mw.ustring.format("''%s''", text) or text
 end
 
 --- Fonction destinée au modèle {{étyl}}. Si au moins une des deux langues est inconnue
@@ -204,6 +204,7 @@ function p.modele_etymologie_langue(frame)
   local destLangName = getLanguageName(destLang)
   local displayedLang = linkToLang and m_bases.lien_modele(originLangName, 'fr') or originLangName
 
+  content = ''
   if word then
     if anchorSection then
       anchor = anchorSection
@@ -213,17 +214,27 @@ function p.modele_etymologie_langue(frame)
     end
 
     content = italicIfLatinScript(m_bases.lien_modele(word, originLang, anchor, alternativeText, true))
+  end
 
-    if transcription then
+  if transcription then
+    if content == '' then
+      content = mw.ustring.format("''%s''", transcription)
+    else
       content = mw.ustring.format("%s, ''%s''", content, transcription)
     end
-    if meaning then
+  end
+  if meaning then
+    if content == '' then
+      content = mw.ustring.format('(«&nbsp;%s&nbsp;»)', meaning)
+    else
       content = mw.ustring.format('%s («&nbsp;%s&nbsp;»)', content, meaning)
     end
+  end
 
-    content = mw.ustring.format('%s %s', displayedLang, content)
-  else
+  if content == '' then
     content = displayedLang
+  else
+    content = mw.ustring.format('%s %s', displayedLang, content)
   end
 
   if not noCat then

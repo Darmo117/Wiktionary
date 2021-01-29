@@ -1,5 +1,6 @@
 local tests = require("Module:UnitTests")
 local m_unicode = require("Module:données Unicode")
+local m_table = require("Module:table")
 
 -- Tests --
 
@@ -61,7 +62,122 @@ function tests:testGetScriptForTextInheritedAndUnknownChar()
 end
 
 function tests:testGetScriptForTextSeveral()
-  self:equals("Plusieurs scripts", m_unicode.getScriptForText("Texte en Latin et en ελληνικά").code, "Common")
+  self:equals("Plusieurs scripts", m_unicode.getScriptForText("Texte en Latin et en Ελληνικά").code, "Unknown")
+end
+
+function tests:testGetScriptsForText()
+  self:equals_deep("Un seul script", m_table.keysToList(m_unicode.getScriptsForText("Texte")), { "Latin" })
+end
+
+function tests:testGetScriptsForTextSeveral()
+  self:equals_deep("Plusieurs scripts", m_table.keysToList(m_unicode.getScriptsForText("Texte en Latin et en Ελληνικά")), { "Common", "Greek", "Latin" })
+end
+
+function tests:testGetScriptsForTextTagsIgnored()
+  self:equals_deep("Plusieurs scripts", m_table.keysToList(m_unicode.getScriptsForText("Ελληνικά<br>Ελληνικά")), { "Greek" })
+  self:equals_deep("Plusieurs scripts", m_table.keysToList(m_unicode.getScriptsForText("Ελληνικά<br/>Ελληνικά")), { "Greek" })
+  self:equals_deep("Plusieurs scripts", m_table.keysToList(m_unicode.getScriptsForText('Ελληνικά<span id="yo">Ελληνικά</span>')), { "Greek" })
+end
+
+function tests:testTextHasScriptSingle()
+  self:equals("Un seul script", m_unicode.textHasScript("Texte", "Latin"), true)
+end
+
+function tests:testTextHasScriptSeveral()
+  self:equals("Plusieurs scripts, Latin", m_unicode.textHasScript("Texte en Latin et en Ελληνικά", "Latin"), true)
+  self:equals("Plusieurs scripts, Greek", m_unicode.textHasScript("Texte en Latin et en Ελληνικά", "Greek"), true)
+  self:equals("Plusieurs scripts, Common", m_unicode.textHasScript("Texte en Latin et en Ελληνικά", "Common"), true)
+end
+
+function tests:testNotTextHasScript()
+  self:equals("Un seul script", m_unicode.textHasScript("Texte", "Greek"), false)
+end
+
+function tests:testShouldItalicizeSingleScript()
+  self:equals("Latin seulement", m_unicode.shouldItalicize("Texte"), true)
+  self:equals("Common seulement", m_unicode.shouldItalicize(" "), true)
+  self:equals("Inherited seulement", m_unicode.shouldItalicize("́"), true)
+end
+
+function tests:testShouldItalicizeOnlyCommonAndInherited()
+  self:equals("Common et Inherited", m_unicode.shouldItalicize("1̧"), true)
+end
+
+function tests:testShouldItalicizeOnlyLatinCommonInherited()
+  self:equals("Latin, Common et Inherited", m_unicode.shouldItalicize("Un ḿ"), true)
+end
+
+function tests:testShouldItalicizeTag()
+  self:equals("Balise HTML", m_unicode.shouldItalicize("a<br>a"), true)
+end
+
+function tests:testShouldNotItalicizeTag()
+  self:equals("Balise HTML", m_unicode.shouldItalicize("ε<br>ε"), false)
+end
+
+function tests:testShouldNotItalicize()
+  self:equals("Non latin seulement", m_unicode.shouldItalicize("ε"), false)
+end
+
+function tests:testShouldNotItalicizeLatinAndOther()
+  self:equals("Latin et autre", m_unicode.shouldItalicize("a et ε"), false)
+end
+
+function tests:testScriptIntervals()
+  local _, invervals = m_unicode.getScriptsForText("yo εε", true)
+  self:equals_deep("yo εε", invervals, { { script = "Latin", from = 1, to = 2 }, { script = "Common", from = 3, to = 3 }, { script = "Greek", from = 4, to = 5 } })
+end
+
+function tests:testScriptIntervalsTag()
+  local _, invervals = m_unicode.getScriptsForText("yo<br>oy", true)
+  self:equals_deep("yo<br>oy", invervals, { { script = "Latin", from = 1, to = 2 }, { from = 3, to = 6 }, { script = "Latin", from = 7, to = 8 } })
+end
+
+function tests:testSetWritingDirectionLtrHorizontalOnly()
+  self:equals("ltr seulement", m_unicode.setWritingDirection("a et ε"), "a et ε")
+end
+
+function tests:testSetWritingDirectionLtrHorizontalOnlyTag()
+  self:equals("ltr seulement et balise", m_unicode.setWritingDirection("a et<br>ε"), "a et<br>ε")
+end
+
+function tests:testSetWritingDirectionRtlHorizontalOnly()
+  self:equals("rtl seulement", m_unicode.setWritingDirection("עברית"), '<span dir="rtl" style="writing-mode:horizontal-tb">עברית</span>')
+end
+
+function tests:testSetWritingDirectionRtlHorizontalAndCommon()
+  self:equals("rtl et Common", m_unicode.setWritingDirection("עב רית"), '<span dir="rtl" style="writing-mode:horizontal-tb">עב רית</span>')
+end
+
+function tests:testSetWritingDirectionRtlHorizontalAndInherited()
+  self:equals("rtl et Inherited", m_unicode.setWritingDirection("עב́רית"), '<span dir="rtl" style="writing-mode:horizontal-tb">עב́רית</span>')
+end
+
+function tests:testSetWritingDirectionRtlHorizontalOnlyTag()
+  self:equals("rtl seulement et balise", m_unicode.setWritingDirection("עב<br>רית"), '<span dir="rtl" style="writing-mode:horizontal-tb">עב</span><br><span dir="rtl" style="writing-mode:horizontal-tb">רית</span>')
+end
+
+function tests:testSetWritingDirectionLtrVerticalOnly()
+  self:equals("vertical seulement", m_unicode.setWritingDirection("ᠠᠨᡳᠶᠠ"), '<span dir="ltr" style="writing-mode:vertical-lr">ᠠᠨᡳᠶᠠ</span>')
+end
+
+function tests:testSetWritingDirectionLtrVerticalAndCommon()
+  self:equals("vertical et Common", m_unicode.setWritingDirection("ᠠᠨᡳ ᠶᠠ"), '<span dir="ltr" style="writing-mode:vertical-lr">ᠠᠨᡳ ᠶᠠ</span>')
+end
+
+function tests:testSetWritingDirectionLtrVerticalAndInherited()
+  self:equals("vertical et Inherited", m_unicode.setWritingDirection("ᠠᠨᡳ́ᠶᠠ"), '<span dir="ltr" style="writing-mode:vertical-lr">ᠠᠨᡳ́ᠶᠠ</span>')
+end
+
+function tests:testSetWritingDirectionLtrVerticalOnlyTag()
+  self:equals("vertical seulement et balise", m_unicode.setWritingDirection("ᠠᠨᡳ<br>ᠶᠠ"), '<span dir="ltr" style="writing-mode:vertical-lr">ᠠᠨᡳ</span><br><span dir="ltr" style="writing-mode:vertical-lr">ᠶᠠ</span>')
+end
+
+function tests:testSetWritingDirectionTwoDirections()
+  self:equals("a et עברית", m_unicode.setWritingDirection("a et עברית"), 'a et <span dir="rtl" style="writing-mode:horizontal-tb">עברית</span>')
+  self:equals("ae ᠠᠨ́ᡳᠶᠠ εε", m_unicode.setWritingDirection("ae ᠠᠨ́ᡳᠶᠠ εε"), 'ae <span dir="ltr" style="writing-mode:vertical-lr">ᠠᠨ́ᡳᠶᠠ </span>εε')
+  self:equals("aeᠠᠨ́εε", m_unicode.setWritingDirection("aeᠠᠨ́εε"), 'ae<span dir="ltr" style="writing-mode:vertical-lr">ᠠᠨ́</span>εε')
+  self:equals("aeᠠᠨ́ᡳᠶᠠעב רית", m_unicode.setWritingDirection("aeᠠᠨ́ᡳᠶᠠעב רית"), 'ae<span dir="ltr" style="writing-mode:vertical-lr">ᠠᠨ́ᡳᠶᠠ</span><span dir="rtl" style="writing-mode:horizontal-tb">עב רית</span>')
 end
 
 -- Error tests --

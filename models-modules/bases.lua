@@ -165,6 +165,36 @@ p.NS_DISCUSSION_TUTORIEL = {
   canonical_name = 'Discussion Tutoriel',
   local_name = 'Discussion Tutoriel',
 }
+p.NS_RIME = {
+  id = 114,
+  canonical_name = 'Rime',
+  local_name = 'Rime',
+}
+p.NS_DISCUSSION_RIME = {
+  id = 115,
+  canonical_name = 'Discussion Rime',
+  local_name = 'Discussion Rime',
+}
+p.NS_CONJUGAISON = {
+  id = 116,
+  canonical_name = 'Conjugaison',
+  local_name = 'Conjugaison',
+}
+p.NS_DISCUSSION_CONJUGAISON = {
+  id = 117,
+  canonical_name = 'Discussion Conjugaison',
+  local_name = 'Discussion Conjugaison',
+}
+p.NS_RACINE = {
+  id = 118,
+  canonical_name = 'Racine',
+  local_name = 'Racine',
+}
+p.NS_DISCUSSION_RACINE = {
+  id = 119,
+  canonical_name = 'Discussion Racine',
+  local_name = 'Discussion Racine',
+}
 
 p.NS_MODULE = {
   id = 828,
@@ -287,7 +317,7 @@ end
 --- @return boolean
 function p.page_de_contenu()
   local ns = currentTitle.namespace
-  return ns == p.NS_MAIN.id or ns == p.NS_ANNEXE.id or ns == p.NS_THESAURUS.id or ns == p.NS_RECONSTRUCTION.id
+  return ns == p.NS_MAIN.id or ns == p.NS_ANNEXE.id or ns == p.NS_THESAURUS.id or ns == p.NS_RECONSTRUCTION.id or ns == p.NS_RIME.id or ns == p.NS_CONJUGAISON.id or ns == p.NS_RACINE.id
 end
 
 --- Renvoie vrai si on est dans une page de l’espace principal.

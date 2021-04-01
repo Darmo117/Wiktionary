@@ -79,7 +79,7 @@ class CSVWriter:
         self.__file.write(('\n' if not header else '') + line)
 
 
-if __name__ == '__main__':
+def _test():
     header = ['c1', 'c\n2', 'c,3']
     csv = [['1 ', ' 2', '3"3'], ['', 'a', 'b'], [], ['c', '', 'd'], ['e', 'f', '']]
     with CSVWriter('test-write1.csv', header, escape=True) as w:
@@ -146,3 +146,7 @@ if __name__ == '__main__':
         print(e)
     finally:
         w.close()
+
+
+if __name__ == '__main__':
+    _test()

@@ -22,7 +22,7 @@ class CSVReader:
         header = ()
         lines = []
 
-        def read_line(raw_line: str, line_index: int, header: typ.Optional[Header]) -> typ.Union[Header, Line]:
+        def read_line(raw_line: str, line_idx: int, file_header: typ.Optional[Header]) -> typ.Union[Header, Line]:
             if ignore_quotes:
                 values = [v.strip() for v in raw_line.split(',')]
             else:
@@ -51,34 +51,34 @@ class CSVReader:
                                 was_quote_mode = False
                             elif c == '"':
                                 if buffer != '' or was_quote_mode:
-                                    raise ParseError(f'Quote found in middle of value at {line_index + 1}:{i + 1}.')
+                                    raise ParseError(f'Quote found in middle of value at {line_idx + 1}:{i + 1}.')
                                 quote_mode = True
                             else:
                                 if was_quote_mode:
-                                    raise ParseError(f'Quote found in middle of value at {line_index + 1}:{i + 1}.')
+                                    raise ParseError(f'Quote found in middle of value at {line_idx + 1}:{i + 1}.')
                                 buffer += c
                     i += 1
                 values.append(buffer)
 
-            if header is None:
+            if file_header is None:
                 return tuple(values)
 
             d = {}
-            for i in range(max(len(values), len(header))):
-                d[header[i] if i < len(header) else default_column_name.format(i)] = \
-                    values[i] if i < len(values) else None
+            for header_i in range(max(len(values), len(file_header))):
+                d[file_header[header_i] if header_i < len(file_header) else default_column_name.format(header_i)] = \
+                    values[header_i] if header_i < len(values) else None
 
             return d
 
-        for i, line in enumerate(file.readlines()):
+        for line_index, line in enumerate(file.readlines()):
             if len(header) == 0:
-                header = read_line(line, i, None)
+                header = read_line(line, line_index, None)
             else:
-                parsed_line = read_line(line, i, header)
+                parsed_line = read_line(line, line_index, header)
                 expected_length = len(header)
                 actual_length = len(parsed_line)
                 if not silent_errors and (expected_length != actual_length or None in parsed_line.values()):
-                    raise ParseError(f'Incorrect number of values in file on line {i + 1}, '
+                    raise ParseError(f'Incorrect number of values in file on line {line_index + 1}, '
                                      f'expected {expected_length} got {actual_length}.')
                 lines.append(parsed_line)
 
@@ -139,16 +139,16 @@ class CSVReader:
         elif isinstance(item, int) or isinstance(item, slice):
             return self.__contents[item]
         elif isinstance(item, tuple):
-            rows, cols = item
+            rows, columns = item
             if isinstance(rows, int):
                 lines = [self.__contents[rows]]
             elif isinstance(rows, slice):
                 lines = self.__contents[rows]
             else:
                 raise KeyError(f'First tuple value must be either int or slice, got <{type(rows).__name__}>.')
-            lines = [select_columns(line, cols) for line in lines]
+            lines = [select_columns(line, columns) for line in lines]
             if isinstance(rows, int):
-                if isinstance(cols, int) or isinstance(cols, str):
+                if isinstance(columns, int) or isinstance(columns, str):
                     return lines[0][0]
                 else:
                     return lines[0]
@@ -156,7 +156,7 @@ class CSVReader:
         raise KeyError(f'Keys must be either string, int, slice or tuple, got <{type(item).__name__}>.')
 
 
-if __name__ == '__main__':
+def _test():
     r = CSVReader('test1.csv', silent_errors=False, ignore_quotes=False)
     assert r.header == ('c1', 'c2', 'c3 (a, b)'), r.header
 
@@ -215,19 +215,23 @@ if __name__ == '__main__':
     assert r[2] == {'c1': '4', 'c2': '5', 'c3 (a, b)': '6', 'c4': '7', '<column-4>': '9'}, r[2]
 
     try:
-        r = CSVReader('test2.csv', silent_errors=False, ignore_quotes=False)
+        CSVReader('test2.csv', silent_errors=False, ignore_quotes=False)
         raise AssertionError('expected ParseError')
     except ParseError:
         pass
 
     try:
-        r = CSVReader('test2-bis.csv', silent_errors=False, ignore_quotes=False)
+        CSVReader('test2-bis.csv', silent_errors=False, ignore_quotes=False)
         raise AssertionError('expected ParseError')
     except ParseError:
         pass
 
     try:
-        r = CSVReader('test3.csv', silent_errors=True, ignore_quotes=False)
+        CSVReader('test3.csv', silent_errors=True, ignore_quotes=False)
         raise AssertionError('expected ParseError')
     except ParseError:
         pass
+
+
+if __name__ == '__main__':
+    _test()

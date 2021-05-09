@@ -11,7 +11,7 @@
  * Icons (OOUI): https://commons.wikimedia.org/wiki/OOUI_icons
  * Icons (Monobook): http://commons.wikimedia.org/wiki/Category:MediaWiki_edit_toolbar
  * ----
- * [[Catégorie:JavaScript du Wiktionnaire|Barre de luxe.js]]
+ * [[Catégorie:JavaScript du Wiktionnaire|Barre de luxe-dev.js]]
  */
 
 $(function () {
@@ -513,7 +513,7 @@ $(function () {
       },
     };
 
-    console.log("Chargement de Gadget-Barre_de_luxe.js…");
+    console.log("Chargement de Gadget-Barre_de_luxe-dev.js…");
     wikt.gadgets.barreDeLuxe.init();
     // Variable should be declared in user page.
     if (bdl_buttons && bdl_buttons instanceof Array) {

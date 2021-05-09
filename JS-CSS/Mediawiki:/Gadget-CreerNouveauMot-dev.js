@@ -656,6 +656,7 @@ $(function () {
         }
       };
 
+      // noinspection JSValidateTypes
       wikt.gadgets.creerNouveauMot.Language.prototype = {
         /**
          * @return {string} This language’s code.
@@ -746,6 +747,7 @@ $(function () {
       wikt.gadgets.creerNouveauMot.Gui = function () {
       };
 
+      // noinspection JSValidateTypes
       wikt.gadgets.creerNouveauMot.Gui.prototype = {
         /** jQuery selector of the HTML element GUIs will be inserted into. */
         TARGET_ELEMENT: "#Editnotice-0",
@@ -1903,6 +1905,7 @@ $(function () {
         this._template = template || "";
       }
 
+      // noinspection JSValidateTypes
       wikt.gadgets.creerNouveauMot.Number.prototype = {
         /**
          * @return {string} The label.
@@ -1942,6 +1945,7 @@ $(function () {
         this._template = template || "";
       }
 
+      // noinspection JSValidateTypes
       wikt.gadgets.creerNouveauMot.Gender.prototype = {
         /**
          * @return {string} Gender’s label.
@@ -1965,11 +1969,12 @@ $(function () {
       wikt.gadgets.creerNouveauMot.genders = {
         MASCULINE: new wikt.gadgets.creerNouveauMot.Gender("masculin", "{{m}}"),
         FEMININE: new wikt.gadgets.creerNouveauMot.Gender("féminin", "{{f}}"),
+        FEMININE_MASCULINE_DIFF: new wikt.gadgets.creerNouveauMot.Gender("masc. et fém. différents"),
         FEMININE_MASCULINE: new wikt.gadgets.creerNouveauMot.Gender("masc. et fém. identiques", "{{mf}}"),
         NO_GENDER: new wikt.gadgets.creerNouveauMot.Gender("pas de genre"),
-        VERB_GROUP1: new wikt.gadgets.creerNouveauMot.Gender("1<sup>er</sup> groupe", "{{type|{0}}} {{conjugaison|fr|group=1}}"),
-        VERB_GROUP2: new wikt.gadgets.creerNouveauMot.Gender("2<sup>ème</sup> groupe", "{{type|{0}}} {{conjugaison|fr|group=2}}"),
-        VERB_GROUP3: new wikt.gadgets.creerNouveauMot.Gender("3<sup>ème</sup> groupe", "{{type|{0}}} {{conjugaison|fr|group=3}}"),
+        VERB_GROUP1: new wikt.gadgets.creerNouveauMot.Gender("1<sup>er</sup> groupe", "{{type|{0}}} {{conjugaison|fr|groupe=1}}"),
+        VERB_GROUP2: new wikt.gadgets.creerNouveauMot.Gender("2<sup>ème</sup> groupe", "{{type|{0}}} {{conjugaison|fr|groupe=2}}"),
+        VERB_GROUP3: new wikt.gadgets.creerNouveauMot.Gender("3<sup>ème</sup> groupe", "{{type|{0}}} {{conjugaison|fr|groupe=3}}"),
         VERB: new wikt.gadgets.creerNouveauMot.Gender("verbe", "{{type|{0}}} {{conjugaison|{0}}}"),
         VERB_NO_TEMPLATE: new wikt.gadgets.creerNouveauMot.Gender("verbe", "{{type|{0}}}"),
         REGULAR_VERB: new wikt.gadgets.creerNouveauMot.Gender("régulier", "{{type|{0}}}"),
@@ -1988,6 +1993,7 @@ $(function () {
         this._sectionCode = sectionCode;
       }
 
+      // noinspection JSValidateTypes
       wikt.gadgets.creerNouveauMot.GrammaticalClass.prototype = {
         /**
          * @return {string} Class’ label.
@@ -2081,6 +2087,7 @@ $(function () {
         };
       };
 
+      // noinspection JSValidateTypes
       wikt.gadgets.creerNouveauMot.GrammaticalItem.prototype = {
         /**
          * @return {wikt.gadgets.creerNouveauMot.GrammaticalClass} The grammatical class.

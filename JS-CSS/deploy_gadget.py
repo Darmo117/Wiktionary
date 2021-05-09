@@ -55,8 +55,12 @@ def handle_file(name: str, commit_message: str):
 
     if push_gadget:
         page = pwb.Page(site, title=name, ns=namespace)
-        page.text = get_file_content()
-        page.save(summary="(Déploiement automatique) " + commit_message)
+        content = get_file_content()
+        if content.rstrip() != page.text.rstrip():
+            page.text = get_file_content()
+            page.save(summary="(Déploiement automatique) " + commit_message)
+        else:
+            print(f'Page [[{page.title()}]] unchanged.')
     elif pull_gadget:
         page = pwb.Page(site, title=name, ns=namespace)
         with open(path, mode='w', encoding='UTF-8') as f_out:

@@ -9,27 +9,30 @@
  *******************************************************************************************
  * v1.0 2013-06-13
  * v2.0 2020-11-01 Full rewrite.
+ * v2.1 2021-05-08 Smarter wikicode analysis;
+ *                 page reloads instead of having its content replaced
  *******************************************************************************************
  * [[Catégorie:JavaScript du Wiktionnaire|CreerTrad-dev]]
  *******************************************************************************************/
 
 $(function () {
-  console.log("Chargement de Gadget-CreerTrad-dev.js…");
+  if (wikt.page.hasNamespaceIn(["", "Reconstruction"])
+      && ["view", "edit", "submit"].includes(mw.config.get("wgAction"))) {
+    console.log("Chargement de Gadget-CreerTrad-dev.js…");
 
-  if (wikt.page.hasNamespaceIn([""]) && mw.config.get("wgAction") === "view") {
     window.wikt.gadgets.createTranslation = {
       NAME: "Créer traduction",
 
-      VERSION: "2.0",
+      VERSION: "2.1",
 
+      /** @type {boolean} */
+      _editMode: false,
       /** @type {string} */
       _word: "",
       /** @type {string} */
       _translation: "",
       /** @type {string} */
       _langCode: "",
-      /** @type {string} */
-      _generatedWikicode: "",
       /**
        * Map that associates a language code to a
        * function that generates the code for it.
@@ -39,36 +42,32 @@ $(function () {
 
       /**
        * Initializes this gadget by hooking a callback to
-       * every red links in the infoboxes with "translations" class.
+       * every red links in the infoboxes with the "translations" class.
+       * @param editMode {boolean} Whether the gadget should be loaded in edit or view mode.
        */
-      init: function () {
+      init: function (editMode) {
+        this._editMode = !!editMode;
+        console.log("Gadget CreerTrad-dev loaded in {0} mode.".format(this._editMode ? "editing" : "viewing"));
         var self = this;
 
-        $(".translations").find(".new").filter(function () {
-          // On évite la colorisation des liens rouges pour les écritures traditionnelles (chinois et coréen)
-          // ainsi que pour les liens interwikis en exposants qui utilisent des codes langue redirigés
-          // (cf. [[Discussion_module:traduction#Liens en exposant et codes wikimédia]])
-          var children = $(this).children();
-          // noinspection JSUnresolvedFunction
-          return children.length > 0 && !children.first().hasClass("ecrit_tradi") &&
-              !children.first().hasClass("trad-inconnu");
-        }).each(function () {
-          var $link = $(this);
-          var translation = /^(.*?) \(page inexistante\)$/.exec($link.attr("title"));
+        if (!this._editMode) {
+          $(".translations .new").each(function () {
+            var $link = $(this);
+            var translation = $link.text();
 
-          if (translation) {
-            translation = translation[1];
-
-            // noinspection JSUnresolvedFunction
-            var langCode = $link.children().first().attr("lang");
-            $link.css("background-color", "#77B5FE");
-            $link.attr("title", "Cliquez pour créer «\u00a0{0}\u00a0» avec le gadget".format(translation));
-            $link.click(function (event) {
-              event.preventDefault();
-              self.createTrans(translation, langCode);
-            });
-          }
-        });
+            if (translation) {
+              var langCode = $link.parent().attr("lang");
+              $link.css("background-color", "#77b5fe");
+              $link.attr("title", "Cliquez pour créer «\u00a0{0}\u00a0» avec le gadget".format(translation));
+              $link.click(function (event) {
+                event.preventDefault();
+                self.createTrans(translation, langCode);
+              });
+            }
+          });
+        } else {
+          this._edit();
+        }
       },
 
       /**
@@ -89,7 +88,16 @@ $(function () {
       createTrans: function (translation, lang) {
         this._word = mw.config.get("wgTitle");
         this._translation = translation;
-        this._langCode = lang;
+        switch (lang) {
+          case "zh-Hant":
+            this._langCode = "zh";
+            break;
+          case "ko-Hani":
+            this._langCode = "ko";
+            break;
+          default:
+            this._langCode = lang;
+        }
 
         // Get current article’s wikicode
         $.get(
@@ -110,160 +118,187 @@ $(function () {
       _generateWikicode: function (wikicode) {
         var wikicodeLines = wikicode.split("\n");
 
-        var abort = false;
-
         var translationLineIndex = 0;
         var translationLine = "";
-        var definitionsCounter = 0;
-        var definitionLine = "";
-
-        this._generatedWikicode = "";
 
         // Fetch line where the translation is.
-        for (var i = 0; i < wikicodeLines.length && !abort && !translationLine; i++) {
-          if (wikicodeLines[i].includes(this._langCode + "|" + this._translation)) {
-            if (translationLine) {
-              alert("Le gadget ne prend pas en charge le fait\n" +
-                  "qu’une traduction apparaisse deux fois dans la même page.");
-              abort = true;
-            } else {
-              translationLineIndex = i;
-              translationLine = wikicodeLines[translationLineIndex];
-            }
+        for (var i = 0; i < wikicodeLines.length && !translationLine; i++) {
+          var line = wikicodeLines[i];
+          var translationMatch = new RegExp(
+              "{{trad(?:\\+|-|--)\\|" + this._langCode + "\\|(?:[^}]*?tradi=)?" + this._translation
+          ).exec(line);
+          if (translationMatch) {
+            translationLineIndex = i;
+            translationLine = line;
           }
         }
 
-        if (!abort) {
+        if (!translationLine) {
+          console.log("{0} could not find trad template for {1}".format(this.NAME, this._translation));
+          return;
+        }
+
+        var self = this;
+        var tradTemplateArgs = $.grep(translationLine.match(/{{trad(?:\+|-|--)\|[^}]+?}}/g), function (m) {
+          return m.includes(self._translation);
+        })[0];
+        var templateArgsArray = $.map(
+            tradTemplateArgs.substr(2, tradTemplateArgs.length - 4).split("|"),
+            function (s) {
+              return s.trim();
+            }
+        );
+
+        var transcription = "";
+        var dif = "";
+        var gender = "";
+
+        for (var i2 = 0; i2 < templateArgsArray.length; i2++) {
+          var arg = templateArgsArray[i2];
+          var m;
+
           // Get transcription if there is one.
-          var transcription = "";
-          var transcriptionMatch = new RegExp(
-              "{{trad[+-]{0,2}\\|" + this._langCode +
-              "\\|" + this._translation + "\\|(?:[^}]*?\\|)?(?:R|tr)=([^=|}]*?)[|}]"
-          ).exec(wikicodeLines[translationLineIndex]);
-          if (transcriptionMatch) {
-            transcription = transcriptionMatch[1];
+          if (m = /^(?:tr|R)\s*=\s*(.+)$/.exec(arg)) {
+            transcription = m[1];
+            // Get dif parameter if it is defined.
+            // Example : <nowiki>* {{T|he}} : {{trad+|he|מכלב|R=makhlev|dif=מַכְלֵב}}</nowiki>
+          } else if (m = /^dif\s*=\s*(.+)$/.exec(arg)) {
+            dif = m[1];
+            // Get gender if there is one.
+          } else if (/^(m|f|n|c|s|p|d|mf|mp|fp|mfp|np|ma|mi|fa|fi|na|ni)$/.test(arg)) {
+            gender = arg;
           }
-
-          // Get dif parameter if it is defined.
-          // Example : <nowiki>* {{T|he}} : {{trad+|he|מכלב|R=makhlev|dif=מַכְלֵב}}</nowiki>
-          var dif = "";
-          var difMatch = new RegExp(this._langCode + "\\|" + this._translation + "[^}]*?dif=([^|}]*?)[|}]")
-              .exec(wikicodeLines[translationLineIndex]);
-          if (difMatch) {
-            dif = difMatch[1];
-          }
-
-          // Get gender if there is one.
-          var gender = "";
-          var genderMatch = new RegExp(
-              "\\{\\{trad[+-]{0,2}\\|" + this._langCode +
-              "\\|" + this._translation + "\\|(?:[^}]*?\\|)?([^=|}]*?)[|}]"
-          )
-              .exec(wikicodeLines[translationLineIndex]);
-          if (genderMatch) {
-            gender = genderMatch[1];
-          }
-
-          // We go through each line from the translation until
-          // we encounter one of the defined level-2 sections.
-          // This section is the nature of the word.
-
-          var natures = [
-            [/S\|adjectif\|/, "adjectif"],
-            [/S\|adverbe\|/, "adverbe"],
-            [/S\|nom\|/, "nom"],
-            [/S\|verbe\|/, "verbe"],
-            [/S\|conjonction\|/, "conjonction"],
-            [/S\|nom propre\|/, "nom propre"],
-            [/S\|préposition\|/, "préposition"],
-            [/S\|phrases\|/, "locution-phrase"],
-            [/S\|onomatopée\|/, "onomatopée"],
-            [/S\|interj(?:ection)?\|/, "interjection"],
-          ];
-
-          var nature = "";
-
-          for (var j = translationLineIndex; j >= 0; j--) {
-            var line = wikicodeLines[j];
-
-            for (var k = 0; k < natures.length; k++) {
-              if (natures[k][0].test(line)) {
-                nature = natures[k][1];
-              }
-            }
-
-            if (line.charAt(0) === "#" && line.charAt(1) !== "*") {
-              definitionsCounter++;
-              definitionLine = line;
-            }
-          }
-
-          var domain = "";
-
-          // If there is only one definition, we look for a domain-template.
-          if (definitionsCounter === 1) {
-            // We first look for a template of the form <nowiki>{{lexique|boulangerie|fr}}</nowiki>.
-            var domainMatch = /{{lexique\|([^}]+?)\|[^|}]+?}}/.exec(definitionLine);
-
-            if (domainMatch) {
-              domain = domainMatch[1];
-            } else {
-              // Otherwise we look for old domain templates (e.g.: <nowiki>{{boulangerie|fr}}</nowiki>)
-              domainMatch = /{{([^|}]+?)\|[^|}]+?}}/.exec(definitionLine);
-              if (domainMatch) {
-                domain = domainMatch[1];
-              }
-            }
-          }
-
-          // Wikicode generation.
-          var newWikicode = "== {" + "{langue|{0}}} ==\n".format(this._langCode);
-          newWikicode += "{" + "{ébauche|{0}}}\n".format(this._langCode);
-          newWikicode += "=== {" + "{S|étymologie}} ===\n";
-          newWikicode += ": {" + "{ébauche-étym|{0}}}\n\n".format(this._langCode);
-          newWikicode += "=== {" + "{S|{0}|{1}}} ===\n".format(nature, this._langCode);
-
-          var generator = this._generators[this._langCode];
-          if (generator) {
-            newWikicode += generator(this._translation, nature, gender, transcription, dif).trim();
-          } else {
-            newWikicode += this._genericGenerator(nature, gender, transcription, dif).trim();
-          }
-
-          newWikicode += "\n# ";
-          if (domain) {
-            newWikicode += "{" + "{lexique|{0}|{1}}} ".format(domain, this._langCode);
-          }
-          newWikicode += "[[{0}#fr|{1}]].\n".format(this._word, this._word.charAt(0).toUpperCase() + this._word.substring(1));
-          newWikicode += "#* {" + "{exemple|lang={0}}}\n\n".format(this._langCode);
-
-          this._generatedWikicode = newWikicode;
         }
+
+        var sectionLineIndex = 0;
+        var nature = "";
+        var definitionNumber = [1];
+        var definitionNumberFound = false;
+        var definitionsLines = [];
+
+        /*
+         * We go through each line upwards from the translation until we encounter a level-2 (===) section.
+         * This section is the nature of the word.
+         * We also gather all encountered definitions and the definition number the translation refers to.
+         */
+        for (var i3 = translationLineIndex; i3 >= 0 && !nature; i3--) {
+          var line2 = wikicodeLines[i3];
+
+          // Fetch enclosing trad-début template to get definition number
+          var tradStartTemplateMatch;
+          if (!definitionNumberFound && (tradStartTemplateMatch = /{{trad-début\|[^|]*\|([^|}]+)/.exec(line2))) {
+            definitionNumber = $.map(
+                tradStartTemplateMatch[1].toLowerCase().split("."),
+                function (s, i) {
+                  s = s.trim();
+                  var n = parseInt(s);
+                  if (isNaN(n)) {
+                    switch (i) {
+                      case 0:
+                        return NaN;
+                      case 1:
+                        return /^[a-z]$/.test(s) ? s.charCodeAt(0) - "a".charCodeAt(0) + 1 : NaN;
+                      default:
+                        return wikt.text.romanNumeralToInt(s);
+                    }
+                  } else {
+                    return n;
+                  }
+                }
+            );
+            definitionNumberFound = true;
+          }
+
+          // Fetch word type
+          var natureMatch;
+          if (natureMatch = /^===\s*{{S\|([^|}]+)/.exec(line2)) {
+            nature = natureMatch[1];
+            sectionLineIndex = i3;
+          }
+        }
+
+        // Fetch all definitions starting from the line after
+        // the word type section line until the next encountered section
+        for (var i4 = sectionLineIndex + 1; i4 < translationLineIndex && !/^(=+).+\1$/.test(wikicodeLines[i4]); i4++) {
+          var line3 = wikicodeLines[i4];
+          var defMatch;
+          if ((defMatch = /^(#+)/.exec(line3)) && !/^#+\*/.test(line3)) {
+            definitionsLines.push([defMatch[1].length, i4])
+          }
+        }
+
+        // Recursively fetches the line for definitionNumber
+        var getDefinitionLine = function (level, i) {
+          var levelCounter = 0;
+
+          for (var i5 = i; i5 < definitionsLines.length; i5++) {
+            var item = definitionsLines[i5];
+            if (item[0] === level + 1) {
+              levelCounter++;
+              if (levelCounter === definitionNumber[level]) {
+                if (level === definitionNumber.length - 1) {
+                  // We reached the end of definitionNumber array, return line number
+                  return item[1];
+                } else {
+                  // Recursively handle the rest of the definitionNumber array
+                  return getDefinitionLine(level + 1, i5 + 1);
+                }
+              }
+            }
+          }
+          return NaN;
+        };
+
+        var definitionLineIndex = getDefinitionLine(0, 0) || definitionsLines[0][1];
+        var domains = "";
+
+        // We look for a template of the form <nowiki>{{lexique|boulangerie|fr}}</nowiki>.
+        var domainMatch;
+        if (domainMatch = /{{lexique\|([^}]+?)\|[^|}]+?}}/.exec(wikicodeLines[definitionLineIndex])) {
+          domains = domainMatch[1];
+        }
+
+        // Wikicode generation.
+
+        var newWikicode = "== {" + "{langue|{0}}} ==\n".format(this._langCode);
+        newWikicode += "{" + "{ébauche|{0}}}\n".format(this._langCode);
+        newWikicode += "=== {" + "{S|étymologie}} ===\n";
+        newWikicode += ": {" + "{ébauche-étym|{0}}}\n\n".format(this._langCode);
+        newWikicode += "=== {" + "{S|{0}|{1}}} ===\n".format(nature, this._langCode);
+
+        var generator;
+        if (generator = this._generators[this._langCode]) {
+          newWikicode += generator(this._translation, nature, gender, transcription, dif).trim();
+        } else {
+          newWikicode += this._genericGenerator(nature, gender, transcription, dif).trim();
+        }
+
+        newWikicode += "\n# ";
+        if (domains) {
+          newWikicode += "{" + "{lexique|{0}|{1}}} ".format(domains, this._langCode);
+        }
+        newWikicode += "[[{0}#fr|{1}]].\n".format(this._word, this._word.charAt(0).toUpperCase() + this._word.substring(1));
+        newWikicode += "#* {" + "{exemple|lang={0}}}\n\n".format(this._langCode);
 
         // Get HTML code of translation’s page.
-        $.get(
-            mw.config.get("wgServer") + mw.config.get("wgScript"),
-            {
-              "title": this._translation,
-              "action": "edit",
-            },
-            this._replacePageContent.bind(this)
-        );
+        location.href = mw.config.get("wgServer") + mw.config.get("wgScript")
+            + "?title={0}&action=edit&gadget-CreerTrad-content={1}".format(
+                encodeURIComponent(this._translation),
+                encodeURIComponent(newWikicode)
+            );
       },
 
       /**
        * Replaces the content of the current page by that of the translation’s page in edit mode then loads the
        * generated wikicode in the edit field.
-       * @param data {string} Translation’s page HTML code.
        * @private
        */
-      _replacePageContent: function (data) {
-        while (document.body.firstChild) {
-          document.body.removeChild(document.body.firstChild);
+      _edit: function () {
+        var content = new URL(location.href).searchParams.get("gadget-CreerTrad-content");
+        if (content) {
+          $("#wpTextbox1").val(content);
+          $("#wpSummary").val("Création avec [[Aide:Gadget-CreerTrad|{0} v{1}]].".format(this.NAME, this.VERSION));
         }
-        document.body.innerHTML = data;
-        document.getElementById("wpTextbox1").value = this._generatedWikicode;
-        document.getElementById("wpSummary").value = "Création avec [[Aide:Gadget-CreerTrad-dev|Gadget-CreerTrad-dev]].";
       },
 
       /**
@@ -297,6 +332,10 @@ $(function () {
         return wikicode;
       }
     };
+
+    /*
+     * Generators registration
+     */
 
     // Catalan/Catalan
     wikt.gadgets.createTranslation.registerGeneratorForLanguage(
@@ -443,6 +482,8 @@ $(function () {
               wikicode += "{" + "{sv-nom-c-er|r=}}\n";
             } else if (translation.endsWith("else")) {
               wikicode += "{" + "{sv-nom-c-er|e=}}\n";
+            } else if (gender === "neutre") {
+              wikicode += "{" + "{sv-nom-n-0}}\n";
             } else {
               wikicode += "{" + "{sv-nom-c-er}}\n";
             }
@@ -465,6 +506,7 @@ $(function () {
         }
     );
 
-    wikt.gadgets.createTranslation.init();
+    var editMode = ["edit", "submit"].includes(mw.config.get("wgAction"));
+    wikt.gadgets.createTranslation.init(editMode);
   }
 });

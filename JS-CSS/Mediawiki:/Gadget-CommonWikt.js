@@ -81,6 +81,103 @@ wikt.text.toUpperCaseFirst = function (string) {
   return string.length > 0 ? string.substr(0, 1).toUpperCase() + string.substr(1, string.length) : "";
 };
 
+/**
+ * Converts an strictly positive (> 0) integer to a Roman numeral.
+ * @param i {number} The number to convert.
+ * @return {string|null} The Roman numeral for the number
+ * or null if the argument is not a strictly positive integer.
+ */
+wikt.text.intToRomanNumeral = function (i) {
+  if (i <= 0 || i > 399999) {
+    return null;
+  }
+
+  i = Math.floor(i);
+  var symbols = [
+    "I", "V",
+    "X", "L",
+    "C", "D",
+    "M", "ↁ",
+    "ↂ", "ↇ",
+    "ↈ",
+  ];
+  var exp = 0;
+  var rn = "";
+
+  while (i > 0) {
+    var d = i % 10;
+    var unit1 = symbols[exp * 2];
+    var unit5 = symbols[exp * 2 + 1];
+    var unit10 = symbols[(exp + 1) * 2];
+    var s = "";
+
+    if (d !== 0) {
+      if (d <= 3) {
+        for (var j = 0; j < d; j++) {
+          s += unit1;
+        }
+      } else if (d === 4) {
+        s += unit1 + unit5;
+      } else if (d === 5) {
+        s += unit5;
+      } else if (5 < d && d < 9) {
+        s += unit5;
+        for (var k = 0; k < d - 5; k++) {
+          s += unit1;
+        }
+      } else {
+        s += unit1 + unit10;
+      }
+    }
+    rn = s + rn;
+    i = Math.floor(i / 10);
+    exp++;
+  }
+
+  return rn;
+};
+
+/**
+ * Converts a Roman numeral to an integer.
+ * @param rn {string} The Roman numeral to convert.
+ * @return {number} The corresponding integer or NaN if the argument is not a Roman numeral.
+ */
+wikt.text.romanNumeralToInt = function (rn) {
+  rn = rn.toUpperCase();
+  // Check arg is a valid roman numeral
+  var regex = /^ↈ{0,3}(ↇ?ↂ{1,3}|ↂ?ↇ|ↂↈ)?(ↁ?M{1,3}|M?ↁ|Mↂ)?(D?C{1,3}|C?D|CM)?(L?X{1,3}|X?L|XC)?(V?I{1,3}|I?V|IX)?$/;
+  if (!rn || !regex.test(rn)) {
+    return NaN;
+  }
+  var symbolToValue = {
+    "I": 1,
+    "V": 5,
+    "X": 10,
+    "L": 50,
+    "C": 100,
+    "D": 500,
+    "M": 1000,
+    "ↁ": 5000,
+    "ↂ": 10000,
+    "ↇ": 50000,
+    "ↈ": 100000,
+  };
+
+  var n = 0;
+  var prevDigit = 0;
+  for (var i = 0; i < rn.length; i++) {
+    var d = symbolToValue[rn[i]];
+    n += d;
+    // Cases: IV, IX, XL, XC, etc.
+    if (d === 5 * prevDigit || d === 10 * prevDigit) {
+      n -= 2 * prevDigit;
+    }
+    prevDigit = d;
+  }
+
+  return n;
+};
+
 /*
  * Editing
  */
@@ -103,6 +200,7 @@ wikt.edit.getEditBox = function () {
  */
 wikt.edit.getText = function ($textInput) {
   var $editBox = $textInput || this.getEditBox();
+  // noinspection JSUnresolvedFunction
   return $editBox ? $editBox.val() : null;
 };
 
@@ -116,6 +214,7 @@ wikt.edit.setText = function (text, $textInput) {
   var $editBox = $textInput || this.getEditBox();
 
   if ($editBox) {
+    // noinspection JSUnresolvedFunction
     $editBox.val(text);
   }
 };
@@ -131,8 +230,10 @@ wikt.edit.insertText = function (index, text, $textInput) {
   var $editBox = $textInput || this.getEditBox();
 
   if ($editBox) {
+    // noinspection JSUnresolvedFunction
     var currentText = $editBox.val();
     var newText = currentText.substring(0, index) + text + currentText.substring(index);
+    // noinspection JSUnresolvedFunction
     $editBox.val(newText);
   }
 };
@@ -149,8 +250,10 @@ wikt.edit.replaceText = function (startIndex, endIndex, text, $textInput) {
   var $editBox = $textInput || this.getEditBox();
 
   if ($editBox) {
+    // noinspection JSUnresolvedFunction
     var currentText = $editBox.val();
     var newText = currentText.substring(0, startIndex) + text + currentText.substring(endIndex);
+    // noinspection JSUnresolvedFunction
     $editBox.val(newText);
   }
 };
@@ -168,6 +271,7 @@ wikt.edit.getCursorLocation = function ($textInput) {
       // noinspection JSUnresolvedFunction
       return this.getCodeMirror().indexFromPos(this.getCodeMirror().getCursor());
     } else {
+      // noinspection JSUnresolvedFunction
       return $editBox.get(0).selectionStart;
     }
   }
@@ -186,10 +290,89 @@ wikt.edit.setCursorLocation = function (position, $textInput) {
       // noinspection JSUnresolvedFunction
       this.getCodeMirror().setCursor(this.getCodeMirror().posFromIndex(position));
     } else {
+      // noinspection JSUnresolvedFunction
       $editBox.get(0).selectionStart = position;
+      // noinspection JSUnresolvedFunction
       $editBox.get(0).selectionEnd = position;
     }
   }
+}
+
+/**
+ * Selects text the edit box between start and end positions.
+ * @param start {number} The start location.
+ * @param end {number} The end location.
+ * @param $textInput {Object?} The text input or textarea to use instead of the main edit box.
+ */
+wikt.edit.setSelection = function (start, end, $textInput) {
+  var $editBox = $textInput || this.getEditBox();
+
+  if ($editBox) {
+    if (this._isCodeMirrorInput($editBox) && this.isCodeMirrorEnabled()) {
+      // noinspection JSUnresolvedFunction
+      this.getCodeMirror().setSelection(
+          this.getCodeMirror().posFromIndex(start),
+          this.getCodeMirror().posFromIndex(end)
+      );
+    } else {
+      // noinspection JSUnresolvedFunction
+      $editBox.get(0).selectionStart = start;
+      // noinspection JSUnresolvedFunction
+      $editBox.get(0).selectionEnd = end;
+    }
+  }
+}
+
+/**
+ * Returns the indices of currently selected lines in the edit box.
+ * @param $textInput {Object?} The text input or textarea to use instead of the main edit box.
+ * @return {Array<number>} An array containing line start and end indices for the current selection.
+ */
+wikt.edit.getSelectedLineNumbers = function ($textInput) {
+  var $editBox = $textInput || this.getEditBox();
+  var start, end;
+
+  if (this._isCodeMirrorInput($editBox) && this.isCodeMirrorEnabled()) {
+    // noinspection JSUnresolvedFunction
+    start = this.getCodeMirror().getCursor("from").line;
+    // noinspection JSUnresolvedFunction
+    end = this.getCodeMirror().getCursor("to").line;
+  } else {
+    var text = this.getText($editBox);
+    // noinspection JSUnresolvedFunction
+    start = text.substring(0, $editBox.get(0).selectionStart).split("\n").length - 1;
+    // noinspection JSUnresolvedFunction
+    end = text.substring(0, $editBox.get(0).selectionEnd).split("\n").length - 1;
+  }
+
+  return [start, end];
+}
+
+/**
+ * Selects the lines between start and end indices.
+ * @param start {number} Start line index.
+ * @param end {number?} End line index.
+ * @param $textInput {Object?} The text input or textarea to use instead of the main edit box.
+ */
+wikt.edit.selectLines = function (start, end, $textInput) {
+  var $editBox = $textInput || this.getEditBox();
+  if (!end) {
+    end = start;
+  }
+  var s, e;
+
+  if (this._isCodeMirrorInput($editBox) && this.isCodeMirrorEnabled()) {
+    // noinspection JSUnresolvedFunction
+    s = this.getCodeMirror().indexFromPos({line: start, ch: 0});
+    // noinspection JSUnresolvedFunction
+    e = this.getCodeMirror().indexFromPos({line: end, ch: this.getCodeMirror().getLine(end).length});
+  } else {
+    var text = this.getText();
+    s = text.split("\n").slice(0, start).join("\n").length + 1;
+    e = text.split("\n").slice(0, end + 1).join("\n").length;
+  }
+
+  this.setSelection(s, e);
 }
 
 /**
@@ -203,8 +386,11 @@ wikt.edit.getSelectedText = function ($textInput) {
   if (this._isCodeMirrorInput($editBox) && this.isCodeMirrorEnabled()) {
     return this.getCodeMirror().getSelection();
   } else {
+    // noinspection JSUnresolvedFunction
     var start = $editBox.get(0).selectionStart;
+    // noinspection JSUnresolvedFunction
     var end = $editBox.get(0).selectionEnd;
+    // noinspection JSUnresolvedFunction
     return $editBox.val().substring(start, end);
   }
 }
@@ -222,9 +408,13 @@ wikt.edit.replaceSelectedText = function (replacement, $textInput) {
     // noinspection JSUnresolvedFunction
     this.getCodeMirror().replaceSelection(replacement);
   } else {
+    // noinspection JSUnresolvedFunction
     var start = $editBox.get(0).selectionStart;
+    // noinspection JSUnresolvedFunction
     var end = $editBox.get(0).selectionEnd;
+    // noinspection JSUnresolvedFunction
     var text = $editBox.val();
+    // noinspection JSUnresolvedFunction
     $editBox.val(text.substring(0, start) + replacement + text.substring(end));
   }
 }
@@ -267,11 +457,13 @@ wikt.edit.getCodeMirror = function () {
 
 /**
  * Indicates whether the given element is the edit box used by CodeMirror.
+ * @param {Object} $elem The element to check.
  * @return {boolean} True if the element is used by CodeMirror.
  */
-wikt.edit._isCodeMirrorInput = function ($textInput) {
+wikt.edit._isCodeMirrorInput = function ($elem) {
   var $editBox = this.getEditBox();
-  return $textInput && $editBox && $textInput.attr("id") === $editBox.attr("id");
+  // noinspection JSUnresolvedFunction
+  return $elem && $editBox && $elem.attr("id") === $editBox.attr("id");
 }
 
 /**
@@ -304,19 +496,6 @@ wikt.user.isInUsergroup = function (groupname) {
   }
 
   return false;
-};
-
-/**
- * Teste le niveau de l’utilisateur courant.
- * Tests the current user’s level.
- * @param levelmask {int}
- * - bits 7 to 4 = bitmask.
- * - bits 3 to 0 = wgUserLevel value to obtain after masking (binary and).
- *   ex: 0x40 for non-admins.
- * @return {boolean} True if the value corresponds.
- */
-wikt.user.hasLevel = function (levelmask) {
-  return (wgUserLevel & (levelmask >>> 4)) === (wgUserLevel & 0xF);
 };
 
 /*
@@ -772,8 +951,10 @@ var CommonWikt_ajax = {
       if (bundle.onSuccess) {
         bundle.onSuccess(xmlhttp, bundle);
       }
-    } else if (bundle.onFailure) {
-      bundle.onFailure(xmlhttp, bundle);
+    } else { // noinspection JSUnresolvedVariable
+      if (bundle.onFailure) {
+        bundle.onFailure(xmlhttp, bundle);
+      }
     }
   }
 };

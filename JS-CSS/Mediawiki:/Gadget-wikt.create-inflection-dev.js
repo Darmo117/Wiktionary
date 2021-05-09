@@ -8,9 +8,9 @@
  * This gadget lets users create inflection pages for lemmas in
  * several languages from red links within inflection tables.
  * ------------------------------------------------------------------
- * v1.0 2020-??-?? First version TODO màj date à la sortie
+ * v1.0 2021-??-?? First version TODO màj date à la sortie
  * ------------------------------------------------------------------
- * [[Catégorie:JavaScript du Wiktionnaire|wikt.create-inflection-dev.js]]
+ * [[Catégorie:JavaScript du Wiktionnaire|create-inflection-dev.js]]
  */
 
 $(function () {

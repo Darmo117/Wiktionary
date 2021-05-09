@@ -4,11 +4,15 @@ local m_params = require('Module:paramètres')
 
 local p = {}
 
--- TODO vérifier le format du nombre /M{0,3}(D?C{1,3}|C?[DM])?(L?X{1,3}|X?[LC])?(V?I{1,4}|I?[VX])?/
+-- TODO vérifier le format du nombre /^M{0,3}(D?C{1,3}|C?D|CM)?(L?X{1,3}|X?L|XC)?(V?I{1,3}|I?V|IX)?$/
 --- Convertit un nombre romain en entier.
 --- @param romanNumber string Le nombre romain à convertir.
---- @return number L’entier correspondant.
+--- @return number L’entier correspondant ou nil si le paramèter n’est pas un nombre romain.
 local function fromRoman(romanNumber)
+  -- Check if arg is a valid roman numeral
+  if not romanNumber or not mw.ustring.gmatch("", romanNumber) then
+    return nil;
+  end
   local digitValues = {
     ['I'] = 1,
     ['V'] = 5,
@@ -18,19 +22,16 @@ local function fromRoman(romanNumber)
     ['D'] = 500,
     ['M'] = 1000,
   }
+
   local n = 0
-  local prevDigit = ''
-
+  local prevDigit = 0
   for i = 1, mw.ustring.len(romanNumber) do
-    local digit = mw.ustring.sub(romanNumber, i, i)
+    local digit = digitValues[mw.ustring.sub(romanNumber, i, i)]
 
-    n = n + digitValues[digit]
-    if (digit == 'V' or digit == 'X') and prevDigit == 'I' or
-        (digit == 'L' or digit == 'C') and prevDigit == 'X' or
-        (digit == 'D' or digit == 'M') and prevDigit == 'C'
-    then
-      -- On retire 2 fois la valeur précédente car elle a été ajoutée en trop à l’itération précédente.
-      n = n - 2 * digitValues[prevDigit]
+    n = n + digit
+    -- Cases: IV, IX, XL, XC, etc.
+    if digit == 5 * prevDigit or digit == 10 * prevDigit then
+      n = n - 2 * prevDigit
     end
     prevDigit = digit
   end

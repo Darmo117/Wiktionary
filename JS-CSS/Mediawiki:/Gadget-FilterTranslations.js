@@ -1,11 +1,11 @@
 /**
  * (fr)
  * Ce gadget masque les traductions qui ne sont pas dans la liste définie
- * dans le common.js de l’utilisateur. Voir [[Aide:Gadget-FilterTranslations]].
+ * dans le filterTranslations.js de l’utilisateur. Voir [[Aide:Gadget-FilterTranslations]].
  * ----
  * (en)
  * This gadget filters out translations that are not listed in the user’s
- * common.js. See [[Aide:Gadget-FilterTranslations]] (fr).
+ * filterTranslations.js. See [[Aide:Gadget-FilterTranslations]] (fr).
  * ----
  * [[Catégorie:JavaScript du Wiktionnaire|FilterTranslations.js]]
  */
@@ -15,7 +15,7 @@ $(function () {
     window.wikt.gadgets.filterTranslations = {
       NAME: "Filtrer traductions",
 
-      VERSION: "1.0",
+      VERSION: "2.0",
 
       _translations: [],
 
@@ -42,7 +42,7 @@ $(function () {
 
         $(".translations > ul > li").each(function (_, e) {
           var $item = $(e);
-          var match = /trad-(\w+)/.exec($item.find("span").prop("class"));
+          var match = /trad-([\w-]+)/.exec($item.find("span").prop("class"));
 
           if (match && !(whitelistedLangs || []).includes(match[1])) {
             self._translations.push($item);
@@ -68,19 +68,11 @@ $(function () {
       },
     };
 
-    var username = mw.config.get("wgUserName");
-    var url = "https://fr.wiktionary.org/wiki/User:{0}/filterTranslations.js?action=raw&ctype=text/javascript".format(username);
-    wikt.loadScripts([url]).done(function () {
-      console.log("Chargement de Gadget-FilterTranslations.js…");
-      try {
-        // noinspection JSUnresolvedVariable
-        if (whitelist instanceof Array) {
-          // noinspection JSUnresolvedVariable
-          wikt.gadgets.filterTranslations.init(whitelist); // Variable should be declared in user page.
-        }
-      } catch (e) {
-        console.log(e);
-      }
-    });
+    console.log("Chargement de Gadget-FilterTranslations.js…");
+    // Variable should be declared in user page.
+    if (ft_whitelist && ft_whitelist instanceof Array) {
+      console.log("Found {0} languages in whitelist.".format(ft_whitelist.length));
+      wikt.gadgets.filterTranslations.init(ft_whitelist);
+    }
   }
 });

@@ -74,23 +74,6 @@ function p.templateT(frame)
   return formatLanguageName(formatedText, langCode) .. category
 end
 
---- Generates the link to a local page.
---- @param langCode string Word’s language code.
---- @param word string The word to link to.
---- @param alternativeText string An alternative text to display instead of the word.
---- @return string The local link.
-local function generateLocalLink(langCode, word, alternativeText)
-  local linkText
-  if alternativeText then
-    linkText = alternativeText
-  else
-    linkText = word
-  end
-
-  local langSpan = m_bases.balise_langue(linkText, langCode)
-  return mw.ustring.format('[[%s#%s|%s]]', word, langCode, langSpan)
-end
-
 --- Generates the link pointing to another Wiktionary.
 --- @param langCode string Word’s language code.
 --- @param word string The word to link to.
@@ -135,18 +118,16 @@ local function formatTraditionalScript(langCode, word)
     return nil
   end
 
-  local destination = word .. "#" .. langCode
-  local shownText = ""
   -- Traditional Chinese is better displayed by browsers when using the code zh-Hant.
   if langCode == "zh" then
-    shownText = m_bases.balise_langue(word, "zh-Hant")
-  else
-    shownText = m_bases.balise_langue(word, langCode)
+    langCode = "zh-Hant"
+  elseif langCode == "ko" then
+    langCode = "ko-Hani"
   end
   -- Mark the text as “traditional” for gadgets.
-  shownText = mw.ustring.format('<span class="ecrit_tradi">%s</span>', shownText)
+  local shownText = mw.ustring.format('<span class="ecrit_tradi">%s</span>', word)
 
-  return mw.ustring.format("[[%s|%s]]", destination, shownText)
+  return m_bases.lien_modele(word, langCode, nil, shownText, true)
 end
 
 --- Formats a transcription.
@@ -214,7 +195,7 @@ end
 function p._templateTrad(status, langCode, word, gender, alternativeText, transcription, traditionalLangCode, traditionalTerm)
   if not langCode then
     table.insert(cats, getCategory("Wiktionnaire:Traductions sans langue précisée"))
-    return '[[WT:Liste des langues|<span style="color:red;">Langue à préciser</span>]] <span style="color:red;">(paramètre 1)</span>'
+    return '<span style="color:red;">[[WT:Liste des langues|Langue à préciser]] (paramètre 1)</span>'
   elseif m_langs.get_nom(langCode) == nil then
     table.insert(cats, getCategory("Wiktionnaire:Traductions trad avec code langue non défini"))
   end
@@ -226,7 +207,7 @@ function p._templateTrad(status, langCode, word, gender, alternativeText, transc
     table.insert(cats, getCategory("Wiktionnaire:Traductions sans traduction précisée"))
     localLink = '<span style="color:red">pas de traduction précisée (paramètre 2)</span>'
   else
-    localLink = generateLocalLink(langCode, word, alternativeText)
+    localLink = m_bases.lien_modele(word, langCode, nil, alternativeText, true)
     superscriptText = generateOutgoingLink(langCode, word, status)
   end
 
@@ -243,7 +224,7 @@ function p._templateTrad(status, langCode, word, gender, alternativeText, transc
     finalText = finalText .. " (" .. formatedTraditionalScript .. ")"
   end
   if formatedTranscription then
-    finalText = finalText .. " ''" .. formatedTranscription .. "''"
+    finalText = finalText .. " " .. formatedTranscription
   end
   if formatedGender then
     finalText = finalText .. " " .. formatedGender

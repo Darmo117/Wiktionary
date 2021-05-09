@@ -142,7 +142,7 @@ local function getLanguageName(langCode)
   return m_table.contains(LATIN_CODES, langCode) and langCode or m_langues.get_nom(langCode)
 end
 
-local function italicIfLatinScript(text)
+local function italicize(text)
   return m_Unicode_data.shouldItalicize(text) and mw.ustring.format("''%s''", text) or text
 end
 
@@ -213,7 +213,7 @@ function p.modele_etymologie_langue(frame)
       anchor = anchor .. '-' .. tostring(anchorNum)
     end
 
-    content = italicIfLatinScript(m_bases.lien_modele(word, originLang, anchor, alternativeText, true))
+    content = italicize(m_bases.lien_modele(word, originLang, anchor, alternativeText, true))
   end
 
   if transcription then

@@ -27,6 +27,7 @@
  *                   interwiki templates
  * v5.1 2020-09-20 added pronunciation section field; added ISO 639-3 code to Language
  *                 class; removed sources section; added help bubbles to some fields
+ * v5.1.1 2021-05-08 Edit notice is no longer overwritten by the button
  * ------------------------------------------------------------------------------------
  * [[Catégorie:JavaScript du Wiktionnaire|CreerNouveauMot.js]]
  */
@@ -42,7 +43,7 @@ $(function () {
       window.wikt.gadgets.creerNouveauMot = {
         NAME: "Créer nouveau mot",
 
-        VERSION: "5.1",
+        VERSION: "5.1.1",
 
         _COOKIE_NAME: "cnm_last_lang",
         /** Cookie duration in days. */
@@ -656,6 +657,7 @@ $(function () {
         }
       };
 
+      // noinspection JSValidateTypes
       wikt.gadgets.creerNouveauMot.Language.prototype = {
         /**
          * @return {string} This language’s code.
@@ -746,6 +748,7 @@ $(function () {
       wikt.gadgets.creerNouveauMot.Gui = function () {
       };
 
+      // noinspection JSValidateTypes
       wikt.gadgets.creerNouveauMot.Gui.prototype = {
         /** jQuery selector of the HTML element GUIs will be inserted into. */
         TARGET_ELEMENT: "#Editnotice-0",
@@ -767,7 +770,7 @@ $(function () {
             'Ouvrir le gadget {0}'.format(gadgetName) +
             '</span>' +
             '</div>';
-        $target.html(headerText);
+        $target.append(headerText);
         $target.find("#cnm-open-ui").on("click", onActivateGadget);
       };
 
@@ -1903,6 +1906,7 @@ $(function () {
         this._template = template || "";
       }
 
+      // noinspection JSValidateTypes
       wikt.gadgets.creerNouveauMot.Number.prototype = {
         /**
          * @return {string} The label.
@@ -1942,6 +1946,7 @@ $(function () {
         this._template = template || "";
       }
 
+      // noinspection JSValidateTypes
       wikt.gadgets.creerNouveauMot.Gender.prototype = {
         /**
          * @return {string} Gender’s label.
@@ -1965,11 +1970,12 @@ $(function () {
       wikt.gadgets.creerNouveauMot.genders = {
         MASCULINE: new wikt.gadgets.creerNouveauMot.Gender("masculin", "{{m}}"),
         FEMININE: new wikt.gadgets.creerNouveauMot.Gender("féminin", "{{f}}"),
+        FEMININE_MASCULINE_DIFF: new wikt.gadgets.creerNouveauMot.Gender("masc. et fém. différents"),
         FEMININE_MASCULINE: new wikt.gadgets.creerNouveauMot.Gender("masc. et fém. identiques", "{{mf}}"),
         NO_GENDER: new wikt.gadgets.creerNouveauMot.Gender("pas de genre"),
-        VERB_GROUP1: new wikt.gadgets.creerNouveauMot.Gender("1<sup>er</sup> groupe", "{{type|{0}}} {{conjugaison|fr|group=1}}"),
-        VERB_GROUP2: new wikt.gadgets.creerNouveauMot.Gender("2<sup>ème</sup> groupe", "{{type|{0}}} {{conjugaison|fr|group=2}}"),
-        VERB_GROUP3: new wikt.gadgets.creerNouveauMot.Gender("3<sup>ème</sup> groupe", "{{type|{0}}} {{conjugaison|fr|group=3}}"),
+        VERB_GROUP1: new wikt.gadgets.creerNouveauMot.Gender("1<sup>er</sup> groupe", "{{type|{0}}} {{conjugaison|fr|groupe=1}}"),
+        VERB_GROUP2: new wikt.gadgets.creerNouveauMot.Gender("2<sup>ème</sup> groupe", "{{type|{0}}} {{conjugaison|fr|groupe=2}}"),
+        VERB_GROUP3: new wikt.gadgets.creerNouveauMot.Gender("3<sup>ème</sup> groupe", "{{type|{0}}} {{conjugaison|fr|groupe=3}}"),
         VERB: new wikt.gadgets.creerNouveauMot.Gender("verbe", "{{type|{0}}} {{conjugaison|{0}}}"),
         VERB_NO_TEMPLATE: new wikt.gadgets.creerNouveauMot.Gender("verbe", "{{type|{0}}}"),
         REGULAR_VERB: new wikt.gadgets.creerNouveauMot.Gender("régulier", "{{type|{0}}}"),
@@ -1988,6 +1994,7 @@ $(function () {
         this._sectionCode = sectionCode;
       }
 
+      // noinspection JSValidateTypes
       wikt.gadgets.creerNouveauMot.GrammaticalClass.prototype = {
         /**
          * @return {string} Class’ label.
@@ -2081,6 +2088,7 @@ $(function () {
         };
       };
 
+      // noinspection JSValidateTypes
       wikt.gadgets.creerNouveauMot.GrammaticalItem.prototype = {
         /**
          * @return {wikt.gadgets.creerNouveauMot.GrammaticalClass} The grammatical class.

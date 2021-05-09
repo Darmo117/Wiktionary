@@ -429,28 +429,39 @@ end
 --- @param langCode string Le code langue.
 --- @param anchor string L’ancre, typiquement l’ID de la section dans la page.
 --- @param text string Le texte à afficher (optionnel).
---- @param addLangAnchor boolean Si vrai, le code langue est ajouté au lien,
----                              seulement si anchor n’est pas renseigné.
+--- @param keepLangAnchor boolean Si vrai, le code langue est ajouté au lien
+---                               même s’il pointe vers la page courante.
 --- @return string Le lien.
-function p.lien_modele(word, langCode, anchor, text, addLangAnchor)
+function p.lien_modele(word, langCode, anchor, text, keepLangAnchor)
   if text and text == '' then
     text = nil
   end
+  local m_unicode = require("Module:données Unicode")
+  text = m_unicode.setWritingDirection(text or word)
+
+  local langCodeForlink
+  if langCode == "zh-Hant" or langCode == "zh-Hans" then
+    langCodeForlink = "zh"
+  elseif langCode == "ko-Hani" then
+    langCodeForlink = "ko"
+  else
+    langCodeForlink = langCode
+  end
 
   if word == currentTitle.prefixedText then
-    if addLangAnchor then
-      return p.balise_langue(mw.ustring.format('[[%s#%s|%s]]', word, langCode, text or word), langCode)
+    if keepLangAnchor then
+      return p.balise_langue(mw.ustring.format('[[%s#%s|%s]]', word, langCodeForlink, text), langCode)
     else
-      return p.balise_langue(mw.ustring.format('[[%s|%s]]', word, text or word), langCode)
+      return p.balise_langue(mw.ustring.format('[[%s|%s]]', word, text), langCode)
     end
   else
     if anchor and anchor ~= '' then
-      anchor = langCode .. '-' .. anchor
+      anchor = langCodeForlink .. '-' .. anchor
     else
-      anchor = langCode
+      anchor = langCodeForlink
     end
 
-    return p.balise_langue(mw.ustring.format('[[%s#%s|%s]]', word, anchor, text or word), langCode)
+    return p.balise_langue(mw.ustring.format('[[%s#%s|%s]]', word, anchor, text), langCode)
   end
 end
 

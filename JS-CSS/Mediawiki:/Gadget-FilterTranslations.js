@@ -70,7 +70,7 @@ $(function () {
 
     console.log("Chargement de Gadget-FilterTranslations.js…");
     // Variable should be declared in user page.
-    if (ft_whitelist && ft_whitelist instanceof Array) {
+    if (typeof ft_whitelist !== "undefined" && ft_whitelist instanceof Array) {
       console.log("Found {0} languages in whitelist.".format(ft_whitelist.length));
       wikt.gadgets.filterTranslations.init(ft_whitelist);
     }

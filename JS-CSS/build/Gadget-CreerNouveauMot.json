@@ -3,11 +3,6 @@
   "namespace": 8,
   "page_names": [
     "Gadget-CreerNouveauMot.js",
-    "Gadget-CreerNouveauMot.js/conv.js",
-    "Gadget-CreerNouveauMot.js/en.js",
-    "Gadget-CreerNouveauMot.js/eo.js",
-    "Gadget-CreerNouveauMot.js/fr.js",
-    "Gadget-CreerNouveauMot.js/it.js",
     "Gadget-CreerNouveauMot.css"
   ],
   "dependencies": [

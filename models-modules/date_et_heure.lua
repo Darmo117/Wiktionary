@@ -10,7 +10,8 @@ local p = {}
 --- @return number L’entier correspondant ou nil si le paramèter n’est pas un nombre romain.
 local function fromRoman(romanNumber)
   -- Check if arg is a valid roman numeral
-  if not romanNumber or not mw.ustring.gmatch("", romanNumber) then
+  local pattern = "^M{0,3}(D?C{1,3}|C?D|CM)?(L?X{1,3}|X?L|XC)?(V?I{1,3}|I?V|IX)?$" -- FIXME pas de {n,m} ni |
+  if not romanNumber or not mw.ustring.gmatch(romanNumber, pattern) then
     return nil;
   end
   local digitValues = {

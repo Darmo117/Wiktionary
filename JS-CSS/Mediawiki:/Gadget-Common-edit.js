@@ -6,8 +6,9 @@
 /**
  * Objet contenant les fonctions et variables pour les gadgets du Wiktionnaire.
  */
-window.wikt = window.wikt || {};
-wikt.edit = {};
+window.wikt = window.wikt || {
+  edit: {},
+};
 
 /************************************
  * Caractères spéciaux
@@ -33,10 +34,12 @@ if (mw.config.get('wgAction') === 'edit' || mw.config.get('wgAction') === 'submi
  */
 function addCharSubsetMenu() {
   var specialchars = $("#specialcharsets");
-  if (specialchars.length === 0) return;
+  if (specialchars.length === 0) {
+    return;
+  }
 
   // Construction du menu de selection
-  var $select = $('<select />')
+  var $select = $('<select>')
       .css('display', 'inline')
       .click(function () {
         chooseCharSubset($(this).val());
@@ -46,7 +49,7 @@ function addCharSubsetMenu() {
   $(specialchars)
       .find("p")
       .each(function () {
-        var $opt = $("<option />")
+        var $opt = $("<option>")
             .val($(this).attr("title"))
             .text($(this).attr("title"));
         $($select).append($opt);
@@ -76,7 +79,7 @@ wikt.edit.addCharSubsetMenu = addCharSubsetMenu;
  * Affichage du jeu de caractères sélectionné
  */
 function chooseCharSubset(name) {
-  $.cookie('Commonedit_selected', name);
+  $.cookie('Commonedit_selected', name, {path: "/;SameSite=Lax"});
   $("#specialcharsets p[title='" + name + "']").each(function () {
     initializeCharSubset(this);
   }).css('display', 'inline').show();

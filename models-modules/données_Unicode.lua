@@ -127,7 +127,7 @@ end
 --- Returns the Unicode scripts for the given text.
 --- @param text string The text.
 --- @param getRanges boolean If true, ranges for each script will be returned
---- @return table|(table,table) The list of scripts (unsorted).
+--- @return table The list of scripts (unsorted).
 function p.getScriptsForText(text, getRanges)
   local res = {}
   local scriptsRanges = {}
@@ -215,29 +215,43 @@ function p.setWritingDirection(text)
   local res = ""
   local scripts, intervals = p.getScriptsForText(text, true)
 
-  local prevScript
+  local prevScriptName
   local inSpan = false
-  for _, interval in ipairs(intervals) do
+  for i, interval in ipairs(intervals) do
     local substr = mw.ustring.sub(text, interval.from, interval.to)
 
     if interval.script then
       local script = scripts[interval.script]
       local scriptName = script.name
       local scriptDir = script.direction or "i"
+      local nextScript = intervals[i + 1] and scripts[intervals[i + 1].script] or nil
+      local nextScriptDir = nextScript and (nextScript.direction or "i") or nil
 
-      if inSpan and scriptDir ~= "i" and scriptDir ~= "m" and scriptName ~= prevScript then
+      if inSpan and scriptDir ~= "i" and scriptDir ~= "m" and scriptName ~= prevScriptName then
         res = res .. "</span>"
         inSpan = false
       end
 
-      if scriptDir == "lr" or scriptDir == "i" or scriptDir == "m" or prevScript == scriptName then
+      if scriptDir == "lr" or prevScriptName == scriptName
+          -- Special case for when text begins with i or m scripts and is followed by script ≠ lr
+          or (scriptDir == "i" or scriptDir == "m") and (i == 1 and nextScriptDir == "lr" or i > 1) then
         res = res .. substr
       else
-        local dir = directionToDir[scriptDir]
-        local dirAttr = dir and ('dir="' .. dir .. '"') or ''
-        local writingMode = directionToCss[scriptDir]
+        local dir
+        local cssDir
+        -- Include current span in next script’s span
+        if scriptDir ~= "i" and scriptDir ~= "m" then
+          dir = directionToDir[scriptDir]
+          cssDir = scriptDir
+          prevScriptName = scriptName
+        else
+          dir = directionToDir[nextScriptDir]
+          cssDir = nextScriptDir
+          prevScriptName = nextScript.name
+        end
+        local dirAttr = dir and ('dir="' .. dir .. '"') or ""
+        local writingMode = directionToCss[cssDir]
         res = res .. mw.ustring.format('<span %s style="writing-mode:%s">', dirAttr, writingMode) .. substr
-        prevScript = scriptName
         inSpan = true
       end
 
@@ -247,7 +261,7 @@ function p.setWritingDirection(text)
         inSpan = false
       end
       res = res .. substr
-      prevScript = nil
+      prevScriptName = nil
     end
   end
 
@@ -296,7 +310,10 @@ function p.writingDirection(frame)
   local args = m_params.process(frame.args, {
     [1] = { required = true, allow_empty = true },
   })
-  return p.setWritingDirection(args[1])
+  if args[1] then
+    return p.setWritingDirection(args[1])
+  end
+  return ""
 end
 
 --- Returns the Unicode codepoint of the given character.

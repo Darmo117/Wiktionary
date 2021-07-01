@@ -5,6 +5,19 @@ local langues = mw.loadData("Module:langues/data")
 
 local p = {}
 
+p.specialCodes = {
+  ["zh-Hani"] = "zh",
+  ["zh-Hans"] = "zh",
+  ["zh-Hant"] = "zh",
+  ["ko-Hani"] = "ko",
+  ["vi-Hani"] = "vi",
+  ["vi-Hans"] = "vi",
+  ["vi-Hant"] = "vi",
+  ["nan-Hani"] = "nan",
+  ["nan-Hans"] = "nan",
+  ["nan-Hant"] = "nan",
+}
+
 -- Cherche et renvoie le nom de la langue depuis notre liste locale [[Module:langues/data]].
 -- Fonction utilisable dans d’autres modules seulement
 function p.get_nom(code)
@@ -18,6 +31,26 @@ function p.get_nom(code)
     return langues[code]["nom"]
   else
     return nil
+  end
+end
+
+-- Cherche et renvoie la clé de tri de la langue depuis notre liste locale [[Module:langues/data]].
+-- Fonction utilisable dans d’autres modules seulement
+function p.get_tri(code)
+  if not code then
+    return nil
+  end
+
+  code = mw.text.trim(code)
+
+  if langues[code] and langues[code]["tri"] then
+    return langues[code]["tri"]
+  else
+    if langues[code] then
+      return langues[code]["nom"]
+    else
+      return nil
+    end
   end
 end
 
@@ -39,6 +72,27 @@ function p.nom_langue(frame)
     return ''
   else
     return langue
+  end
+end
+
+-- Fonction pouvant remplacer les appels de type {{ {{{lang}}} }} dans les modèles
+-- Cette fonction marche pour un modèle
+function p.tri_langue(frame)
+  local args
+
+  if frame.args ~= nil and frame.args[1] ~= nil then
+    args = frame.args
+  else
+    args = frame:getParent().args
+  end
+  local code = args[1]
+
+  local tri = p.get_tri(code)
+
+  if tri == nil or tri == "" then
+    return ''
+  else
+    return tri
   end
 end
 

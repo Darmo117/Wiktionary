@@ -7,6 +7,8 @@ mw.loader.load("//fr.wiktionary.org/wiki/Utilisateur:Sebleouf/linksheredeluxe.js
 // Ajoute des boutons à droite du titre de la page courante.
 mw.loader.load("//fr.wiktionary.org/wiki/Utilisateur:Darmo117/Gadgets/AddTitleButtons.js?action=raw&ctype=text/javascript");
 
+var createInflectionLangs = ["en", "eo"];
+
 var bdl_buttons = [
   {
     action: function (selectedText, language) {
@@ -50,8 +52,7 @@ var bdl_buttons = [
       if ("[]".includes(delimiter)) {
         start = "[";
         end = "]"
-      }
-      else {
+      } else {
         start = end = delimiter;
       }
       return "{{pron-API|" + start + selectedText + end + "}}";

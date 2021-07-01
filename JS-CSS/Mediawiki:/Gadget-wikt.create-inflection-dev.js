@@ -1,22 +1,22 @@
-/**
- * (fr)
- *  Ce gadget permet de créer les flexions pour les lemmes dans
- *  diverses langues à partir des liens rouges dans les tables de
- *  flexions.
- * ------------------------------------------------------------------
+/*************************************************************************
  * (en)
  * This gadget lets users create inflection pages for lemmas in
  * several languages from red links within inflection tables.
- * ------------------------------------------------------------------
- * v1.0 2021-??-?? First version TODO màj date à la sortie
- * ------------------------------------------------------------------
+ *************************************************************************
+ * (fr)
+ * Ce gadget permet de créer les flexions pour les lemmes dans
+ * diverses langues à partir des liens rouges dans les tables de
+ * flexions.
+ *************************************************************************
+ * v1.0 2021-??-?? First version; full rewrite from gadget CreerFlexionFr. TODO màj date à la sortie
+ *************************************************************************
  * [[Catégorie:JavaScript du Wiktionnaire|create-inflection-dev.js]]
- */
+ * <nowiki>
+ *************************************************************************/
 
 $(function () {
   // Activate only in main namespace.
-  // noinspection PointlessBooleanExpressionJS TEST
-  if (true/*wikt.page.hasNamespaceIn([""])*/) { // TEST
+  if (wikt.page.hasNamespaceIn([""])) {
     console.log("Chargement de Gadget-wikt.create-inflection-dev.js…");
 
     window.wikt.gadgets.createInflection = {
@@ -28,42 +28,38 @@ $(function () {
 
       _inflectionToCreate: "",
 
-      _gender: "",
-
-      _number: "",
-
       /** @type {wikt.gadgets.createInflection.LanguageData} */
       _language: null,
 
-      /**
-       * @type {Array<wikt.gadgets.createInflection.LanguageData>}
-       */
+      /** @type {Array<wikt.gadgets.createInflection.LanguageData>} */
       _languages: [],
 
-      /**
-       * Adds the given language data to this gadget.
-       * @param languageData {wikt.gadgets.createInflection.LanguageData}
-       */
-      addLanguageData: function (languageData) {
-        this._languages.push(languageData);
-      },
+      /** @type {Array<string>} */
+      _activatedLanguages: ["fr"],
 
       /**
        * Initializes the gadget by adding a callback function to
        * this gadget to red links inside the first table with the
        * "flextable-fr-mfsp" CSS class.
+       *
+       * @param userLanguages {Array<string>} List of additional languages for the current user.
        */
-      init: function () {
+      init: function (userLanguages) {
+        if (userLanguages) {
+          this._activatedLanguages = this._activatedLanguages.concat(userLanguages);
+        }
         var self = this;
 
-        this._languages.forEach(function (languageData) {
-          var flexTableClass = "." + languageData.inflectionTableClass;
+        $.grep(this._languages, function (language) {
+          return self._activatedLanguages.indexOf(language.code);
+        }).forEach(function (language) {
+          var flexTableClass = "." + language.inflectionTableClass;
 
           var gender = null;
           var $flextableSelfLink = $(flexTableClass + " .selflink");
 
           if ($flextableSelfLink.length) {
-            languageData.genderClasses.forEach(function (genderClass) {
+            language.genderClasses.forEach(function (genderClass) {
               if ($flextableSelfLink.first().parents("." + genderClass.class).length) {
                 gender = genderClass.code;
               }
@@ -74,12 +70,11 @@ $(function () {
             var $redLink = $(e);
             var inflection = $redLink.text();
 
-            // Une boite de flexions pour noms communs contient deux lemmes différents :
+            // Une boite de flexions pour noms communs en français peuvent parfois contenir deux lemmes différents :
             // celui au masculin et au féminin : on ne colore dans ce cas que les formes
             // du genre correspondant au nom de la page
             var isNoun = false;
             // Get word type from section title
-            // noinspection JSUnresolvedFunction
             var wordType = $redLink.parents(flexTableClass)
                 .prevAll("h3").first().find(".titredef").text();
 
@@ -89,7 +84,7 @@ $(function () {
 
             // gender of the red link
             var redLinkGender = null;
-            languageData.genderClasses.forEach(function (genderClass) {
+            language.genderClasses.forEach(function (genderClass) {
               if ($redLink.parents("." + genderClass.class).length) {
                 redLinkGender = genderClass.code;
               }
@@ -97,7 +92,7 @@ $(function () {
             console.log(isNoun, redLinkGender, gender); // DEBUG
 
             // On ne surligne pas les liens qui ne sont pas des flexions du mot courant
-            // redLinkGender est null dans le cas de fr-rég, où le genre n'est pas
+            // redLinkGender est null dans le cas de fr-rég (entre autres), où le genre n’est pas
             // indiqué dans le tableau de flexions.
             if (isNoun && redLinkGender && redLinkGender !== gender) {
               return;
@@ -109,8 +104,7 @@ $(function () {
               e.preventDefault();
               self._baseWord = mw.config.get("wgPageName").replace(/_/g, " ");
               self._inflectionToCreate = inflection.replace(/&nbsp;/g, " ");
-              // TODO set self._number
-              self._language = languageData;
+              self._language = language;
               self._onClick();
             });
           });
@@ -148,16 +142,16 @@ $(function () {
         var newWikicode = "";
 
         // Générer le code wiki de la nouvelle page en ne conservant que les lignes utiles
-        // de l'ancienne (la page principale du mot).
-        // Le principe est que l'on doit trouver dans l'ordre :
-        // * une section de langue française
+        // de l’ancienne (la page principale du mot).
+        // Le principe est qu’on doit trouver dans l’ordre :
+        // * une section dans la langue
         // ** une section de type de mot
         // *** éventuellement une boite de flexions
         // *** une ligne de forme
-        // ** éventuellement une autre section de type de mot (retour récursif).
-        // * Une autre section de langue arrête tout.
+        // ** éventuellement une autre section de type de mot (retour étape 2)
+        // * Une autre section de langue arrête tout
 
-        newWikicode = wikicodeLines.join("\n"); // TEST
+        newWikicode = wikicodeLines.join("\n"); // TEMP
 
         // TODO reprendre tout les modèles de flexion pour ajouter des classe CSS pour les genres/nombres
 
@@ -168,7 +162,7 @@ $(function () {
               "action": "edit",
             },
             function (data) {
-              self._loadEditPage(data, newWikicode, self._baseWord);
+              self._loadEditPage(data, newWikicode);
             }
         );
       },
@@ -177,14 +171,25 @@ $(function () {
        * Replaces the current page content by the inflection edit page.
        * @param pageData {string} Edit page HTML content.
        * @param newWikicode {string} Inflection wikicode.
-       * @param referer {string} Origin page title.
        */
-      _loadEditPage: function (pageData, newWikicode, referer) {
-        document.body.innerHTML = pageData;
-        $("#wpTextbox1").val(newWikicode);
-        $("#wpSummary").val(
-            "Création avec [[Aide:Gadget-wikt.create-inflection|{0}]] (v{1}) depuis [[{2}]]"
-                .format(this.NAME, this.VERSION, referer));
+      _loadEditPage: function (pageData, newWikicode) {
+        var summary = "Création avec [[Aide:Gadget-wikt.create-inflection|{0} (v{1})]] depuis [[{2}]]."
+            .format(this.NAME, this.VERSION, this._baseWord);
+        // Go to inflection’s page.
+        location.href = mw.config.get("wgServer") + mw.config.get("wgScript")
+            + "?title={0}&action=edit&preload-edit-text={1}&preload-edit-summary={2}".format(
+                encodeURIComponent(this._inflectionToCreate),
+                encodeURIComponent(newWikicode),
+                encodeURIComponent(summary)
+            );
+      },
+
+      /**
+       * Adds the given language data to this gadget.
+       * @param languageData {wikt.gadgets.createInflection.LanguageData}
+       */
+      addLanguageData: function (languageData) {
+        this._languages.push(languageData);
       },
     };
 
@@ -230,16 +235,22 @@ $(function () {
       }
     });
 
-    var namespaceId = mw.config.get("wgNamespaceIds")["mediawiki"];
-    var basePage = "Gadget-wikt.create-inflection-dev.js";
+    // French/français
+    wikt.gadgets.createInflection.addLanguageData(new wikt.gadgets.createInflection.LanguageData(
+        "fr",
+        "flextable-fr-mfsp",
+        [
+          {class: "flextable-fr-m", code: "m"},
+          {class: "flextable-fr-f", code: "f"},
+        ]
+    ));
 
-    wikt.page.getSubpages(namespaceId, basePage, "[a-zA-Z]*\\.js", function (response) {
-      var modules = $.map(response.query.search, function (e) {
-        return "https://fr.wiktionary.org/wiki/{0}?action=raw&ctype=text/javascript".format(e.title);
-      });
-      wikt.loadScripts(modules).done(function () {
-        wikt.gadgets.createInflection.init();
-      });
-    });
+    var userLangs = [];
+    // Variable should be declared in user page.
+    if (typeof createInflectionLangs !== "undefined" && createInflectionLangs instanceof Array) {
+      userLangs = createInflectionLangs;
+    }
+    wikt.gadgets.createInflection.init(userLangs);
   }
 });
+// </nowiki>

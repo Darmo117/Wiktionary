@@ -2,6 +2,8 @@
  * Cette page contient des fonctions JavaScript qui sont utilisées ou exécutées
  * à chaque chargement de page pour tous les utilisateurs.
  * Elle est donc à modifier avec précaution !
+ * --
+ * [[Catégorie:JavaScript du Wiktionnaire|Common.js]]
  */
 
 // Ajoute des liens vers les modules et URL dans les modules et scripts JavaScript.
@@ -61,7 +63,6 @@ if (window.location.hash) {
  */
 $(function () {
   // links are only replaced in p-lang
-  // noinspection JSUnresolvedVariable
   if (typeof window.disableFeaturedInterwikiLinks !== "undefined") {
     return;
   }
@@ -166,7 +167,6 @@ $(function stubeditLink() {
     var $hall = $ol.prevAll("h2, h3, h4");
     if ($hall.length > 0) {
       var href = "";
-      // noinspection JSUnresolvedFunction
       $hall.each(function () {
         var $modif = $(this).find(".mw-editsection a");
         href = $modif.attr("href");
@@ -179,5 +179,22 @@ $(function stubeditLink() {
 });
 
 /*
-[[Catégorie:JavaScript du Wiktionnaire|{{SUBPAGENAME}}]]
-*/
+ * Ajoute deux paramètres d’URL en mode édition
+ * qui permettent de définir le contenu de la zone
+ * d’édition (preload-edit-text) et/ou le résumé de
+ * modification (preload-edit-summary).
+ */
+$(function () {
+  if (["edit", "submit"].includes(mw.config.get("wgAction"))) {
+    var searchParams = new URL(location.href).searchParams;
+    var content = (searchParams.get("preload-edit-text") || "").trim();
+    var summary = (searchParams.get("preload-edit-summary") || "").trim();
+
+    if (content) {
+      $("#wpTextbox1").val(content);
+    }
+    if (summary) {
+      $("#wpSummary").val(summary);
+    }
+  }
+});

@@ -9,7 +9,7 @@
      *
      * @param {string|mw.Title} content Content to parse, either as a wikitext string or
      *   a mw.Title.
-     * @param {Object} additionalParams Parameters object to set custom settings, e.g.
+     * @param {Object?} additionalParams Parameters object to set custom settings, e.g.
      *   redirects, sectionpreview.  prop should not be overridden.
      * @return {jQuery.Promise}
      * @return {Function} return.done

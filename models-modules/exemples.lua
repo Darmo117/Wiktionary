@@ -16,7 +16,7 @@ local p = {}
 --- @param scriptLang string The language code for the script.
 --- @param frame table The frame object for expanding templates.
 --- @return string The wikicode.
-local function _example(text, transcription, meaning, source, link, heading, lang, scriptLang, frame)
+local function _format_example(text, transcription, meaning, source, link, heading, lang, scriptLang, frame)
   if not text then
     return frame:expandTemplate { title = "ébauche-exe", args = { lang } }
   end
@@ -30,7 +30,7 @@ local function _example(text, transcription, meaning, source, link, heading, lan
 
   if lang ~= "fr" then
     if transcription then
-      wikicode = wikicode .. "<br>" .. m_bases.balise_langue("''" .. transcription .. "''", scriptLang .. "-Latn")
+      wikicode = wikicode .. "<br/>" .. m_bases.balise_langue("''" .. transcription .. "''", scriptLang .. "-Latn")
     end
     wikicode = wikicode .. mw.ustring.format("\n%s: ", heading)
     if meaning then
@@ -40,10 +40,11 @@ local function _example(text, transcription, meaning, source, link, heading, lan
     end
   end
 
-  return wikicode
+  return wikicode .. m_bases.fait_categorie_contenu("Exemples en " .. m_langs.get_nom(lang))
 end
 
---- Formats an example.
+--- Formats an example. Function to call from templates.
+--- Throws an error if the language is missing or undefined.
 --- Parameters:
 ---  parent frame.args[1] (string): The quoted text.
 ---  parent frame.args[2]/frame.args["sens"] (string): The translation in French.
@@ -53,31 +54,26 @@ end
 ---  parent frame.args["tête"] (string): The characters to add before the translation (usually #*).
 ---  parent frame.args["lang"] (string): The quote’s language code.
 --- @return string The wikicode.
-function p.example(frame)
-  local additionalLangCodes = {
-    ["zh-Hans"] = "zh",
-    ["zh-Hant"] = "zh",
-  }
-
+function p.format_example(frame)
   local actualFrame = frame:getParent()
   local args = m_params.process(actualFrame.args, {
     [1] = {},
-    ["sens"] = {},
+    ["sens"] = {}, -- TODO permettre de désactiver la traduction si pas lang ≠ fr
     [2] = { alias_of = "sens" },
     ["tr"] = {},
     [3] = { alias_of = "tr" },
     ["source"] = {},
     ["lien"] = {},
     ["tête"] = { default = "#*" },
-    ["lang"] = { default = "fr", checker = function(lang)
-      return additionalLangCodes[lang] or m_langs.get_nom(lang) ~= nil
+    ["lang"] = { required = true, checker = function(lang)
+      return m_langs.specialCodes[lang] ~= nil or m_langs.get_nom(lang) ~= nil
     end },
   })
 
   local scriptLang = args["lang"]
-  args["lang"] = additionalLangCodes[args["lang"]] or args["lang"]
+  local lang = m_langs.specialCodes[args["lang"]] or args["lang"]
 
-  return _example(args[1], args["tr"], args["sens"], args["source"], args["lien"], args["tête"], args["lang"], scriptLang, actualFrame)
+  return _format_example(args[1], args["tr"], args["sens"], args["source"], args["lien"], args["tête"], lang, scriptLang, actualFrame)
 end
 
 return p

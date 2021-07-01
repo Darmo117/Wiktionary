@@ -238,6 +238,7 @@
       'letton': 'm f p',
       'ligure': 'm f p',
       'lituanien': 'm f p',
+      'lorrain': 'm f',
       'luxembourgeois': 'm f n p',
       'macédonien': 'm f n p trans',
       'malayalam': 'trans',
@@ -270,6 +271,7 @@
       'tamoul': 'trans',
       'tadjik': 'trans',
       'tatare': 'trans',
+      'tchèque': 'm f n',
       'tchouvache': 'trans',
       'télougou': 'trans',
       'thaï': 'trans',
@@ -345,8 +347,7 @@
       if (last_click[this.name] === this) {
         last_click[this.name] = null;
         this.checked = false;
-      }
-      else {
+      } else {
         last_click[this.name] = this;
       }
     });
@@ -399,8 +400,7 @@
         if ($.inArray(lang_name, ['chinois', 'coréen']) === -1) {
           form.find('.ed-tradi').hide();
         }
-      }
-      else {
+      } else {
         var opts = lang_meta[form[0].lang_name.value] || lang_meta[''];
         elems
             .hide()
@@ -526,8 +526,7 @@
       if (!lang_name) {
         show_error(new NoInputError('lang-name'));
         return;
-      }
-      else if (!word) {
+      } else if (!word) {
         show_error(new NoInputError('word'));
         return;
       }
@@ -539,41 +538,35 @@
       ) {
         show_error(new CommaWordError('une virgule'));
         return;
-      }
-      else if (word.indexOf('،') !== -1 &&
+      } else if (word.indexOf('،') !== -1 &&
           title.indexOf('،') === -1 &&
           silentFailStorage.getItem('comma-knowledge') !== 'ok'
       ) {
         show_error(new CommaWordError('une virgule'));
         return;
-      }
-      else if (word.indexOf(';') !== -1 &&
+      } else if (word.indexOf(';') !== -1 &&
           title.indexOf(';') === -1 &&
           silentFailStorage.getItem('comma-knowledge') !== 'ok'
       ) {
         show_error(new CommaWordError('un point-virgule'));
         return;
-      }
-      else if (word.indexOf('/') !== -1 &&
+      } else if (word.indexOf('/') !== -1 &&
           title.indexOf('/') === -1 &&
           silentFailStorage.getItem('comma-knowledge') !== 'ok'
       ) {
         show_error(new CommaWordError('une barre oblique'));
         return;
-      }
-      else if (word.charAt(0) !== word.charAt(0).toLowerCase() &&
+      } else if (word.charAt(0) !== word.charAt(0).toLowerCase() &&
           title.charAt(0) === title.charAt(0).toLowerCase() &&
           expected_case.indexOf(lang_name) === -1 &&
           silentFailStorage.getItem('case-knowledge') !== 'ok'
       ) {
         show_error(new CaseWordError());
         return;
-      }
-      else if (lang_name === 'français') {
+      } else if (lang_name === 'français') {
         show_error(new BadLangNameError());
         return;
-      }
-      else if (translation.re_wikitext.test(word)) {
+      } else if (translation.re_wikitext.test(word)) {
         show_error(new BadFormatError());
         return;
       }
@@ -598,41 +591,34 @@
         if (e instanceof NoLangTplError) {
           form.find('.ed-lang-name').addClass('ed-error').focus();
           e = 'La langue « ' + e.lang_name + ' » n\'est pas définie.';
-        }
-        else if (e instanceof NoInputError) {
+        } else if (e instanceof NoInputError) {
           form.find('.ed-' + e.input).addClass('ed-error').focus();
           if (e.input === 'lang-name') {
             e = 'Entrez le nom de langue (anglais, suédois,…)';
-          }
-          else if (e.input === 'word') {
+          } else if (e.input === 'word') {
             e = 'Entrez la traduction';
           }
-        }
-        else if (e instanceof BadLangNameError) {
+        } else if (e instanceof BadLangNameError) {
           form.find('.ed-lang-name').addClass('ed-error').focus();
           e = 'Il n\'est pas possible d\'ajouter une traduction en français. ' +
               'À la place, veuillez utiliser la section « Synonymes » ou ' +
               '« Variantes dialectales ».';
-        }
-        else if (e instanceof CommaWordError) {
+        } else if (e instanceof CommaWordError) {
           form.find('.ed-word').addClass('ed-error').focus();
           e = 'Êtes-vous certain que la traduction contient ' + e.message + ' ? ' +
               'Si tel n\'est pas le cas, <br />veuillez insérer les traductions une par une, ' +
               'en cliquant sur le bouton « Ajouter » après chaque insertion de traduction.<br />' +
               'Si vous êtes sûr de votre coup, veuillez <span class="ed-error-comma ed-click">cliquer ici</span>.';
-        }
-        else if (e instanceof CaseWordError) {
+        } else if (e instanceof CaseWordError) {
           form.find('.ed-word').addClass('ed-error').focus();
           e = 'Êtes-vous certain que la majuscule fait partie de la traduction ?<br />' +
               'Si tel n\'est pas le cas, merci de corriger cela.<br />' +
               'Sinon, veuillez <span class="ed-error-case ed-click">cliquer ici</span>.';
-        }
-        else if (e instanceof BadFormatError) {
+        } else if (e instanceof BadFormatError) {
           form.find('.ed-word').addClass('ed-error').focus();
           e = 'La traduction n\'est pas dans un format correct : ' +
               'elle contient du wikitexte ([]{}|=)';
-        }
-        else if (e instanceof HttpError) {
+        } else if (e instanceof HttpError) {
           e = 'Vous ne pouvez pas charger la traduction. Êtes-vous en ligne ?';
         }
         form.find('.ed-errors').html(get_error_html(e));
@@ -667,14 +653,12 @@
             lang_code = lang_name;
             lang_name = tab_langues[lang_code];
             word_options.lang_name = lang_name;
-          }
-          else {
+          } else {
             show_error(new NoLangTplError(lang_name));
             return;
           }
         }
-      }
-      else {
+      } else {
         throw new Error('Le tableau des langues n\'est pas défini.');
       }
 
@@ -696,8 +680,7 @@
         if (error === 'http') {
           // jQuery HTTP error
           show_error(new HttpError());
-        }
-        else {
+        } else {
           show_error(error);
         }
       }).done(function (word_html, wikitext) {
@@ -760,8 +743,7 @@
                           ' donc pas être ajoutée par le gadget.');
                     }
                     return 'equal';
-                  }
-                  else if (sortkey(match[1].toLowerCase()) < sortkey(lang_name)) {
+                  } else if (sortkey(match[1].toLowerCase()) < sortkey(lang_name)) {
                     return 'before';
                   }
                 }
@@ -806,7 +788,7 @@
     return new mw.Api().get({
       action: 'parse',
       text: '<div>' + wikitext + '</div>',
-      title: wgPageName
+      title: mw.config.get('wgPageName')
     }).then(function (data) {
       var html = data.parse.text['*'];
       // Get only the parts between <div> and </div>
@@ -852,11 +834,9 @@
 
     if (wm_liens.hasOwnProperty(lang_code)) {
       domain = wm_liens[lang_code] + '.wiktionary';
-    }
-    else if (lang_code == 'conv') {
+    } else if (lang_code == 'conv') {
       domain = 'species.wikimedia';
-    }
-    else if ($.inArray(lang_code, wiktios) !== -1) {
+    } else if ($.inArray(lang_code, wiktios) !== -1) {
       domain = lang_code + '.wiktionary';
     }
 
@@ -931,8 +911,7 @@
     make_trans_top: function (gloss) {
       if (translation.is_trans_top(gloss)) {
         return gloss;
-      }
-      else {
+      } else {
         return '{{trad-début|' + gloss + '}}';
       }
     },
@@ -1002,8 +981,7 @@
         if (eq_or_bef === 'equal') {
           items[i] = opts.add_to_item(items[i]);
           return items;
-        }
-        else if (eq_or_bef === 'before') {
+        } else if (eq_or_bef === 'before') {
           items[i] = opts.add_after(items[i]);
           return items;
         }
@@ -1065,8 +1043,7 @@
               if (tab_langues[code_langue] === undefined) {
                 if (tab_langues.redirects[code_langue]) {
                   code_langue = tab_langues.redirects[code_langue];
-                }
-                else {
+                } else {
                   // sinon, c'est que le code est indéfini
                   return false;
                 }
@@ -1085,8 +1062,7 @@
                       ' ne peut donc pas être ajoutée par le gadget.');
                 }
                 return 'equal';
-              }
-              else if (sortkey(tab_langues[code_langue]) < sortkey(opts.lang_name)) {
+              } else if (sortkey(tab_langues[code_langue]) < sortkey(opts.lang_name)) {
                 return 'before';
               }
             }

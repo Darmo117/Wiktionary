@@ -12,6 +12,7 @@
  * Icons (Monobook): http://commons.wikimedia.org/wiki/Category:MediaWiki_edit_toolbar
  * ----
  * [[Catégorie:JavaScript du Wiktionnaire|Barre de luxe.js]]
+ * <nowiki>
  */
 
 $(function () {
@@ -163,7 +164,7 @@ $(function () {
           group: "messages",
         },
         {
-          tagOpen: "{{sup" + "p|",
+          tagOpen: "{{supp|",
           tagClose: "}}",
           imageFileName: "f/f3/Button_broom2.png",
           imageFileNameOOUI: "thumb/d/de/OOjs_UI_icon_trash-destructive.svg/24px-OOjs_UI_icon_trash-destructive.svg.png",
@@ -182,7 +183,7 @@ $(function () {
         },
         {
           tagOpen: "== {{langue|fr}} ==\n=== {{S|étymologie}} ===\n{{ébauche-étym|fr}}\n:",
-          tagClose: " {{" + "date|?|lang=fr}}/{{" + "siècle|?|lang=fr}}\n=== {{S|nom|fr}} ===\n{{fr-rég|}}\n'''{{subst:" + "PAGENAME}}''' {{pron||fr}} {{genre ?}}\n#\n#* ''''\n==== {{S|variantes orthographiques}} ====\n==== {{S|synonymes}} ====\n==== {{S|antonymes}} ====\n==== {{S|dérivés}} ====\n==== {{S|apparentés}} ====\n==== {{S|vocabulaire}} ====\n==== {{S|hyperonymes}} ====\n==== {{S|hyponymes}} ====\n==== {{S|méronymes}} ====\n==== {{S|holonymes}} ====\n==== {{S|traductions}} ====\n{{trad-début}}\n{{ébauche-trad}}\n{{trad-fin}}\n=== {{S|prononciation}} ===\n* {{pron||fr}}\n* {{écouter|<!--  précisez svp la ville ou la région -->||audio=|lang=}}\n==== {{S|homophones|fr}} ====\n==== {{S|paronymes}} ====\n=== {{S|anagrammes}} ===\n=== {{S|voir aussi}} ===\n* {{WP}}\n=== {{S|références}} ===\n{{clé de tri}}",
+          tagClose: " {{date|?|lang=fr}}/{{siècle|?|lang=fr}}\n=== {{S|nom|fr}} ===\n{{fr-rég|}}\n'''{{subst:" + "PAGENAME}}''' {{pron||fr}} {{genre ?}}\n#\n#* ''''\n==== {{S|variantes orthographiques}} ====\n==== {{S|synonymes}} ====\n==== {{S|antonymes}} ====\n==== {{S|dérivés}} ====\n==== {{S|apparentés}} ====\n==== {{S|vocabulaire}} ====\n==== {{S|hyperonymes}} ====\n==== {{S|hyponymes}} ====\n==== {{S|méronymes}} ====\n==== {{S|holonymes}} ====\n==== {{S|traductions}} ====\n{{trad-début}}\n{{ébauche-trad}}\n{{trad-fin}}\n=== {{S|prononciation}} ===\n* {{pron||fr}}\n* {{écouter|<!--  précisez svp la ville ou la région -->||audio=|lang=}}\n==== {{S|homophones|fr}} ====\n==== {{S|paronymes}} ====\n=== {{S|anagrammes}} ===\n=== {{S|voir aussi}} ===\n* {{WP}}\n=== {{S|références}} ===\n{{clé de tri}}",
           imageFileName: "3/32/Button_anular_voto.png",
           imageFileNameOOUI: "thumb/8/81/OOjs_UI_icon_stripeFlow-ltr.svg/24px-OOjs_UI_icon_stripeFlow-ltr.svg.png",
           tooltip: "Patron long",
@@ -224,8 +225,11 @@ $(function () {
           group: "links",
         },
         {
-          tagOpen: "{{" + "refnec|",
-          tagClose: "|lang=<!-- Merci d’indiquer la langue -->}}",
+          action: function (selectedText, language) {
+            return "{{refnec|{0}|lang={1}}}".format(selectedText, language);
+          },
+          promptText: "Langue",
+          promptDefault: "fr",
           imageFileName: "0/0b/Button_fuente.png",
           imageFileNameOOUI: "thumb/6/69/OOjs_UI_icon_help.svg/24px-OOjs_UI_icon_help.svg.png",
           tooltip: "Référence nécessaire",
@@ -233,8 +237,11 @@ $(function () {
           group: "misc_templates",
         },
         {
-          tagOpen: "{{" + "?|",
-          tagClose: "|lang=<!-- Merci d’indiquer la langue -->}}",
+          action: function (selectedText, language) {
+            return "{{?|{0}|lang={1}}}".format(selectedText, language);
+          },
+          promptText: "Langue",
+          promptDefault: "fr",
           imageFileName: "8/89/Button_nosense.png",
           imageFileNameOOUI: "thumb/b/b2/OOjs_UI_icon_help-ltr.svg/24px-OOjs_UI_icon_help-ltr.svg.png",
           tooltip: "À vérifier",
@@ -516,9 +523,10 @@ $(function () {
     console.log("Chargement de Gadget-Barre_de_luxe.js…");
     wikt.gadgets.barreDeLuxe.init();
     // Variable should be declared in user page.
-    if (bdl_buttons && bdl_buttons instanceof Array) {
+    if (typeof bdl_buttons !== "undefined" && bdl_buttons instanceof Array) {
       console.log("Found {0} custom user buttons.".format(bdl_buttons.length));
       wikt.gadgets.barreDeLuxe.addButtons(bdl_buttons);
     }
   }
 });
+// </nowiki>

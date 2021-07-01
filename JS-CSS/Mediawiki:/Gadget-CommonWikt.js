@@ -887,7 +887,6 @@ wikt.cookie.delete = CommonWikt_SupprimeCookie;
  * Utilisations :
  *
  * MediaWiki:Gadget-CreerFlexionFr.js TEMP en cours de refactor
- * MediaWiki:Gadget-CreerTrad.js
  *
  * Utilisateur:Maintenance gadgets/Gadget-CreerTrad.js
  *
@@ -910,6 +909,7 @@ wikt.cookie.delete = CommonWikt_SupprimeCookie;
  * - soit via l’interface standard (index.php)
  * - soit via l’API (api.php)
  * - soit via les requêtes POST et GET
+ * @deprecated Utiliser $.get() à la place.
  */
 var CommonWikt_ajax = {
   http: function (bundle) {
@@ -958,8 +958,6 @@ var CommonWikt_ajax = {
     }
   }
 };
-
-wikt.ajax = CommonWikt_ajax;
 
 /**
  * This function loads asynchronously the list of given scripts.

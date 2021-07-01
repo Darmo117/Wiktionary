@@ -433,36 +433,48 @@ end
 ---                               même s’il pointe vers la page courante.
 --- @return string Le lien.
 function p.lien_modele(word, langCode, anchor, text, keepLangAnchor)
-  if text and text == '' then
+  if langCode and langCode == "" then
+    langCode = nil
+  end
+  if text and text == "" then
     text = nil
   end
+  if anchor and anchor == "" then
+    anchor = nil
+  end
   local m_unicode = require("Module:données Unicode")
+  local m_langs = require("Module:langues")
   text = m_unicode.setWritingDirection(text or word)
 
-  local langCodeForlink
-  if langCode == "zh-Hant" or langCode == "zh-Hans" then
-    langCodeForlink = "zh"
-  elseif langCode == "ko-Hani" then
-    langCodeForlink = "ko"
-  else
-    langCodeForlink = langCode
-  end
+  local langCodeForlink = m_langs.specialCodes[langCode] or langCode
 
-  if word == currentTitle.prefixedText then
-    if keepLangAnchor then
-      return p.balise_langue(mw.ustring.format('[[%s#%s|%s]]', word, langCodeForlink, text), langCode)
+  local link
+
+  if word == currentTitle.prefixedText and not anchor then
+    if keepLangAnchor and langCodeForlink then
+      link = mw.ustring.format("[[%s#%s|%s]]", word, langCodeForlink, text)
     else
-      return p.balise_langue(mw.ustring.format('[[%s|%s]]', word, text), langCode)
+      link = mw.ustring.format("[[%s|%s]]", word, text)
     end
   else
-    if anchor and anchor ~= '' then
-      anchor = langCodeForlink .. '-' .. anchor
-    else
-      anchor = langCodeForlink
+    if langCodeForlink then
+      if anchor then
+        anchor = langCodeForlink .. "-" .. anchor
+      else
+        anchor = langCodeForlink
+      end
     end
-
-    return p.balise_langue(mw.ustring.format('[[%s#%s|%s]]', word, anchor, text), langCode)
+    if anchor then
+      link = mw.ustring.format("[[%s#%s|%s]]", word, anchor, text)
+    else
+      link = mw.ustring.format("[[%s|%s]]", word, text)
+    end
   end
+
+  if langCode then
+    return p.balise_langue(link, langCode)
+  end
+  return link
 end
 
 --- Cherche la position de la dernière occurence de la seconde chaine dans la première.

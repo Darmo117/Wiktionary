@@ -23,10 +23,10 @@ $(function () {
   if (["edit", "submit"].includes(mw.config.get("wgAction"))) {
     console.log("Chargement de Gadget-wikt.auto-complete-dev.js…");
 
-    window.wikt.gadgets.autoComplete = {
+    window.gadget_autoComplete = {
       NAME: "Auto-complétion de modèles",
 
-      VERSION: "1.0",
+      VERSION: "1.1",
 
       /** Maximum number of suggestions to display. */
       _MAX_SUGGESTIONS: 100,
@@ -254,7 +254,7 @@ $(function () {
       },
     };
 
-    window.wikt.gadgets.autoComplete.init();
+    window.gadget_autoComplete.init();
 
     /**
      * Converts the given string representing a LUA table to a JSON object.
@@ -290,7 +290,7 @@ $(function () {
           "https://fr.wiktionary.org/wiki/Module:{0}/data?action=raw".format(encodeURIComponent(moduleName)),
           function (data) {
             try {
-              window.wikt.gadgets.autoComplete.addTemplateParameters(templateName, Object.keys(luaDataPageToJson(data)));
+              window.gadget_autoComplete.addTemplateParameters(templateName, Object.keys(luaDataPageToJson(data)));
             } catch (e) {
               console.log("An error occured while parsing LUA table for [[Module:{0}/data]] ([[Template:{1}]])".format(moduleName, templateName));
             }
@@ -303,9 +303,9 @@ $(function () {
         "https://fr.wiktionary.org/wiki/MediaWiki:Gadget-translation editor.js/langues.json?action=raw",
         function (data) {
           try {
-            window.wikt.gadgets.autoComplete.addTemplateParameters("langue", Object.keys(JSON.parse(data)));
+            window.gadget_autoComplete.addTemplateParameters("langue", Object.keys(JSON.parse(data)));
           } catch (e) {
-            console.log("An error occured while parsing JSON for [[MediaWiki:Gadget-translation editor.js/langues.json]] ([[Template:langue]])");
+            console.log("An error occured while parsing JSON for [[MediaWiki:Gadget-translation editor.js/langues.json]] ([[Template:langue]]): " + e);
           }
         }
     );
@@ -324,14 +324,14 @@ $(function () {
                 function (data) {
                   try {
                     var wordTypes = Object.keys(luaDataPageToJson(data)["texte"]);
-                    window.wikt.gadgets.autoComplete.addTemplateParameters("S", sectionIds.concat(wordTypes));
+                    window.gadget_autoComplete.addTemplateParameters("S", sectionIds.concat(wordTypes));
                   } catch (e) {
-                    console.log("An error occured while parsing LUA table for [[Module:types de mots/data]] ([[Template:S]])", e);
+                    console.log("An error occured while parsing LUA table for [[Module:types de mots/data]] ([[Template:S]]): " + e);
                   }
                 }
             );
           } catch (e) {
-            console.log("An error occured while parsing LUA table for [[Module:section article/data]] ([[Template:S]])", e);
+            console.log("An error occured while parsing LUA table for [[Module:section article/data]] ([[Template:S]]): " + e);
           }
         }
     );

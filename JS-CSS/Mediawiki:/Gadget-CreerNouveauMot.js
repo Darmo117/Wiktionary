@@ -29,6 +29,11 @@
  *                 class; removed sources section; added help bubbles to some fields
  * v5.1.1 2021-05-08 Edit notice is no longer overwritten by the button
  * v5.1.2 2021-06-15 Merged language definitions into main file
+ * v5.1.3 2021-06-28 Moved dependencies to [[MediaWiki:Gadgets-definition]]
+ * v5.2 2021-07-06 Non-predefined languages now show actual name instead of code if
+ *                 defined in [[MediaWiki:Gadget-translation editor.js/langues.json]].
+ *                 Clearer indication of currently selected language.
+ *                 Not using wikt.gadgets object that was causing bugs.
  * ------------------------------------------------------------------------------------
  * [[Catégorie:JavaScript du Wiktionnaire|CreerNouveauMot.js]]
  * <nowiki>
@@ -39,10 +44,10 @@ $(function () {
   if (wikt.page.hasNamespaceIn([""]) && ["edit", "submit"].includes(mw.config.get("wgAction"))) {
     console.log("Chargement de Gadget-CreerNouveauMot.js…");
 
-    window.wikt.gadgets.creerNouveauMot = {
+    window.gadget_creerNouveauMot = {
       NAME: "Créer nouveau mot",
 
-      VERSION: "5.1.3",
+      VERSION: "5.2",
 
       _COOKIE_NAME: "cnm_last_lang",
       /** Cookie duration in days. */
@@ -248,6 +253,13 @@ $(function () {
       ],
 
       /**
+       * Language span tag in gadget’s title.
+       * @type {Object}
+       * @private
+       */
+      _$TITLE_LANG: null,
+
+      /**
        * Main word.
        * @type {string}
        * @private
@@ -256,31 +268,45 @@ $(function () {
 
       /**
        * Currently selected language.
-       * @type {wikt.gadgets.creerNouveauMot.Language}
+       * @type {gadget_creerNouveauMot.Language}
        * @private
        */
       _selectedLanguage: null,
 
       /**
        * List of available languages.
-       * @type {Array<wikt.gadgets.creerNouveauMot.Language>}
+       * @type {Array<gadget_creerNouveauMot.Language>}
        * @private
        */
       _languages: [],
 
       /**
+       * Object mapping language codes to their respective names.
+       * @type {Object<string, string>}
+       * @private
+       */
+      _languageNames: {},
+
+      /**
        * Start up GUI.
-       * @type {wikt.gadgets.creerNouveauMot.StartGui}
+       * @type {gadget_creerNouveauMot.StartGui}
        * @private
        */
       _startGui: null,
 
       /**
        * Main GUI.
-       * @type {wikt.gadgets.creerNouveauMot.MainGui}
+       * @type {gadget_creerNouveauMot.MainGui}
        * @private
        */
       _gui: null,
+
+      /**
+       * API hook.
+       * @type {mw.Api}
+       * @private
+       */
+      _api: new mw.Api(),
 
       /*
        * Public functions
@@ -302,14 +328,32 @@ $(function () {
           }
         });
 
-        if ($(this.Gui.prototype.TARGET_ELEMENT)) {
-          this._generateStartUi();
-        }
+        var self = this;
+        this._api.get({
+          action: "query",
+          format: "json",
+          titles: "MediaWiki:Gadget-translation editor.js/langues.json",
+          prop: "revisions",
+          rvprop: "content",
+          rvslots: "main",
+        }).then(function (data) {
+          for (var pageID in data.query.pages) {
+            if (data.query.pages.hasOwnProperty(pageID)) {
+              // noinspection JSUnresolvedVariable
+              self._languageNames = JSON.parse(data.query.pages[pageID].revisions[0].slots.main["*"]);
+              break;
+            }
+          }
+
+          if ($(self.Gui.prototype.TARGET_ELEMENT)) {
+            self._generateStartUi();
+          }
+        });
       },
 
       /**
        * Adds a language to the list of available languages.
-       * @param language {wikt.gadgets.creerNouveauMot.Language} The language to add.
+       * @param language {gadget_creerNouveauMot.Language} The language to add.
        */
       addLanguage: function (language) {
         this._languages.push(language);
@@ -318,7 +362,7 @@ $(function () {
       /**
        * Fecthes the language with the given code.
        * @param languageCode {string} Language code.
-       * @returns {wikt.gadgets.creerNouveauMot.Language|null} The language object or null if none were found.
+       * @returns {gadget_creerNouveauMot.Language|null} The language object or null if none were found.
        */
       getLanguage: function (languageCode) {
         for (var i = 0; i < this._languages.length; i++) {
@@ -347,6 +391,12 @@ $(function () {
        * @private
        */
       _generateMainUi: function () {
+        this._startGui.remove();
+        this._startGui = null;
+        var $title = $('<h1 id="cnm-title">Ajout d’un mot en <span id="cnm-title-lang">…</span></h1>');
+        $(this.Gui.prototype.TARGET_ELEMENT).append($title);
+        this._$TITLE_LANG = $("#cnm-title-lang");
+
         this._gui = new this.MainGui(
             this._word,
             this._languages,
@@ -575,16 +625,24 @@ $(function () {
       _onLanguageSelect: function (languageCode) {
         languageCode = languageCode.trim();
 
-        if (languageCode !== "") {
+        if (languageCode) {
           var language = this.getLanguage(languageCode);
 
           if (!language) {
-            language = new wikt.gadgets.creerNouveauMot.Language(languageCode, null, null, languageCode, [], [
-              new wikt.gadgets.creerNouveauMot.GrammaticalItem(wikt.gadgets.creerNouveauMot.grammaticalClasses.ADJECTIVE),
-              new wikt.gadgets.creerNouveauMot.GrammaticalItem(wikt.gadgets.creerNouveauMot.grammaticalClasses.ADVERB),
-              new wikt.gadgets.creerNouveauMot.GrammaticalItem(wikt.gadgets.creerNouveauMot.grammaticalClasses.NOUN),
-              new wikt.gadgets.creerNouveauMot.GrammaticalItem(wikt.gadgets.creerNouveauMot.grammaticalClasses.PROPER_NOUN),
-              new wikt.gadgets.creerNouveauMot.GrammaticalItem(wikt.gadgets.creerNouveauMot.grammaticalClasses.VERB),
+            var languageName = this._languageNames[languageCode];
+            if (!languageName) {
+              alert("Code de langue invalide !");
+              return;
+            }
+            // TODO ajouter tous les types de mots
+            language = new this.Language(languageCode, null, null, this._languageNames[languageCode], [], [
+              new this.GrammaticalItem(this.grammaticalClasses.ADJECTIVE),
+              new this.GrammaticalItem(this.grammaticalClasses.ADVERB),
+              new this.GrammaticalItem(this.grammaticalClasses.NOUN),
+              new this.GrammaticalItem(this.grammaticalClasses.VERB),
+              new this.GrammaticalItem(this.grammaticalClasses.PRONOUN),
+              new this.GrammaticalItem(this.grammaticalClasses.PROPER_NOUN),
+              new this.GrammaticalItem(this.grammaticalClasses.INTERJECTION),
             ]);
           }
           this._selectedLanguage = language;
@@ -626,12 +684,12 @@ $(function () {
      * @param iso6393Code {string?} ISO 639-3 language code.
      * @param name {string} Language’s name (in French).
      * @param ipaSymbols {Array<Array<string>>?} An optional list of common IPA symbols for the language.
-     * @param grammarItems {Array<wikt.gadgets.creerNouveauMot.GrammaticalItem>?} An optional list of grammatical items.
+     * @param grammarItems {Array<gadget_creerNouveauMot.GrammaticalItem>?} An optional list of grammatical items.
      * @param pronGenerator {Function?} An optional function that generates an approximate pronunciation
      * based on the word.
      * @constructor
      */
-    wikt.gadgets.creerNouveauMot.Language = function (code, wikimediaCode, iso6393Code, name, ipaSymbols, grammarItems, pronGenerator) {
+    gadget_creerNouveauMot.Language = function (code, wikimediaCode, iso6393Code, name, ipaSymbols, grammarItems, pronGenerator) {
       /** @type {string} */
       this._code = code;
       /** @type {string} */
@@ -642,7 +700,7 @@ $(function () {
       this._name = name;
       /** @type {Array<Array<string>>} */
       this._ipaSymbols = ipaSymbols || [];
-      /** @type {Object<string, wikt.gadgets.creerNouveauMot.GrammaticalItem>} */
+      /** @type {Object<string, gadget_creerNouveauMot.GrammaticalItem>} */
       this._grammarItems = {};
       /** @type {Function} */
       this._pronGenerator = pronGenerator || function () {
@@ -657,7 +715,7 @@ $(function () {
     };
 
     // noinspection JSValidateTypes
-    wikt.gadgets.creerNouveauMot.Language.prototype = {
+    gadget_creerNouveauMot.Language.prototype = {
       /**
        * @return {string} This language’s code.
        */
@@ -694,7 +752,7 @@ $(function () {
       },
 
       /**
-       * @return {Object<string, wikt.gadgets.creerNouveauMot.GrammaticalItem>} The grammatical items for this language.
+       * @return {Object<string, gadget_creerNouveauMot.GrammaticalItem>} The grammatical items for this language.
        */
       get grammarItems() {
         return this._grammarItems;
@@ -703,7 +761,7 @@ $(function () {
       /**
        * Fetches the grammatical item that has the given section title.
        * @param sectionName {string} Section’s title.
-       * @return {wikt.gadgets.creerNouveauMot.GrammaticalItem} The grammatical item if found or undefined otherwise.
+       * @return {gadget_creerNouveauMot.GrammaticalItem} The grammatical item if found or undefined otherwise.
        */
       getGrammarItem: function (sectionName) {
         return this._grammarItems[sectionName];
@@ -725,17 +783,17 @@ $(function () {
      * @param options {Object} OOUI tab’s options.
      * @constructor
      */
-    wikt.gadgets.creerNouveauMot.Tab = function (name, options) {
+    gadget_creerNouveauMot.Tab = function (name, options) {
       OO.ui.TabPanelLayout.call(this, name, options);
     };
 
     // Inherit from OOUI TabPanelLayout’s prototype.
-    wikt.gadgets.creerNouveauMot.Tab.prototype = Object.create(OO.ui.TabPanelLayout.prototype);
+    gadget_creerNouveauMot.Tab.prototype = Object.create(OO.ui.TabPanelLayout.prototype);
 
     /**
      * Sets this tab as active.
      */
-    wikt.gadgets.creerNouveauMot.Tab.prototype.select = function () {
+    gadget_creerNouveauMot.Tab.prototype.select = function () {
       // noinspection JSUnresolvedFunction
       this.setActive(true);
     };
@@ -744,42 +802,48 @@ $(function () {
      * Base class for GUIs.
      * @constructor
      */
-    wikt.gadgets.creerNouveauMot.Gui = function () {
+    gadget_creerNouveauMot.Gui = function () {
     };
 
     // noinspection JSValidateTypes
-    wikt.gadgets.creerNouveauMot.Gui.prototype = {
+    gadget_creerNouveauMot.Gui.prototype = {
       /** jQuery selector of the HTML element GUIs will be inserted into. */
       TARGET_ELEMENT: "#Editnotice-0",
     }
 
     /**
-     * Inherits from wikt.gadgets.creerNouveauMot.Gui.
+     * Inherits from gadget_creerNouveauMot.Gui.
      * @param gadgetName {string}
      * @param onActivateGadget {function}
      * @constructor
      */
-    wikt.gadgets.creerNouveauMot.StartGui = function (gadgetName, onActivateGadget) {
-      wikt.gadgets.creerNouveauMot.Gui.call(this);
+    gadget_creerNouveauMot.StartGui = function (gadgetName, onActivateGadget) {
+      gadget_creerNouveauMot.Gui.call(this);
 
       var $target = $(this.TARGET_ELEMENT);
 
       var headerText = '<div class="center" style="margin-bottom: 5px">' +
-          '<span id="cnm-open-ui" class="mw-ui-button mw-ui-progressive">' +
+          '<span id="{0}" class="mw-ui-button mw-ui-progressive">'.format(this.ELEMENT_ID) +
           'Ouvrir le gadget {0}'.format(gadgetName) +
           '</span>' +
           '</div>';
       $target.append(headerText);
-      $target.find("#cnm-open-ui").on("click", onActivateGadget);
+      $target.find("#" + this.ELEMENT_ID).on("click", onActivateGadget);
     };
 
     // Inherit from gadget Gui’s prototype.
-    wikt.gadgets.creerNouveauMot.StartGui.prototype = Object.create(wikt.gadgets.creerNouveauMot.Gui.prototype);
+    gadget_creerNouveauMot.StartGui.prototype = Object.create(gadget_creerNouveauMot.Gui.prototype);
+
+    gadget_creerNouveauMot.StartGui.prototype.ELEMENT_ID = "cnm-open-ui";
+
+    gadget_creerNouveauMot.StartGui.prototype.remove = function () {
+      $("#" + this.ELEMENT_ID).remove();
+    }
 
     /**
-     * Inherits from wikt.gadgets.creerNouveauMot.Gui.
+     * Inherits from gadget_creerNouveauMot.Gui.
      * @param word {string} The word.
-     * @param languages {Array<wikt.gadgets.creerNouveauMot.Language>} The language.
+     * @param languages {Array<gadget_creerNouveauMot.Language>} The language.
      * @param sections {Array<Object<string, string>>} The list of word type sub-sections.
      * @param onLanguageSelect {Function<string|null, void>} Callback function for when a language is selected.
      * @param onClassSelect {Function} Callback function for when a grammatical class is selected.
@@ -787,13 +851,13 @@ $(function () {
      * @param otherProjects {Object<string, string>} Object containing data for sister projects.
      * @constructor
      */
-    wikt.gadgets.creerNouveauMot.MainGui = function (word, languages, sections, onLanguageSelect, onClassSelect, onInsertWikicode, otherProjects) {
-      wikt.gadgets.creerNouveauMot.Gui.call(this);
+    gadget_creerNouveauMot.MainGui = function (word, languages, sections, onLanguageSelect, onClassSelect, onInsertWikicode, otherProjects) {
+      gadget_creerNouveauMot.Gui.call(this);
 
       this._word = word;
       /**
        * Tabs list.
-       * @type {Array<wikt.gadgets.creerNouveauMot.Tab>}
+       * @type {Array<gadget_creerNouveauMot.Tab>}
        */
       this._tabs = [];
       this._languageFld = null;
@@ -823,9 +887,6 @@ $(function () {
       this._seeOtherProjectsChk = {};
       this._sortKeyFld = null;
       this._otherProjects = otherProjects;
-
-      // Deleting all content above edit box.
-      $("#nouvel-article").parent().remove();
 
       var $tedit = $(this.TARGET_ELEMENT);
 
@@ -859,7 +920,9 @@ $(function () {
         {
           title: "Langue, type, définition",
           content: function () {
-            self._languageFld = new OO.ui.TextInputWidget();
+            self._languageFld = new OO.ui.TextInputWidget({
+              placeholder: "Code de langue",
+            });
             self._languageBnt = new OO.ui.ButtonWidget({
               label: "Passer à cette langue",
             });
@@ -1208,7 +1271,7 @@ $(function () {
         id: "cnm-tabs-widget",
       });
       for (var i = 0; i < tabs.length; i++) {
-        var tab = new wikt.gadgets.creerNouveauMot.Tab("cnm-tab{0}".format(i), {
+        var tab = new gadget_creerNouveauMot.Tab("cnm-tab{0}".format(i), {
           label: tabs[i].title,
           expanded: false,
         });
@@ -1272,11 +1335,11 @@ $(function () {
       }
 
       var hideBtn = "hide";
-      generateButton(toolFactory, hideBtn, "eyeClosed", false, "Masquer", function () {
+      generateButton(toolFactory, hideBtn, "collapse", false, "Masquer", function () {
         // noinspection JSCheckFunctionSignatures
         tabsWidget.toggle();
         this.setTitle(tabsWidget.isVisible() ? "Masquer" : "Afficher");
-        this.setIcon(tabsWidget.isVisible() ? "eyeClosed" : "eye");
+        this.setIcon(tabsWidget.isVisible() ? "collapse" : "expand");
       });
 
       var helpBtn = "help";
@@ -1320,7 +1383,7 @@ $(function () {
       toolbar.initialize();
       toolbar.emit("updateState");
 
-      $tedit.html(gadgetBox.$element);
+      $tedit.append(gadgetBox.$element);
 
       for (var projectCode in self._otherProjects) {
         if (self._otherProjects.hasOwnProperty(projectCode)) {
@@ -1337,7 +1400,7 @@ $(function () {
           '"Arial Unicode MS",sans-serif !important');
     };
 
-    wikt.gadgets.creerNouveauMot.MainGui.prototype = Object.create(wikt.gadgets.creerNouveauMot.Gui.prototype);
+    gadget_creerNouveauMot.MainGui.prototype = Object.create(gadget_creerNouveauMot.Gui.prototype);
 
     /*
      * Public methods
@@ -1347,16 +1410,17 @@ $(function () {
      * Selects the tab at the given index.
      * @param index {number} The index.
      */
-    wikt.gadgets.creerNouveauMot.MainGui.prototype.selectTab = function (index) {
+    gadget_creerNouveauMot.MainGui.prototype.selectTab = function (index) {
       this._tabs[index].select();
     };
 
     /**
      * Selects the given language. All external links are modified appropriatly.
      * If the language is not in the dropdown menu, it is added to it.
-     * @param language {wikt.gadgets.creerNouveauMot.Language} The language object.
+     * @param language {gadget_creerNouveauMot.Language} The language object.
      */
-    wikt.gadgets.creerNouveauMot.MainGui.prototype.selectLanguage = function (language) {
+    gadget_creerNouveauMot.MainGui.prototype.selectLanguage = function (language) {
+      gadget_creerNouveauMot._$TITLE_LANG.text(language.name);
       if (!this._languageSelectFld.getMenu().findItemFromData(language.code)) {
         this._languageSelectFld.getMenu().addItems([new OO.ui.MenuOptionWidget({
           data: language.code,
@@ -1382,17 +1446,17 @@ $(function () {
 
     /**
      * Sets the available genders widget.
-     * @param genders {Array<wikt.gadgets.creerNouveauMot.Gender>} The list of genders.
+     * @param genders {Array<gadget_creerNouveauMot.Gender>} The list of genders.
      */
-    wikt.gadgets.creerNouveauMot.MainGui.prototype.setAvailableGenders = function (genders) {
+    gadget_creerNouveauMot.MainGui.prototype.setAvailableGenders = function (genders) {
       this._setListValues(genders, this._gendersFld);
     };
 
     /**
      * Sets the available grammatical numbers widget.
-     * @param numbers {Array<wikt.gadgets.creerNouveauMot.Number>} The list of grammatical numbers.
+     * @param numbers {Array<gadget_creerNouveauMot.Number>} The list of grammatical numbers.
      */
-    wikt.gadgets.creerNouveauMot.MainGui.prototype.setAvailableNumbers = function (numbers) {
+    gadget_creerNouveauMot.MainGui.prototype.setAvailableNumbers = function (numbers) {
       this._setListValues(numbers, this._numbersFld);
     };
 
@@ -1402,10 +1466,10 @@ $(function () {
 
     /**
      * Updates all language-related fields.
-     * @param language {wikt.gadgets.creerNouveauMot.Language} The selected language.
+     * @param language {gadget_creerNouveauMot.Language} The selected language.
      * @private
      */
-    wikt.gadgets.creerNouveauMot.MainGui.prototype._updateFields = function (language) {
+    gadget_creerNouveauMot.MainGui.prototype._updateFields = function (language) {
       this._grammarClassSelectFld.getMenu().clearItems();
       var grammarItems = language.grammarItems;
       var items = [];
@@ -1428,10 +1492,10 @@ $(function () {
 
     /**
      * Updates the link search links to sister projects based on the selected language.
-     * @param language {wikt.gadgets.creerNouveauMot.Language} The selected language.
+     * @param language {gadget_creerNouveauMot.Language} The selected language.
      * @private
      */
-    wikt.gadgets.creerNouveauMot.MainGui.prototype._updateSisterProjectsLinks = function (language) {
+    gadget_creerNouveauMot.MainGui.prototype._updateSisterProjectsLinks = function (language) {
       for (var projectCode in this._otherProjects) {
         if (this._otherProjects.hasOwnProperty(projectCode)) {
           var forLangs = this._otherProjects[projectCode].showOnlyForLangs || [];
@@ -1459,10 +1523,10 @@ $(function () {
 
     /**
      * Sets the values of the given OOUI dropdown widget.
-     * @param values {Array<wikt.gadgets.creerNouveauMot.Gender|wikt.gadgets.creerNouveauMot.Number>} The list of values.
+     * @param values {Array<gadget_creerNouveauMot.Gender|gadget_creerNouveauMot.Number>} The list of values.
      * @param field {OO.ui.DropdownWidget} The OOUI widget.
      */
-    wikt.gadgets.creerNouveauMot.MainGui.prototype._setListValues = function (values, field) {
+    gadget_creerNouveauMot.MainGui.prototype._setListValues = function (values, field) {
       // noinspection JSUnresolvedFunction
       field.getMenu().clearItems();
       var items = [];
@@ -1485,7 +1549,7 @@ $(function () {
      * @return {object} A jQuery object.
      * @private
      */
-    wikt.gadgets.creerNouveauMot.MainGui.prototype._formatApi = function (ipaSymbols) {
+    gadget_creerNouveauMot.MainGui.prototype._formatApi = function (ipaSymbols) {
       var $label = $("<span>");
 
       for (var i = 0; i < ipaSymbols.length; i++) {
@@ -1507,7 +1571,7 @@ $(function () {
      * @return {Object} A jQuery object.
      * @private
      */
-    wikt.gadgets.creerNouveauMot.MainGui.prototype._createLinks = function (list, textField, cssClass, text) {
+    gadget_creerNouveauMot.MainGui.prototype._createLinks = function (list, textField, cssClass, text) {
       var $links = $("<span>");
 
       if (text) {
@@ -1542,7 +1606,7 @@ $(function () {
      * @param word {string} The word to search for.
      * @return {string} The search URL.
      */
-    wikt.gadgets.creerNouveauMot.MainGui.prototype._generateProjectLink = function (projectDomain, urlBase, langCode, word) {
+    gadget_creerNouveauMot.MainGui.prototype._generateProjectLink = function (projectDomain, urlBase, langCode, word) {
       if (langCode) {
         projectDomain = projectDomain.format(langCode);
         return "https://{0}/{1}{2}".format(projectDomain, urlBase, encodeURI(word));
@@ -1559,7 +1623,7 @@ $(function () {
      * @param sectionCode {string} Sections’s code.
      * @return {string} The section’s contents.
      */
-    wikt.gadgets.creerNouveauMot.MainGui.prototype.getSectionContent = function (sectionCode) {
+    gadget_creerNouveauMot.MainGui.prototype.getSectionContent = function (sectionCode) {
       // noinspection JSCheckFunctionSignatures
       return this._otherSectionFields[sectionCode].getValue().trim();
     };
@@ -1570,7 +1634,7 @@ $(function () {
      * @param sectionCode {string} Sections’s code.
      * @param content {string} The section’s contents.
      */
-    wikt.gadgets.creerNouveauMot.MainGui.prototype.setSectionContent = function (sectionCode, content) {
+    gadget_creerNouveauMot.MainGui.prototype.setSectionContent = function (sectionCode, content) {
       this._otherSectionFields[sectionCode].setValue(content.trim());
     };
 
@@ -1579,7 +1643,7 @@ $(function () {
      * @param projectCode {string} Project’s code.
      * @return {boolean} True if a link has to be inserted.
      */
-    wikt.gadgets.creerNouveauMot.MainGui.prototype.hasAddLinkToProject = function (projectCode) {
+    gadget_creerNouveauMot.MainGui.prototype.hasAddLinkToProject = function (projectCode) {
       return this._seeOtherProjectsChk[projectCode]["checkbox"].isSelected();
     };
 
@@ -1588,7 +1652,7 @@ $(function () {
      * @param projectCode {string} Project’s code.
      * @param link {boolean} True if a link has to be inserted.
      */
-    wikt.gadgets.creerNouveauMot.MainGui.prototype.setAddLinkToProject = function (projectCode, link) {
+    gadget_creerNouveauMot.MainGui.prototype.setAddLinkToProject = function (projectCode, link) {
       this._seeOtherProjectsChk[projectCode]["checkbox"].setSelected(link);
     };
 
@@ -1597,7 +1661,7 @@ $(function () {
      * @param projectCode {string} Project’s code.
      * @return {string} Template’s parameters.
      */
-    wikt.gadgets.creerNouveauMot.MainGui.prototype.getProjectLinkParams = function (projectCode) {
+    gadget_creerNouveauMot.MainGui.prototype.getProjectLinkParams = function (projectCode) {
       // noinspection JSCheckFunctionSignatures
       return this._seeOtherProjectsChk[projectCode]["textfield"].getValue().trim();
     };
@@ -1607,11 +1671,11 @@ $(function () {
      * @param projectCode {string} Project’s code.
      * @param params {string} Template’s parameters.
      */
-    wikt.gadgets.creerNouveauMot.MainGui.prototype.setProjectLinkParams = function (projectCode, params) {
+    gadget_creerNouveauMot.MainGui.prototype.setProjectLinkParams = function (projectCode, params) {
       this._seeOtherProjectsChk[projectCode]["textfield"].setValue(params.trim());
     };
 
-    Object.defineProperty(wikt.gadgets.creerNouveauMot.MainGui.prototype, "tabsNumber", {
+    Object.defineProperty(gadget_creerNouveauMot.MainGui.prototype, "tabsNumber", {
       /**
        * @return {number} The number of tabs.
        */
@@ -1620,7 +1684,7 @@ $(function () {
       }
     });
 
-    Object.defineProperty(wikt.gadgets.creerNouveauMot.MainGui.prototype, "selectedLanguage", {
+    Object.defineProperty(gadget_creerNouveauMot.MainGui.prototype, "selectedLanguage", {
       /**
        * @return {string} Selected language’s code.
        */
@@ -1630,7 +1694,7 @@ $(function () {
       }
     });
 
-    Object.defineProperty(wikt.gadgets.creerNouveauMot.MainGui.prototype, "gender", {
+    Object.defineProperty(gadget_creerNouveauMot.MainGui.prototype, "gender", {
       /**
        * @return {string} Selected gender’s code.
        */
@@ -1640,7 +1704,7 @@ $(function () {
       },
     });
 
-    Object.defineProperty(wikt.gadgets.creerNouveauMot.MainGui.prototype, "number", {
+    Object.defineProperty(gadget_creerNouveauMot.MainGui.prototype, "number", {
       /**
        * @return {string} Selected grammatical number’s code.
        */
@@ -1650,7 +1714,7 @@ $(function () {
       },
     });
 
-    Object.defineProperty(wikt.gadgets.creerNouveauMot.MainGui.prototype, "grammarClass", {
+    Object.defineProperty(gadget_creerNouveauMot.MainGui.prototype, "grammarClass", {
       /**
        * @return {string} Selected grammatical class.
        */
@@ -1660,7 +1724,7 @@ $(function () {
       },
     });
 
-    Object.defineProperty(wikt.gadgets.creerNouveauMot.MainGui.prototype, "imageName", {
+    Object.defineProperty(gadget_creerNouveauMot.MainGui.prototype, "imageName", {
       /**
        * @return {string} The image name.
        */
@@ -1678,7 +1742,7 @@ $(function () {
       },
     });
 
-    Object.defineProperty(wikt.gadgets.creerNouveauMot.MainGui.prototype, "imageDescription", {
+    Object.defineProperty(gadget_creerNouveauMot.MainGui.prototype, "imageDescription", {
       /**
        * @return {string} The image description.
        */
@@ -1696,7 +1760,7 @@ $(function () {
       },
     });
 
-    Object.defineProperty(wikt.gadgets.creerNouveauMot.MainGui.prototype, "pronunciation", {
+    Object.defineProperty(gadget_creerNouveauMot.MainGui.prototype, "pronunciation", {
       /**
        * @return {string} The pronunciation.
        */
@@ -1714,7 +1778,7 @@ $(function () {
       },
     });
 
-    Object.defineProperty(wikt.gadgets.creerNouveauMot.MainGui.prototype, "definition", {
+    Object.defineProperty(gadget_creerNouveauMot.MainGui.prototype, "definition", {
       /**
        * @return {string} The definition.
        */
@@ -1732,7 +1796,7 @@ $(function () {
       }
     });
 
-    Object.defineProperty(wikt.gadgets.creerNouveauMot.MainGui.prototype, "categories", {
+    Object.defineProperty(gadget_creerNouveauMot.MainGui.prototype, "categories", {
       /**
        * @return {Array<string>} The categories.
        */
@@ -1750,7 +1814,7 @@ $(function () {
       },
     });
 
-    Object.defineProperty(wikt.gadgets.creerNouveauMot.MainGui.prototype, "etymology", {
+    Object.defineProperty(gadget_creerNouveauMot.MainGui.prototype, "etymology", {
       /**
        * @return {string} The etymology.
        */
@@ -1768,7 +1832,7 @@ $(function () {
       }
     });
 
-    Object.defineProperty(wikt.gadgets.creerNouveauMot.MainGui.prototype, "pronunciationSection", {
+    Object.defineProperty(gadget_creerNouveauMot.MainGui.prototype, "pronunciationSection", {
       /**
        * @return {string} The pronunciation section.
        */
@@ -1786,7 +1850,7 @@ $(function () {
       },
     });
 
-    Object.defineProperty(wikt.gadgets.creerNouveauMot.MainGui.prototype, "homophones", {
+    Object.defineProperty(gadget_creerNouveauMot.MainGui.prototype, "homophones", {
       /**
        * @return {string} The homophones.
        */
@@ -1804,7 +1868,7 @@ $(function () {
       },
     });
 
-    Object.defineProperty(wikt.gadgets.creerNouveauMot.MainGui.prototype, "paronyms", {
+    Object.defineProperty(gadget_creerNouveauMot.MainGui.prototype, "paronyms", {
       /**
        * @return {string} The paronyms.
        */
@@ -1822,7 +1886,7 @@ $(function () {
       },
     });
 
-    Object.defineProperty(wikt.gadgets.creerNouveauMot.MainGui.prototype, "references", {
+    Object.defineProperty(gadget_creerNouveauMot.MainGui.prototype, "references", {
       /**
        * @return {string} The references.
        */
@@ -1840,7 +1904,7 @@ $(function () {
       },
     });
 
-    Object.defineProperty(wikt.gadgets.creerNouveauMot.MainGui.prototype, "bibliography", {
+    Object.defineProperty(gadget_creerNouveauMot.MainGui.prototype, "bibliography", {
       /**
        * @return {string} The bibliography.
        */
@@ -1858,7 +1922,7 @@ $(function () {
       },
     });
 
-    Object.defineProperty(wikt.gadgets.creerNouveauMot.MainGui.prototype, "isDraft", {
+    Object.defineProperty(gadget_creerNouveauMot.MainGui.prototype, "isDraft", {
       /**
        * Indicates whether the article is a draft.
        * @return {boolean} True if it is a draft.
@@ -1876,7 +1940,7 @@ $(function () {
       },
     });
 
-    Object.defineProperty(wikt.gadgets.creerNouveauMot.MainGui.prototype, "sortingKey", {
+    Object.defineProperty(gadget_creerNouveauMot.MainGui.prototype, "sortingKey", {
       /**
        * @return {string} The sorting key.
        */
@@ -1900,13 +1964,13 @@ $(function () {
      * @param template {string?} Number’s template if any.
      * @constructor
      */
-    wikt.gadgets.creerNouveauMot.Number = function (label, template) {
+    gadget_creerNouveauMot.Number = function (label, template) {
       this._label = label;
       this._template = template || "";
     }
 
     // noinspection JSValidateTypes
-    wikt.gadgets.creerNouveauMot.Number.prototype = {
+    gadget_creerNouveauMot.Number.prototype = {
       /**
        * @return {string} The label.
        */
@@ -1924,14 +1988,14 @@ $(function () {
 
     /**
      * Defines all available grammatical numbers.
-     * @type {Object<string, wikt.gadgets.creerNouveauMot.Number>}
+     * @type {Object<string, gadget_creerNouveauMot.Number>}
      */
-    wikt.gadgets.creerNouveauMot.numbers = {
-      DIFF_SINGULAR_PLURAL: new wikt.gadgets.creerNouveauMot.Number("sing. et plur. différents"),
-      SAME_SINGULAR_PLURAL: new wikt.gadgets.creerNouveauMot.Number("sing. et plur. identiques", "{{sp}}"),
-      SINGULAR_ONLY: new wikt.gadgets.creerNouveauMot.Number("singulier uniquement", "{{au singulier uniquement|{0}}}"),
-      PLURAL_ONLY: new wikt.gadgets.creerNouveauMot.Number("pluriel uniquement", "{{au pluriel uniquement|{0}}}"),
-      INVARIABLE: new wikt.gadgets.creerNouveauMot.Number("invariable", "{{invariable}}"),
+    gadget_creerNouveauMot.numbers = {
+      DIFF_SINGULAR_PLURAL: new gadget_creerNouveauMot.Number("sing. et plur. différents"),
+      SAME_SINGULAR_PLURAL: new gadget_creerNouveauMot.Number("sing. et plur. identiques", "{{sp}}"),
+      SINGULAR_ONLY: new gadget_creerNouveauMot.Number("singulier uniquement", "{{au singulier uniquement|{0}}}"),
+      PLURAL_ONLY: new gadget_creerNouveauMot.Number("pluriel uniquement", "{{au pluriel uniquement|{0}}}"),
+      INVARIABLE: new gadget_creerNouveauMot.Number("invariable", "{{invariable}}"),
     };
 
     /**
@@ -1940,13 +2004,13 @@ $(function () {
      * @param template {string?} Gender’s template if any.
      * @constructor
      */
-    wikt.gadgets.creerNouveauMot.Gender = function (label, template) {
+    gadget_creerNouveauMot.Gender = function (label, template) {
       this._label = label;
       this._template = template || "";
     }
 
     // noinspection JSValidateTypes
-    wikt.gadgets.creerNouveauMot.Gender.prototype = {
+    gadget_creerNouveauMot.Gender.prototype = {
       /**
        * @return {string} Gender’s label.
        */
@@ -1964,21 +2028,21 @@ $(function () {
 
     /**
      * Defines all available grammatical genders/verb groups.
-     * @type {Object<string, wikt.gadgets.creerNouveauMot.Gender>}
+     * @type {Object<string, gadget_creerNouveauMot.Gender>}
      */
-    wikt.gadgets.creerNouveauMot.genders = {
-      MASCULINE: new wikt.gadgets.creerNouveauMot.Gender("masculin", "{{m}}"),
-      FEMININE: new wikt.gadgets.creerNouveauMot.Gender("féminin", "{{f}}"),
-      FEMININE_MASCULINE_DIFF: new wikt.gadgets.creerNouveauMot.Gender("masc. et fém. différents"),
-      FEMININE_MASCULINE: new wikt.gadgets.creerNouveauMot.Gender("masc. et fém. identiques", "{{mf}}"),
-      NO_GENDER: new wikt.gadgets.creerNouveauMot.Gender("pas de genre"),
-      VERB_GROUP1: new wikt.gadgets.creerNouveauMot.Gender("1<sup>er</sup> groupe", "{{type|{0}}} {{conjugaison|fr|groupe=1}}"),
-      VERB_GROUP2: new wikt.gadgets.creerNouveauMot.Gender("2<sup>ème</sup> groupe", "{{type|{0}}} {{conjugaison|fr|groupe=2}}"),
-      VERB_GROUP3: new wikt.gadgets.creerNouveauMot.Gender("3<sup>ème</sup> groupe", "{{type|{0}}} {{conjugaison|fr|groupe=3}}"),
-      VERB: new wikt.gadgets.creerNouveauMot.Gender("verbe", "{{type|{0}}} {{conjugaison|{0}}}"),
-      VERB_NO_TEMPLATE: new wikt.gadgets.creerNouveauMot.Gender("verbe", "{{type|{0}}}"),
-      REGULAR_VERB: new wikt.gadgets.creerNouveauMot.Gender("régulier", "{{type|{0}}}"),
-      IRREGULAR_VERB: new wikt.gadgets.creerNouveauMot.Gender("irrégulier", "{{type|{0}}}"),
+    gadget_creerNouveauMot.genders = {
+      MASCULINE: new gadget_creerNouveauMot.Gender("masculin", "{{m}}"),
+      FEMININE: new gadget_creerNouveauMot.Gender("féminin", "{{f}}"),
+      FEMININE_MASCULINE_DIFF: new gadget_creerNouveauMot.Gender("masc. et fém. différents"),
+      FEMININE_MASCULINE: new gadget_creerNouveauMot.Gender("masc. et fém. identiques", "{{mf}}"),
+      NO_GENDER: new gadget_creerNouveauMot.Gender("pas de genre"),
+      VERB_GROUP1: new gadget_creerNouveauMot.Gender("1<sup>er</sup> groupe", "{{type|{0}}} {{conjugaison|fr|groupe=1}}"),
+      VERB_GROUP2: new gadget_creerNouveauMot.Gender("2<sup>ème</sup> groupe", "{{type|{0}}} {{conjugaison|fr|groupe=2}}"),
+      VERB_GROUP3: new gadget_creerNouveauMot.Gender("3<sup>ème</sup> groupe", "{{type|{0}}} {{conjugaison|fr|groupe=3}}"),
+      VERB: new gadget_creerNouveauMot.Gender("verbe", "{{type|{0}}} {{conjugaison|{0}}}"),
+      VERB_NO_TEMPLATE: new gadget_creerNouveauMot.Gender("verbe", "{{type|{0}}}"),
+      REGULAR_VERB: new gadget_creerNouveauMot.Gender("régulier", "{{type|{0}}}"),
+      IRREGULAR_VERB: new gadget_creerNouveauMot.Gender("irrégulier", "{{type|{0}}}"),
     };
 
     /**
@@ -1988,13 +2052,13 @@ $(function () {
      * (as defined in [[Wiktionnaire:Structure_des_pages#Résumé_des_sections]] 2,1 onwards).
      * @constructor
      */
-    wikt.gadgets.creerNouveauMot.GrammaticalClass = function (label, sectionCode) {
+    gadget_creerNouveauMot.GrammaticalClass = function (label, sectionCode) {
       this._label = label;
       this._sectionCode = sectionCode;
     }
 
     // noinspection JSValidateTypes
-    wikt.gadgets.creerNouveauMot.GrammaticalClass.prototype = {
+    gadget_creerNouveauMot.GrammaticalClass.prototype = {
       /**
        * @return {string} Class’ label.
        */
@@ -2012,99 +2076,99 @@ $(function () {
 
     /**
      * Defines all available grammatical classes.
-     * @type {Object<string, wikt.gadgets.creerNouveauMot.GrammaticalClass>}
+     * @type {Object<string, gadget_creerNouveauMot.GrammaticalClass>}
      */
-    wikt.gadgets.creerNouveauMot.grammaticalClasses = {
-      SYMBOL: new wikt.gadgets.creerNouveauMot.GrammaticalClass("symbole", "symbole"),
-      LETTER: new wikt.gadgets.creerNouveauMot.GrammaticalClass("lettre", "lettre"),
+    gadget_creerNouveauMot.grammaticalClasses = {
+      SYMBOL: new gadget_creerNouveauMot.GrammaticalClass("symbole", "symbole"),
+      LETTER: new gadget_creerNouveauMot.GrammaticalClass("lettre", "lettre"),
 
-      SCIENTIFIC_NAME: new wikt.gadgets.creerNouveauMot.GrammaticalClass("nom scientifique", "nom scientifique"),
+      SCIENTIFIC_NAME: new gadget_creerNouveauMot.GrammaticalClass("nom scientifique", "nom scientifique"),
 
       // Nouns
-      NOUN: new wikt.gadgets.creerNouveauMot.GrammaticalClass("nom commun", "nom"),
-      PROPER_NOUN: new wikt.gadgets.creerNouveauMot.GrammaticalClass("nom propre", "nom propre"),
-      FIRST_NAME: new wikt.gadgets.creerNouveauMot.GrammaticalClass("prénom", "prénom"),
-      LAST_NAME: new wikt.gadgets.creerNouveauMot.GrammaticalClass("nom de famille", "nom de famille"),
+      NOUN: new gadget_creerNouveauMot.GrammaticalClass("nom commun", "nom"),
+      PROPER_NOUN: new gadget_creerNouveauMot.GrammaticalClass("nom propre", "nom propre"),
+      FIRST_NAME: new gadget_creerNouveauMot.GrammaticalClass("prénom", "prénom"),
+      LAST_NAME: new gadget_creerNouveauMot.GrammaticalClass("nom de famille", "nom de famille"),
 
       // Adjectives
-      ADJECTIVE: new wikt.gadgets.creerNouveauMot.GrammaticalClass("adjectif", "adjectif"),
-      INTERROGATIVE_ADJECTIVE: new wikt.gadgets.creerNouveauMot.GrammaticalClass("adjectif interrogatif", "adjectif interrogatif"),
-      NUMERAL_ADJECTIVE: new wikt.gadgets.creerNouveauMot.GrammaticalClass("adjectif numéral", "adjectif numéral"),
-      POSSESSIVE_ADJECTIVE: new wikt.gadgets.creerNouveauMot.GrammaticalClass("adjectif possessif", "adjectif possessif"),
+      ADJECTIVE: new gadget_creerNouveauMot.GrammaticalClass("adjectif", "adjectif"),
+      INTERROGATIVE_ADJECTIVE: new gadget_creerNouveauMot.GrammaticalClass("adjectif interrogatif", "adjectif interrogatif"),
+      NUMERAL_ADJECTIVE: new gadget_creerNouveauMot.GrammaticalClass("adjectif numéral", "adjectif numéral"),
+      POSSESSIVE_ADJECTIVE: new gadget_creerNouveauMot.GrammaticalClass("adjectif possessif", "adjectif possessif"),
 
       // Adverbs
-      ADVERB: new wikt.gadgets.creerNouveauMot.GrammaticalClass("adverbe", "adverbe"),
-      INTERROGATIVE_ADVERB: new wikt.gadgets.creerNouveauMot.GrammaticalClass("adverbe interrogatif", "adverbe interrogatif"),
+      ADVERB: new gadget_creerNouveauMot.GrammaticalClass("adverbe", "adverbe"),
+      INTERROGATIVE_ADVERB: new gadget_creerNouveauMot.GrammaticalClass("adverbe interrogatif", "adverbe interrogatif"),
 
       // Pronouns
-      PRONOUN: new wikt.gadgets.creerNouveauMot.GrammaticalClass("pronom", "pronom"),
-      DEMONSTRATIVE_PRONOUN: new wikt.gadgets.creerNouveauMot.GrammaticalClass("pronom démonstratif", "pronom démonstratif"),
-      INDEFINITE_PRONOUN: new wikt.gadgets.creerNouveauMot.GrammaticalClass("pronom indéfini", "pronom indéfini"),
-      INTERROGATIVE_PRONOUN: new wikt.gadgets.creerNouveauMot.GrammaticalClass("pronom interrogatif", "pronom interrogatif"),
-      PERSONAL_PRONOUN: new wikt.gadgets.creerNouveauMot.GrammaticalClass("pronom personnel", "pronom personnel"),
-      POSSESSIVE_PRONOUN: new wikt.gadgets.creerNouveauMot.GrammaticalClass("pronom possessif", "pronom possessif"),
-      RELATIVE_PRONOUN: new wikt.gadgets.creerNouveauMot.GrammaticalClass("pronom relatif", "pronom relatif"),
+      PRONOUN: new gadget_creerNouveauMot.GrammaticalClass("pronom", "pronom"),
+      DEMONSTRATIVE_PRONOUN: new gadget_creerNouveauMot.GrammaticalClass("pronom démonstratif", "pronom démonstratif"),
+      INDEFINITE_PRONOUN: new gadget_creerNouveauMot.GrammaticalClass("pronom indéfini", "pronom indéfini"),
+      INTERROGATIVE_PRONOUN: new gadget_creerNouveauMot.GrammaticalClass("pronom interrogatif", "pronom interrogatif"),
+      PERSONAL_PRONOUN: new gadget_creerNouveauMot.GrammaticalClass("pronom personnel", "pronom personnel"),
+      POSSESSIVE_PRONOUN: new gadget_creerNouveauMot.GrammaticalClass("pronom possessif", "pronom possessif"),
+      RELATIVE_PRONOUN: new gadget_creerNouveauMot.GrammaticalClass("pronom relatif", "pronom relatif"),
 
       // Conjunctions
-      CONJUNCTION: new wikt.gadgets.creerNouveauMot.GrammaticalClass("conjonction", "conjonction"),
-      COORDINATION_CONJUNCTION: new wikt.gadgets.creerNouveauMot.GrammaticalClass("conjonction de coordination", "conjonction de coordination"),
+      CONJUNCTION: new gadget_creerNouveauMot.GrammaticalClass("conjonction", "conjonction"),
+      COORDINATION_CONJUNCTION: new gadget_creerNouveauMot.GrammaticalClass("conjonction de coordination", "conjonction de coordination"),
 
       // Articles
-      ARTICLE: new wikt.gadgets.creerNouveauMot.GrammaticalClass("article", "article"),
-      INDEFINITE_ARTICLE: new wikt.gadgets.creerNouveauMot.GrammaticalClass("article indéfini", "article indéfini"),
-      DEFINITE_ARTICLE: new wikt.gadgets.creerNouveauMot.GrammaticalClass("article défini", "article défini"),
-      PARTITIVE_ARTICLE: new wikt.gadgets.creerNouveauMot.GrammaticalClass("article partitif", "article partitif"),
+      ARTICLE: new gadget_creerNouveauMot.GrammaticalClass("article", "article"),
+      INDEFINITE_ARTICLE: new gadget_creerNouveauMot.GrammaticalClass("article indéfini", "article indéfini"),
+      DEFINITE_ARTICLE: new gadget_creerNouveauMot.GrammaticalClass("article défini", "article défini"),
+      PARTITIVE_ARTICLE: new gadget_creerNouveauMot.GrammaticalClass("article partitif", "article partitif"),
 
       // Affixes
-      PREFIX: new wikt.gadgets.creerNouveauMot.GrammaticalClass("préfixe", "préfixe"),
-      SUFFIX: new wikt.gadgets.creerNouveauMot.GrammaticalClass("suffixe", "suffixe"),
-      CIRCUMFIX: new wikt.gadgets.creerNouveauMot.GrammaticalClass("circonfixe", "circonfixe"),
-      INFIX: new wikt.gadgets.creerNouveauMot.GrammaticalClass("infixe", "infixe"),
+      PREFIX: new gadget_creerNouveauMot.GrammaticalClass("préfixe", "préfixe"),
+      SUFFIX: new gadget_creerNouveauMot.GrammaticalClass("suffixe", "suffixe"),
+      CIRCUMFIX: new gadget_creerNouveauMot.GrammaticalClass("circonfixe", "circonfixe"),
+      INFIX: new gadget_creerNouveauMot.GrammaticalClass("infixe", "infixe"),
 
-      VERB: new wikt.gadgets.creerNouveauMot.GrammaticalClass("verbe", "verbe"),
-      PREPOSITION: new wikt.gadgets.creerNouveauMot.GrammaticalClass("préposition", "préposition"),
-      POSTPOSITION: new wikt.gadgets.creerNouveauMot.GrammaticalClass("postposition", "postposition"),
-      PARTICLE: new wikt.gadgets.creerNouveauMot.GrammaticalClass("particule", "particule"),
-      INTERJECTION: new wikt.gadgets.creerNouveauMot.GrammaticalClass("interjection", "interjection"),
+      VERB: new gadget_creerNouveauMot.GrammaticalClass("verbe", "verbe"),
+      PREPOSITION: new gadget_creerNouveauMot.GrammaticalClass("préposition", "préposition"),
+      POSTPOSITION: new gadget_creerNouveauMot.GrammaticalClass("postposition", "postposition"),
+      PARTICLE: new gadget_creerNouveauMot.GrammaticalClass("particule", "particule"),
+      INTERJECTION: new gadget_creerNouveauMot.GrammaticalClass("interjection", "interjection"),
     };
 
     /**
      * A grammatical item associates a grammatical class to genders and numbers.
-     * @param grammaticalClass {wikt.gadgets.creerNouveauMot.GrammaticalClass} The grammatical class.
-     * @param availableGenders {Array<wikt.gadgets.creerNouveauMot.Gender>?} Associated genders.
-     * @param availableNumbers {Array<wikt.gadgets.creerNouveauMot.Number>?} Associated numbers.
+     * @param grammaticalClass {gadget_creerNouveauMot.GrammaticalClass} The grammatical class.
+     * @param availableGenders {Array<gadget_creerNouveauMot.Gender>?} Associated genders.
+     * @param availableNumbers {Array<gadget_creerNouveauMot.Number>?} Associated numbers.
      * @param generateInflections {Function?} Optional function that generates inflections template.
      * @constructor
      */
-    wikt.gadgets.creerNouveauMot.GrammaticalItem = function (grammaticalClass, availableGenders, availableNumbers, generateInflections) {
+    gadget_creerNouveauMot.GrammaticalItem = function (grammaticalClass, availableGenders, availableNumbers, generateInflections) {
       this._grammaticalClass = grammaticalClass;
-      /** @type {Array<wikt.gadgets.creerNouveauMot.Gender>} */
-      this._availableGenders = availableGenders || [new wikt.gadgets.creerNouveauMot.Gender("<em>indisponible</em>")];
-      /** @type {Array<wikt.gadgets.creerNouveauMot.Number>} */
-      this._availableNumbers = availableNumbers || [new wikt.gadgets.creerNouveauMot.Number("<em>indisponible</em>")];
+      /** @type {Array<gadget_creerNouveauMot.Gender>} */
+      this._availableGenders = availableGenders || [new gadget_creerNouveauMot.Gender("<em>indisponible</em>")];
+      /** @type {Array<gadget_creerNouveauMot.Number>} */
+      this._availableNumbers = availableNumbers || [new gadget_creerNouveauMot.Number("<em>indisponible</em>")];
       this._generateInflections = generateInflections || function () {
         return "";
       };
     };
 
     // noinspection JSValidateTypes
-    wikt.gadgets.creerNouveauMot.GrammaticalItem.prototype = {
+    gadget_creerNouveauMot.GrammaticalItem.prototype = {
       /**
-       * @return {wikt.gadgets.creerNouveauMot.GrammaticalClass} The grammatical class.
+       * @return {gadget_creerNouveauMot.GrammaticalClass} The grammatical class.
        */
       get grammaticalClass() {
         return this._grammaticalClass;
       },
 
       /**
-       * @return {Array<wikt.gadgets.creerNouveauMot.Gender>} Associated genders.
+       * @return {Array<gadget_creerNouveauMot.Gender>} Associated genders.
        */
       get availableGenders() {
         return this._availableGenders;
       },
 
       /**
-       * @return {Array<wikt.gadgets.creerNouveauMot.Number>} Associated numbers.
+       * @return {Array<gadget_creerNouveauMot.Number>} Associated numbers.
        */
       get availableNumbers() {
         return this._availableNumbers;
@@ -2114,9 +2178,9 @@ $(function () {
     /**
      * Fetches the gender with the given label.
      * @param genderLabel {string} Gender’s label.
-     * @return {wikt.gadgets.creerNouveauMot.Gender|null} The gender object or null if none were found.
+     * @return {gadget_creerNouveauMot.Gender|null} The gender object or null if none were found.
      */
-    wikt.gadgets.creerNouveauMot.GrammaticalItem.prototype.getGender = function (genderLabel) {
+    gadget_creerNouveauMot.GrammaticalItem.prototype.getGender = function (genderLabel) {
       for (var i = 0; i < this._availableGenders.length; i++) {
         var gender = this._availableGenders[i];
         if (gender.label === genderLabel) {
@@ -2130,9 +2194,9 @@ $(function () {
     /**
      * Fetches the number with the given label.
      * @param numberLabel {string} Number’s label
-     * @return {wikt.gadgets.creerNouveauMot.Number|null} The number object or null if none were found.
+     * @return {gadget_creerNouveauMot.Number|null} The number object or null if none were found.
      */
-    wikt.gadgets.creerNouveauMot.GrammaticalItem.prototype.getNumber = function (numberLabel) {
+    gadget_creerNouveauMot.GrammaticalItem.prototype.getNumber = function (numberLabel) {
       for (var i = 0; i < this._availableNumbers.length; i++) {
         var number = this._availableNumbers[i];
         if (number.label === numberLabel) {
@@ -2151,13 +2215,13 @@ $(function () {
      * @param pronunciation {string} IPA pronunciation.
      * @return {string} Template’s wikicode.
      */
-    wikt.gadgets.creerNouveauMot.GrammaticalItem.prototype.getInflectionsTemplate = function (word, genderLabel, numberLabel, pronunciation) {
+    gadget_creerNouveauMot.GrammaticalItem.prototype.getInflectionsTemplate = function (word, genderLabel, numberLabel, pronunciation) {
       var grammarClass = this._grammaticalClass.label;
       grammarClass = grammarClass.charAt(0).toUpperCase() + grammarClass.substring(1);
       return this._generateInflections(word, grammarClass, genderLabel, numberLabel, pronunciation);
     };
 
-    var cnm = wikt.gadgets.creerNouveauMot;
+    var cnm = gadget_creerNouveauMot;
 
     /*
      * French language definition.
@@ -2530,7 +2594,7 @@ $(function () {
         ]
     )); // conv
 
-    wikt.gadgets.creerNouveauMot.init();
+    gadget_creerNouveauMot.init();
   }
 });
 // </nowiki>

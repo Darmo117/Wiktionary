@@ -1,3 +1,11 @@
 #Editnotice-0 .oo-ui-inputWidget-input {
   font-family: 'Menlo', 'Consolas', 'Monaco', 'Noto Mono', 'Nimbus Mono L', monospace !important;
 }
+
+#cnm-title {
+  text-align: center;
+}
+
+#cnm-title-lang {
+  text-decoration: underline;
+}

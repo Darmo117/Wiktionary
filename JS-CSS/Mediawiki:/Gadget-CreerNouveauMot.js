@@ -475,7 +475,7 @@ $(function () {
             }
 
             if (defFound && (i === defLines.length - 1 || defLines[i + 1].substr(0, 2) !== "#*")) {
-              def += "#* {{ébauche-exe|{0}}}\n".format(langCode);
+              def += "#* {{exemple|lang={0}}}\n".format(langCode);
             }
           }
 

@@ -244,15 +244,18 @@ function p.setWritingDirection(text)
           dir = directionToDir[scriptDir]
           cssDir = scriptDir
           prevScriptName = scriptName
-        else
+        elseif nextScriptDir then
           dir = directionToDir[nextScriptDir]
           cssDir = nextScriptDir
           prevScriptName = nextScript.name
         end
-        local dirAttr = dir and ('dir="' .. dir .. '"') or ""
-        local writingMode = directionToCss[cssDir]
-        res = res .. mw.ustring.format('<span %s style="writing-mode:%s">', dirAttr, writingMode) .. substr
-        inSpan = true
+
+        if dir then
+          local dirAttr = dir and ('dir="' .. dir .. '"') or ""
+          local writingMode = directionToCss[cssDir]
+          res = res .. mw.ustring.format('<span %s style="writing-mode:%s">', dirAttr, writingMode) .. substr
+          inSpan = true
+        end
       end
 
     else

@@ -234,7 +234,7 @@ function p.setWritingDirection(text)
 
       if scriptDir == "lr" or prevScriptName == scriptName
           -- Special case for when text begins with i or m scripts and is followed by script ≠ lr
-          or (scriptDir == "i" or scriptDir == "m") and (i == 1 and nextScriptDir == "lr" or i > 1) then
+          or ((scriptDir == "i" or scriptDir == "m") and (i == 1 and nextScriptDir == "lr" or i > 1 or not nextScript)) then
         res = res .. substr
       else
         local dir
@@ -273,6 +273,17 @@ function p.setWritingDirection(text)
   end
 
   return res
+end
+
+--- Converts an integer into another system.
+--- @param n number The number to convert.
+--- @param system string The target number system.
+--- @return string The converted number as a string of digits.
+function p.convertNumber(n, system)
+  if n < 0 then
+    error("number must be a positive integer")
+  end
+  -- TODO
 end
 
 -----------------------------
@@ -363,6 +374,21 @@ function p.character(frame)
   end
 
   error("Point de code incorrect")
+end
+
+--- Converts an arab number into the given system.
+---  frame.args[1] (int): The number.
+---  frame.args["script"] (string): The target system.
+--- @return string The converted number as a string of digits.
+function p.number(frame)
+  local args = m_params.process(frame.args, {
+    [1] = { required = true, type = m_params.INT, checker = function(i)
+      return tonumber(i) >= 0
+    end },
+    ["script"] = { enum = {} } -- TODO définir les systèmes numériques (positionels, grec, etc.)
+  })
+
+  return p.convertNumber(args[1], args["script"])
 end
 
 return p

@@ -10,7 +10,7 @@ local p = {}
 
 function p.categorizeInterlanguageLexicon(_)
   local lexicon = mw.title.getCurrentTitle().text
-  local lexiconData = tree[m_bases.lc(lexicon)] or tree[lexicon]
+  local lexiconData = tree[m_bases.lcfirst(lexicon)] or tree[lexicon]
 
   if lexiconData then
     local categories = lexiconData["description"] .. "\n"
@@ -21,7 +21,7 @@ function p.categorizeInterlanguageLexicon(_)
       end
     end
 
-    return categories .. "[[Catégorie:Lexiques]]"
+    return categories .. "[[Catégorie:Lexiques|" .. m_bases.ucfirst(lexicon) .. "]]"
   else
     return "[[Catégorie:Wiktionnaire:Lexiques non définis]]"
   end
@@ -41,10 +41,15 @@ local function parseLexiconTitle(title, langCode)
 
   for _, d in ipairs(determiners) do
     lang, subject = mw.ustring.match(title, root .. " " .. d .. "(.+)")
+    -- Récupérer le code à partir du nom de la langue
+    if langCode == nil then
+      langCode = m_langs._getLanguageCode(lang)
+    end
 
     if lang ~= nil and subject ~= nil then
       langCat = "Lexiques en " .. lang .. "|" .. subject
-      subjectCat = subject .. "|" .. lang
+      -- subjectCat = subject .. "|" .. lang
+      subjectCat = subject .. "|" .. m_langs.get_tri(langCode)
       break
     end
   end
@@ -146,18 +151,22 @@ function p.categorizeLexiconWithoutLanguage(_)
         det = "l’"
       end
 
-      local templateLink = mw.getCurrentFrame():expandTemplate { title = "M", args = { "lexique" } }
+      local templateLink = mw.getCurrentFrame():expandTemplate { title = "M", args = { "lexique", subject } }
+      local infoTemplate = mw.getCurrentFrame():expandTemplate { title = "M", args = { "info lex", subject } }
 
       header = mw.ustring.format(
-          [=[Cette catégorie liste les pages qui incluent le modèle %s avec la valeur <code>%s</code> sans avoir précisé le paramètre de langue.
+          [=[Cette catégorie liste les pages qui incluent le modèle %s sans avoir précisé le paramètre de langue.
 
 Cette catégorie devrait être vide&nbsp;: tous les appels du modèle %s doivent mentionner un paramètre de langue.
 
-<small>Cette catégorie est une catégorie de maintenance.<small>
+Si vous ne souhaitez pas que la page soit catégorisée, vous pouvez utiliser %s.
+
+<small>Cette catégorie est une catégorie de maintenance.</small>
 [[Catégorie:Wiktionnaire:Lexiques sans langue précisée|%s]]
-[[Catégorie:%s|*]]
+[[Catégorie:%s|!]]
+[[Catégorie:Catégories cachées|! Lexiques %s]]
 ]=],
-          templateLink, subject, templateLink, subject, m_bases.ucfirst(subject)
+          templateLink, templateLink, infoTemplate, subject, m_bases.ucfirst(subject), subject
       )
     end
 
@@ -180,16 +189,23 @@ function p.lexicon(frame, nocat)
   local tableLen = m_table.length(args)
   if nocat then
     if tableLen < 1 then
-      return [[<span style="color:red">'''Veuillez saisir au moins un lexique !'''</span>]]
+      return [[<span style="color:red; font-weight: bold;">Veuillez saisir au moins un lexique !</span>]] .. "[[Catégorie:Wiktionnaire:Erreurs d’appel du modèle lexique]]"
     end
   else
     if tableLen < 2 then
-      return [[<span style="color:red">'''Veuillez saisir au moins un lexique et un code langue !'''</span>]]
+      return [[<span style="color:red; font-weight: bold;">Veuillez saisir au moins un lexique et un code langue !</span>]] .. "[[Catégorie:Wiktionnaire:Erreurs d’appel du modèle lexique]]"
     end
   end
 
   local lexicons = {}
   local last
+  local key = args["clé"]
+  if key == nil then
+    key = ""
+  end
+  if key ~= "" then
+    key = "|" .. key
+  end
 
   for _, arg in ipairs(args) do
     if last ~= nil then
@@ -198,14 +214,14 @@ function p.lexicon(frame, nocat)
     last = arg
   end
 
-  local lang_code
+  local langCode
   local lang
 
   if nocat then
     table.insert(lexicons, last)
   else
-    lang_code = last
-    lang = m_langs.get_nom(lang_code)
+    langCode = last
+    lang = m_langs.get_nom(langCode)
   end
 
   local text = ""
@@ -213,8 +229,8 @@ function p.lexicon(frame, nocat)
 
   if not nocat and lang == nil then
     return mw.ustring.format(
-        [=[<span style="color:red" title="Code langue saisi : %s">'''Code langue inconnu !'''</span>[[Catégorie:Wiktionnaire:Lexiques avec langue manquante]]]=],
-        lang_code
+        [=[<span style="color:red; font-weight: bold;" title="Code langue saisi : %s">Code langue inconnu !</span>[[Catégorie:Wiktionnaire:Lexiques avec langue manquante]]]=],
+        langCode
     )
   end
 
@@ -222,19 +238,35 @@ function p.lexicon(frame, nocat)
 
   for _, lexicon in ipairs(lexicons) do
     if tree[lexicon] then
-      table.insert(filteredLexicons, [[<span title="]] .. tree[lexicon]["description"] .. [[">'']] .. (not nocat and m_bases.ucfirst(lexicon) or lexicon) .. [[''</span>]])
+      local span
+      if langCode then
+        span = mw.ustring.format(
+            [[<span title="%s" id="%s-%s">''%s''</span>]],
+            tree[lexicon]["description"],
+            langCode,
+            lexicon,
+            m_bases.ucfirst(lexicon)
+        )
+      else
+        span = mw.ustring.format(
+            [[<span title="%s">''%s''</span>]],
+            tree[lexicon]["description"],
+            m_bases.ucfirst(lexicon)
+        )
+      end
+      table.insert(filteredLexicons, span)
       if tree[lexicon]["determiner"] then
         if not nocat then
           categories = categories .. mw.ustring.format(
-              "[[Catégorie:Lexique en %s %s]]",
-              lang, tree[lexicon]["determiner"] .. lexicon
+              "[[Catégorie:Lexique en %s %s%s]]",
+              lang, tree[lexicon]["determiner"] .. lexicon, key
           )
         end
       else
         categories = categories .. "[[Catégorie:Wiktionnaire:Lexiques avec déterminant inconnu]]"
       end
     else
-      table.insert(filteredLexicons, [[<span style="color:red" title="Lexique inexistant : ]] .. lexicon .. [[">'''Lexique inconnu !'''</span>]])
+      table.insert(filteredLexicons, [[<span style="color:red; font-weight: bold;" title="Lexique inexistant : ]] .. lexicon .. [[">Lexique inconnu !</span>]])
       categories = categories .. "[[Catégorie:Wiktionnaire:Lexiques avec nom inconnu]]"
     end
   end
@@ -243,7 +275,11 @@ function p.lexicon(frame, nocat)
     text = "(" .. table.concat(filteredLexicons, ", ") .. ")"
   end
 
-  return text .. categories
+  if m_bases.page_de_contenu() then
+    return text .. categories
+  else
+    return text
+  end
 end
 
 function p.getLexiconList(_)

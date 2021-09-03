@@ -458,7 +458,7 @@ function p.lien_modele(word, langCode, anchor, text, keepLangAnchor)
     end
   else
     if langCodeForlink then
-      if anchor then
+      if anchor and anchor ~= "" then
         anchor = langCodeForlink .. "-" .. anchor
       else
         anchor = langCodeForlink

@@ -30,10 +30,13 @@
  * v5.1.1 2021-05-08 Edit notice is no longer overwritten by the button
  * v5.1.2 2021-06-15 Merged language definitions into main file
  * v5.1.3 2021-06-28 Moved dependencies to [[MediaWiki:Gadgets-definition]]
- * v5.2 2021-07-06 Non-predefined languages now show actual name instead of code if
+ * v5.2 2021-07-07 Non-predefined languages now show actual name instead of code if
  *                 defined in [[MediaWiki:Gadget-translation editor.js/langues.json]].
  *                 Clearer indication of currently selected language.
  *                 Not using wikt.gadgets object that was causing bugs.
+ * v5.3 2021-07-07 Prevent code from being inserted if definition field is empty.
+ *                 Word type, gender and number are not selected by default anymore
+ *                 (except if there is only one choice).
  * ------------------------------------------------------------------------------------
  * [[Catégorie:JavaScript du Wiktionnaire|CreerNouveauMot.js]]
  * <nowiki>
@@ -47,7 +50,7 @@ $(function () {
     window.gadget_creerNouveauMot = {
       NAME: "Créer nouveau mot",
 
-      VERSION: "5.2",
+      VERSION: "5.3",
 
       _COOKIE_NAME: "cnm_last_lang",
       /** Cookie duration in days. */
@@ -425,15 +428,31 @@ $(function () {
         var pron = this._gui.pronunciation;
         var isConv = langCode === "conv";
 
+        if (!this._gui.grammarClass) {
+          alert("Veuillez sélectionner une classe grammaticale (adjectif, nom, etc.).");
+          return;
+        }
+        if (!this._gui.gender) {
+          alert("Veuillez sélectionner un genre grammatical (masculin, féminin, etc.).");
+          return;
+        }
+        if (!this._gui.number) {
+          alert("Veuillez sélectionner un nombre grammatical (singulier, pluriel, etc.).");
+          return;
+        }
         var grammarItem = this._selectedLanguage.getGrammarItem(this._gui.grammarClass);
-        var gender = grammarItem.getGender(this._gui.gender);
-        var number = grammarItem.getNumber(this._gui.number);
+        var gender = grammarItem.getGender(this._gui.gender) || new gadget_creerNouveauMot.Gender("");
+        var number = grammarItem.getNumber(this._gui.number) || new gadget_creerNouveauMot.Number("");
         var grammarClass = grammarItem.grammaticalClass;
         var inflectionsTemplate = grammarItem.getInflectionsTemplate(word, gender.label, number.label, pron);
         var imageName = this._gui.imageName;
         var imageDescription = this._gui.imageDescription;
 
-        var definition = this._gui.definition || "# {{ébauche-déf|{0}}}".format(langCode);
+        var definition = this._gui.definition;
+        if (!definition) {
+          alert("Définition manquante ! Veuillez renseigner au moins une définition avant de charger le wikicode.");
+          return;
+        }
 
         var references = this._gui.references;
         var bibliography = this._gui.bibliography;
@@ -661,9 +680,14 @@ $(function () {
        * @private
        */
       _onClassSelect: function (className) {
-        var grammarItem = this._selectedLanguage.getGrammarItem(className);
-        this._gui.setAvailableGenders(grammarItem.availableGenders);
-        this._gui.setAvailableNumbers(grammarItem.availableNumbers);
+        if (className) {
+          var grammarItem = this._selectedLanguage.getGrammarItem(className);
+          this._gui.setAvailableGenders(grammarItem.availableGenders);
+          this._gui.setAvailableNumbers(grammarItem.availableNumbers);
+        } else {
+          this._gui.setAvailableGenders([]);
+          this._gui.setAvailableNumbers([]);
+        }
       },
 
       /**
@@ -941,7 +965,7 @@ $(function () {
               }));
             }
             self._languageSelectFld = new OO.ui.DropdownWidget({
-              label: "Choisissez",
+              label: "— Veuillez choisir —",
               menu: {
                 items: languageOptions,
               },
@@ -952,17 +976,17 @@ $(function () {
             });
 
             self._grammarClassSelectFld = new OO.ui.DropdownWidget({
-              label: "Choisissez",
+              label: "— Veuillez choisir —",
             });
             self._grammarClassSelectFld.getMenu().on("select", function (e) {
               // noinspection JSCheckFunctionSignatures
               onClassSelect(e.getData());
             });
             self._gendersFld = new OO.ui.DropdownWidget({
-              label: "Choisissez",
+              label: "— Veuillez choisir —",
             });
             self._numbersFld = new OO.ui.DropdownWidget({
-              label: "Choisissez",
+              label: "— Veuillez choisir —",
             });
 
             var imageSectionLabel = new OO.ui.HtmlSnippet(
@@ -1002,10 +1026,10 @@ $(function () {
                   items: [
                     new OO.ui.HorizontalLayout({
                       items: [
-                        new OO.ui.ActionFieldLayout(self._languageFld, self._languageBnt),
                         new OO.ui.FieldLayout(self._languageSelectFld, {
                           expanded: false,
                         }),
+                        new OO.ui.ActionFieldLayout(self._languageFld, self._languageBnt),
                       ],
                     }),
                   ],
@@ -1473,6 +1497,10 @@ $(function () {
       this._grammarClassSelectFld.getMenu().clearItems();
       var grammarItems = language.grammarItems;
       var items = [];
+      items.push(new OO.ui.MenuOptionWidget({
+        data: "",
+        label: new OO.ui.HtmlSnippet("— Veuillez choisir —"),
+      }));
 
       for (var key in grammarItems) {
         if (grammarItems.hasOwnProperty(key)) {
@@ -1530,11 +1558,24 @@ $(function () {
       // noinspection JSUnresolvedFunction
       field.getMenu().clearItems();
       var items = [];
-      for (var i = 0; i < values.length; i++) {
-        var value = values[i];
+      if (values.length) {
+        if (values.length !== 1) { // No need to add an extra step when there’s only one choice
+          items.push(new OO.ui.MenuOptionWidget({
+            data: "",
+            label: new OO.ui.HtmlSnippet("— Veuillez choisir —"),
+          }));
+        }
+        for (var i = 0; i < values.length; i++) {
+          var value = values[i];
+          items.push(new OO.ui.MenuOptionWidget({
+            data: value.label,
+            label: new OO.ui.HtmlSnippet(value.label),
+          }));
+        }
+      } else {
         items.push(new OO.ui.MenuOptionWidget({
-          data: value.label,
-          label: new OO.ui.HtmlSnippet(value.label),
+          data: "*",
+          label: new OO.ui.HtmlSnippet("<em>indisponible</em>"),
         }));
       }
       // noinspection JSUnresolvedFunction
@@ -2143,9 +2184,9 @@ $(function () {
     gadget_creerNouveauMot.GrammaticalItem = function (grammaticalClass, availableGenders, availableNumbers, generateInflections) {
       this._grammaticalClass = grammaticalClass;
       /** @type {Array<gadget_creerNouveauMot.Gender>} */
-      this._availableGenders = availableGenders || [new gadget_creerNouveauMot.Gender("<em>indisponible</em>")];
+      this._availableGenders = availableGenders || [];
       /** @type {Array<gadget_creerNouveauMot.Number>} */
-      this._availableNumbers = availableNumbers || [new gadget_creerNouveauMot.Number("<em>indisponible</em>")];
+      this._availableNumbers = availableNumbers || [];
       this._generateInflections = generateInflections || function () {
         return "";
       };

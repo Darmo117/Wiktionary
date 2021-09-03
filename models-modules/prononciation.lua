@@ -1,23 +1,26 @@
 local m_params = require("Module:paramètres")
 local m_langues = require("Module:langues")
 local m_bases = require("Module:bases")
---local m_rimes = require('Module:rimes')
+local m_table = require("Module:table")
 
-local export = {}
+-- On récupère les données (en cache)
+local tree = mw.loadData("Module:prononciation/data")
+
+local p = {}
 
 --- Page principale des annexes de prononciations
-export.racine_pron = 'Annexe:Prononciation'
+p.racine_pron = 'Annexe:Prononciation'
 
 --- Retourne la page de l’annexe de prononciation pour une langue donnée.
 --- @param lang_code string le code de langue
 --- @return string|nil la page de prononciation si elle existe, nil sinon
-function export.page_pron(lang_code)
-  local lang_name = m_langues.get_nom(lang_code)
+function p.page_pron(lang_code)
+  local langName = m_langues.get_nom(lang_code)
 
-  if lang_name then
-    local pron_page = export.racine_pron .. '/' .. lang_name
-    if m_bases.page_existe(export.racine_pron .. '/' .. lang_name) then
-      return pron_page
+  if langName then
+    local pronPage = p.racine_pron .. '/' .. langName
+    if m_bases.page_existe(p.racine_pron .. '/' .. langName) then
+      return pronPage
     end
   end
 
@@ -26,20 +29,21 @@ end
 
 --- Met en forme une prononciation avec un lien vers l’annexe dédiée si elle existe.
 --- Cette fonction destinée à être appelée par d’autres modules lua.
---- @param pron string la prononciation API ; si la valeur "-" est passé, la prononciation n’est pas affichée
---- @param lang_code string le code de la langue ; s’il est absent, un message d’erreur est affichée à la place de la prononciation et la page est catégorisée dans Wiktionnaire:Prononciations avec langue manquante
---- @param delimiters string les délimiteurs ("[]", "//" ou "\\") ; la valeur par défaut est "\\"
---- @param is_audio_linked boolean indique si un fichier audio est associé à la prononciation pour ajouter la catégorie adéquate
+--- @param pron string la prononciation API ; si la valeur "-" est passé, la prononciation n’est pas affichée
+--- @param langCode string le code de la langue ; s’il est absent, un message d’erreur est affichée à la place de la prononciation et la page est catégorisée dans Wiktionnaire:Prononciations avec langue manquante
+--- @param delimiters string les délimiteurs ("[]", "//" ou "\\") ; la valeur par défaut est "\\"
+--- @param isAudioLinked boolean indique si un fichier audio est associé à la prononciation pour ajouter la catégorie adéquate
+--- @param enforceCharset boolean analyser la prononciation pour s'assurer qu'elle n'utilise que les caractères attendus (pour la prononciation prototypique notamment)
 --- @return string la prononciation formatée
-function export.lua_pron(pron, lang_code, delimiters, is_audio_linked)
-  delimiters = delimiters or '\\\\' -- valeur par défaut
-  is_audio_linked = is_audio_linked or false -- valeur par défaut
+function p.lua_pron(pron, langCode, delimiters, isAudioLinked, enforceCharset)
+  delimiters = delimiters or '\\\\'
+  isAudioLinked = isAudioLinked
   local delimiter1 = string.sub(delimiters, 1, 1)
   local delimiter2 = string.sub(delimiters, 2, 2)
-  local lang_name = m_langues.get_nom(lang_code)
-  local current_page_title = mw.title.getCurrentTitle()
+  local langName = m_langues.get_nom(langCode)
+  local currentPageTitle = mw.title.getCurrentTitle()
 
-  if not lang_code or lang_code == '' or not lang_name then
+  if not langCode or langCode == '' or not langName then
     return m_bases.fait_categorie_contenu("Wiktionnaire:Prononciations avec langue manquante") .. [[<span style="color:red">'''Erreur sur la langue !'''</span>]]
   end
 
@@ -49,35 +53,57 @@ function export.lua_pron(pron, lang_code, delimiters, is_audio_linked)
   if not pron or pron == '' then
     -- Invitation à ajouter la prononciation
     text = ('<span title="Prononciation à préciser">' .. delimiter1 .. '<small><span class="plainlinks stubedit">['
-        .. tostring(mw.uri.fullUrl(current_page_title.fullText, 'action=edit'))
+        .. tostring(mw.uri.fullUrl(currentPageTitle.fullText, 'action=edit'))
         .. ' Prononciation ?]</span></small>' .. delimiter2 .. '</span>')
 
     -- Catégorisation de cette absence de prononciation
-    local category_lang = lang_name and ('en ' .. lang_name) or 'sans langue précisée'
-    local category_name = 'Prononciations '
-    if is_audio_linked then
-      category_name = category_name .. 'phonétiques'
+    local categoryLang = langName and ('en ' .. langName) or 'sans langue précisée'
+    local categoryName = 'Prononciations '
+    if isAudioLinked then
+      categoryName = categoryName .. 'phonétiques'
     end
-    category_name = category_name .. ' manquantes ' .. category_lang
-    local category = m_bases.fait_categorie_contenu('Wiktionnaire:' .. category_name)
+    categoryName = categoryName .. ' manquantes ' .. categoryLang
+    local category = m_bases.fait_categorie_contenu('Wiktionnaire:' .. categoryName)
     if category then
       text = text .. category
     end
   elseif pron ~= '-' then
     -- Page d’aide de la prononciation dans la langue donnée
-    local pron_page = export.page_pron(lang_code) or export.racine_pron
+    local pronPage = p.page_pron(langCode) or p.racine_pron
     -- On affiche la prononciation avec le lien vers la page d’aide
-    text = '[[' .. pron_page .. '|<span class="API" title="Prononciation API">' .. delimiter1 .. pron .. delimiter2 .. '</span>]]'
+    text = mw.ustring.format(
+        '[[%s|<span class="API" title="Prononciation API">%s%s%s</span>]]',
+        pronPage, delimiter1, pron, delimiter2
+    )
+
+    -- Vérification du charset si demandé et disponible
+    if enforceCharset and tree[langCode] ~= nil then
+      text = text .. p.check_pron(langCode, langName, pron)
+    end
   end
 
   return text
+end
+
+function p.check_pron(langCode, langName, pron)
+  local charset = tree[langCode]['charset']
+
+  -- Itération sur chaque caractère de la prononciation
+  for c in mw.ustring.gmatch(pron, '.') do
+    if not m_table.contains(charset, c) then
+      -- Catégorisation de l'emploi d'un caractère non-attendu
+      local categoryLang = langName and ('en ' .. langName) or 'sans langue précisée'
+      return m_bases.fait_categorie_contenu('Wiktionnaire:Prononciations employant des caractères inconnus ' .. categoryLang, c)
+    end
+  end
+  return ""
 end
 
 --- Extrait les paramètres de l’objet frame.
 --- Lance une erreur si les paramètres ne sont pas corrects, sauf si uniquement la langue est erronée ou absente.
 --- @param frame table le 1er paramètre est la prononciation en API, le 2e le code de la langue
 --- @return table|nil,boolean les paramètres si la langue est correcte, nil sinon ; un booléen indiquant si la langue est correctement renseignée
-local function get_params(frame)
+local function getParams(frame)
   local params = {
     [1] = { required = true, allow_empty = true },
     [2] = { required = true },
@@ -93,53 +119,42 @@ local function get_params(frame)
   error(args[3])
 end
 
---- Fonction qui récupère les paramètres de l’objet frame et retourne la pronoctiation formatée.
+--- Fonction qui récupère les paramètres de l’objet frame et retourne la prononciation formatée.
 --- @param frame table le 1er paramètre est la prononciation en API, le 2e le code de la langue
 --- @param delimiters string les délimiteurs ("[]", "//" ou "\\")
+--- @param enforceCharset boolean analyser la prononciation pour s'assurer qu'elle n'utilise que les caractères attendus (pour la prononciation prototypique notamment)
 --- @return string la prononciation formatée
-local function pronunciation(frame, delimiters)
-  local args, success = get_params(frame)
-  local api_pron = ""
-  local lang_code = ""
+local function pronunciation(frame, delimiters, enforceCharset)
+  local args, success = getParams(frame)
+  local apiPron = ""
+  local langCode = ""
 
   if success then
-    api_pron = args[1]
-    lang_code = args[2]
+    apiPron = args[1]
+    langCode = args[2]
   end
 
-  return export.lua_pron(api_pron, lang_code, delimiters)
+  return p.lua_pron(apiPron, langCode, delimiters, false, enforceCharset)
 end
 
 --- Fonction destinée à être utilisée directement depuis le modèle pron.
 --- @param frame table le 1er paramètre est la prononciation en API, le 2e le code de la langue
-function export.pron(frame)
-  -- Rimes
-  --    local extra = ""
-  --    local cat_rimes = m_rimes.get_categorie(texte_api)
-  --    if m_bases.page_principale() and code_lang == 'fr' and cat_rimes and cat_rimes ~= '' then
-  --      extra = '[[' .. cat_rimes .. ']]'
-  --      local cat_rimes_missing = ""
-  --      if not m_bases.page_existe(cat_rimes) then
-  --        extra = extra .. "[[Catégorie:Pages sans catégorie de rimes]]"
-  --      end
-  --    end
-
-  -- Prononciation entre barres contre-obliques
-  return pronunciation(frame, '\\\\')
+function p.pron(frame)
+  return pronunciation(frame, '\\\\', true)
 end
 
 --- Fonction destinée à être utilisée directement depuis le modèle phon.
 --- @param frame table le 1er paramètre est la prononciation en API, le 2e le code de la langue
-function export.phon(frame)
+function p.phon(frame)
   -- Prononciation entre crochets
-  return pronunciation(frame, '[]')
+  return pronunciation(frame, '[]', false)
 end
 
 --- Fonction destinée à être utilisée directement depuis le modèle phono.
 --- @param frame table le 1er paramètre est la prononciation en API, le 2e le code de la langue
-function export.phono(frame)
+function p.phono(frame)
   -- Prononciation entre barres obliques
-  return pronunciation(frame, '//')
+  return pronunciation(frame, '//', false)
 end
 
 --- Fonction destinée à être utilisée directement depuis le modèle écouter.
@@ -149,41 +164,53 @@ end
 --- 3 ou lang = code ISO de la langue (obligatoire)
 --- audio = nom du fichier audio (sans le préfixe File:)
 --- titre = texte prononcé si différent du mot vedette
-function export.pron_reg(frame)
+function p.pron_reg(frame)
+  local levels = {
+    ['débutant'] = 'débutant',
+    ['moyen'] = 'niveau moyen',
+    ['bon'] = 'bon niveau',
+  }
+
   local params = {
     [1] = { default = '<small>(Région à préciser)</small>' },
     [2] = {},
     [3] = { required = true },
-    ["pron"] = { alias_of = 2 },
-    ["lang"] = { alias_of = 3 },
-    ["audio"] = {},
-    ["titre"] = { default = mw.title.getCurrentTitle().text },
+    [4] = { enum = m_table.keysToList(levels) },
+    ['pron'] = { alias_of = 2 },
+    ['lang'] = { alias_of = 3 },
+    ['niveau'] = { alias_of = 4 },
+    ['audio'] = {},
+    ['titre'] = { default = mw.title.getCurrentTitle().text },
   }
   local args = m_params.process(frame:getParent().args, params)
-  local country = args[1]
+  local region = args[1]
   local pron = args[2]
-  local lang_code = args[3]
-  local audio_file = args["audio"]
-  local title = args["titre"]
+  local langCode = args[3]
+  local level = args[4]
+  local audioFile = args['audio']
+  local title = args['titre']
 
   -- Génération du wikicode
-  local text = country .. ' : '
+  local text = region .. '&nbsp;: '
 
-  if pron or audio_file then
-    if audio_file and audio_file ~= '' then
-      text = text .. 'écouter « ' .. title
-      if lang_code and mw.title.getCurrentTitle().namespace == 0 then
-        local lang_name = m_langues.get_nom(lang_code)
-        if lang_name then
-          text = text .. '[[Catégorie:Prononciations audio en ' .. lang_name .. ']]'
+  if pron or audioFile then
+    if audioFile and audioFile ~= '' then
+      text = text .. 'écouter «&nbsp;' .. title
+      if langCode and mw.title.getCurrentTitle().namespace == 0 then
+        local langName = m_langues.get_nom(langCode)
+        if langName then
+          text = text .. '[[Catégorie:Prononciations audio en ' .. langName .. ']]'
         else
           text = text .. '[[Catégorie:Prononciations audio sans langue précisée]]'
         end
       end
-      text = text .. ' ' .. export.lua_pron(pron, lang_code, '[]', true)
-      text = text .. ' »[[File:' .. audio_file .. ']]'
+      text = text .. ' ' .. p.lua_pron(pron, langCode, '[]', true)
+      text = text .. '&nbsp;»[[File:' .. audioFile .. ']]'
     else
-      text = text .. export.lua_pron(pron, lang_code, '[]', true)
+      text = text .. p.lua_pron(pron, langCode, '[]', true)
+    end
+    if level then
+      text = text .. mw.ustring.format(" (''%s'')", levels[level])
     end
   else
     text = text .. '<small>merci de préciser une prononciation phonétique ou un fichier audio (voir la [[Modèle:écouter|notice]])</small>'
@@ -194,20 +221,20 @@ end
 
 --- Fonction destinée à être utilisée directement depuis le modèle h aspiré.
 --- Pour les paramètres, voir la doc du modèle h_aspiré (c'est un peu compliqué).
-function export.h_aspire(frame)
+function p.h_aspire(frame)
   local params = {
-    ["nocat"] = { type = "boolean" },
+    ["nocat"] = { type = m_params.BOOLEAN },
   }
   local args = m_params.process(frame:getParent().args, params)
   local nocat = args["nocat"]
-  local txt = '<sup style="font-size:83.33%;line-height:1"><small>([[h aspiré]])</small></sup>'
+  local text = '<sup style="font-size:83.33%;line-height:1"><small>([[h aspiré]])</small></sup>'
 
   -- catégorisation si dans "principal" (namespace = 0)
   if mw.title.getCurrentTitle().namespace == 0 and not nocat then
-    txt = txt .. '[[Catégorie:Termes en français à h aspiré]]'
+    text = text .. '[[Catégorie:Termes en français à h aspiré]]'
   end
 
-  return txt
+  return text
 end
 
-return export
+return p

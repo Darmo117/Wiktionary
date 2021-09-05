@@ -1,3 +1,4 @@
+local m_table = require("Module:table")
 local m_params = require("Module:paramètres")
 
 local p = {}
@@ -26,6 +27,12 @@ function p.getScriptRanges()
   -- Loaded with require() instead of mw.loadData() as the returned table
   -- has tables as keys.
   return require("Module:données Unicode/data/script ranges")
+end
+
+--- Returns the list of all number systems.
+--- @return table
+function p.getNumberSystems()
+  return mw.loadData("Module:données Unicode/data/numbers")
 end
 
 -- Block-related functions --
@@ -281,9 +288,134 @@ end
 --- @return string The converted number as a string of digits.
 function p.convertNumber(n, system)
   if n < 0 then
-    error("number must be a positive integer")
+    error("Le nombre doit être un entier positif ou nul !")
   end
-  -- TODO
+  local s = p.getNumberSystems()[system]
+  if not s then
+    error("Système numérique invalide : " .. tostring(system))
+  end
+  if (s.min_value and n < s.min_value) or (s.max_value and n > s.max_value) then
+    error("Valeur invalide : " .. tostring(n))
+  end
+
+  -- Positional systems
+  if s.positional then
+    local base = s.base
+    local offset = s.zero_offset
+    local digit = function(i)
+      return mw.ustring.char(i + offset)
+    end
+
+    if n == 0 then
+      return digit(0)
+    end
+
+    local res = ""
+    local i = n
+    while i > 0 do
+      res = digit(i % base) .. res
+      i = math.floor(i / base)
+    end
+
+    return res
+
+    -- Roman numerals
+  elseif system == "romain" then
+    local symbols = {
+      "I", "V",
+      "X", "L",
+      "C", "D",
+      "M", "ↁ",
+      "ↂ", "ↇ",
+      "ↈ",
+    }
+    local exp = 0;
+    local res = "";
+
+    local i = n
+    while i > 0 do
+      local d = i % 10;
+      local unit1 = symbols[exp * 2 + 1];
+      local unit5 = symbols[(exp + 1) * 2];
+      local unit10 = symbols[(exp + 1) * 2 + 1];
+      local str = "";
+
+      if d ~= 0 then
+        if d <= 3 then
+          for _ = 0, d - 1 do
+            str = str .. unit1
+          end
+        elseif d == 4 then
+          str = str .. unit1 .. unit5
+        elseif d == 5 then
+          str = str .. unit5
+        elseif 5 < d and d < 9 then
+          str = str .. unit5
+          for _ = 0, d - 6 do
+            str = str .. unit1
+          end
+        else
+          str = str .. unit1 .. unit10
+        end
+      end
+      res = str .. res;
+      i = math.floor(i / 10);
+      exp = exp + 1;
+    end
+
+    return res;
+
+    -- Greek numerals
+  elseif system == "grec" then
+    local symbols = {
+      "α", "β", "γ", "δ", "ε", "ϛ", "ζ", "η", "θ", -- 1 to 9
+      "ι", "κ", "λ", "μ", "ν", "ξ", "ο", "π", "ϟ", -- 10 to 90
+      "ρ", "σ", "τ", "υ", "φ", "χ", "ψ", "ω", "ϡ", -- 100 to 900
+    }
+
+    local exp = 1;
+    local res = "";
+
+    local i = n
+    while i > 0 do
+      local d = i % 10
+      if d > 0 then
+        if exp == 10 or exp == 10000 then
+          d = d + 9
+        elseif exp == 100 or exp == 100000 then
+          d = d + 18
+        end
+        res = symbols[d] .. res
+        if exp >= 1000 then
+          res = "͵" .. res
+        end
+      end
+      exp = exp * 10
+      i = math.floor(i / 10)
+    end
+    if n % 1000 ~= 0 then
+      res = res .. "ʹ"
+    end
+
+    return res
+
+    -- Chinese and japanese numerals
+  elseif system == "sinogrammes" then
+    local symbols = { "〇", "一", "二", "三", "四", "五", "六", "七", "八", "九" }
+
+    if n == 0 then
+      return symbols[1]
+    end
+
+    local res = "";
+    local i = n
+    while i > 0 do
+      res = symbols[(i % 10) + 1] .. res
+      i = math.floor(i / 10)
+    end
+
+    return res
+  end
 end
 
 -----------------------------
@@ -385,7 +517,7 @@ function p.number(frame)
     [1] = { required = true, type = m_params.INT, checker = function(i)
       return tonumber(i) >= 0
     end },
-    ["script"] = { enum = {} } -- TODO définir les systèmes numériques (positionels, grec, etc.)
+    ["script"] = { enum = m_table.keysToList(p.getNumberSystems()), default = "latin" }
   })
 
   return p.convertNumber(args[1], args["script"])

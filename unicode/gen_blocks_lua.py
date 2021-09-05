@@ -2,15 +2,14 @@ import datetime
 
 with open('blocks.csv', encoding='UTF-8') as f_in:
     with open('../models-modules/données_Unicode/data/blocks.lua', mode='w', encoding='UTF-8') as f_out:
-        f_out.write(f"""-- Liste des blocs Unicode.
--- Veuillez ne pas modifier cette page manuellement, elle est générée automatiquement.
--- Dernière génération : {datetime.datetime.now()}
+        f_out.write(f"""-- This page lists all Unicode blocks.
+-- Do not edit this page manually as it is automatically generated.
+-- Last generation: {datetime.datetime.now()}
 
--- Sources :
+-- Sources:
 -- https://www.unicode.org/Public/UCD/latest/ucd/Blocks.txt
 
--- Valeurs : borne inférieure, borne supérieure, {{nom anglais, nom français}}, URL du PDF, version d’Unicode, année \
-de publication
+-- Values : lower bound, upper bound, {{english name, french name}}, PDF’s URL, Unicode version, publication year
 
 return {{""")
         for line in f_in.readlines()[1:]:

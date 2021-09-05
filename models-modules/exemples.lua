@@ -18,7 +18,11 @@ local p = {}
 --- @return string The wikicode.
 local function _format_example(text, transcription, meaning, source, link, heading, lang, scriptLang, frame)
   if not text then
-    return frame:expandTemplate { title = "ébauche-exe", args = { lang } }
+    return mw.ustring.format(
+        [=[''[[Aide:Exemples|Exemple d’utilisation]] manquant.'' <span class="plainlinks stubedit">([%s Ajouter])</span>
+        [[Catégorie:Wiktionnaire:Exemples manquants en %s]]]=],
+        mw.title.getCurrentTitle():fullUrl({ action = "edit" }), m_langs.get_nom(lang)
+    )
   end
 
   local italics = m_unicode.shouldItalicize(text) and "''" or ""

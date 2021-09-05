@@ -1,0 +1,40 @@
+-- This file defines different number systems.
+
+return {
+  -- Positional systems
+  ["latin"] = { positional = true, base = 10, zero_offset = 48 },
+  ["arabe"] = { positional = true, base = 10, zero_offset = 1632 },
+  ["persan"] = { positional = true, base = 10, zero_offset = 1776 },
+  ["n’ko"] = { positional = true, base = 10, zero_offset = 1984 },
+  ["dévanâgarî"] = { positional = true, base = 10, zero_offset = 2406 },
+  ["bengali"] = { positional = true, base = 10, zero_offset = 2534 },
+  ["gourmoukhî"] = { positional = true, base = 10, zero_offset = 2662 },
+  ["goudjarati"] = { positional = true, base = 10, zero_offset = 2790 },
+  ["oriyâ"] = { positional = true, base = 10, zero_offset = 2918 },
+  ["tamoul"] = { positional = true, base = 10, zero_offset = 3046 },
+  ["télougou"] = { positional = true, base = 10, zero_offset = 3174 },
+  ["kannara"] = { positional = true, base = 10, zero_offset = 3302 },
+  ["malayalam"] = { positional = true, base = 10, zero_offset = 3430 },
+  ["thaï"] = { positional = true, base = 10, zero_offset = 3664 },
+  ["laotien"] = { positional = true, base = 10, zero_offset = 3792 },
+  ["tibétain"] = { positional = true, base = 10, zero_offset = 3872 },
+  ["birman"] = { positional = true, base = 10, zero_offset = 4160 },
+  ["khmer"] = { positional = true, base = 10, zero_offset = 6112 },
+  ["mongol"] = { positional = true, base = 10, zero_offset = 6160 },
+  ["taï-le"] = { positional = true, base = 10, zero_offset = 6470 },
+  ["nouveau taï lü"] = { positional = true, base = 10, zero_offset = 6608 },
+  ["balinais"] = { positional = true, base = 10, zero_offset = 6992 },
+  ["soundanais"] = { positional = true, base = 10, zero_offset = 7088 },
+  ["lepcha"] = { positional = true, base = 10, zero_offset = 7232 },
+  ["ol tchiki"] = { positional = true, base = 10, zero_offset = 7248 },
+  ["saurachtra"] = { positional = true, base = 10, zero_offset = 43216 },
+  ["kayah li"] = { positional = true, base = 10, zero_offset = 43264 },
+  ["cham"] = { positional = true, base = 10, zero_offset = 43600 },
+  ["vaï"] = { positional = true, base = 10, zero_offset = 42528 },
+  ["osmanais"] = { positional = true, base = 10, zero_offset = 66720 },
+
+  -- Other systems
+  ["grec"] = { max_value = 999999 },
+  ["romain"] = { min_value = 1, max_value = 399999 },
+  ["sinogrammes"] = {},
+}

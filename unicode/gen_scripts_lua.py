@@ -56,21 +56,21 @@ with open('iso15924-utf8-20190819.txt', encoding='UTF-8') as f:
 
 with open('../models-modules/données_Unicode/data/scripts.lua', mode='w', encoding='UTF-8') as f_out:
     f_out.write(f"""-- Liste des scripts Unicode/ISO 15924.
--- Veuillez ne pas modifier cette page manuellement, elle est générée automatiquement.
--- Dernière génération : {datetime.datetime.now()}
+-- Do not edit this page manually as it is automatically generated.
+-- Last generation: {datetime.datetime.now()}
 
--- Sources :
+-- Sources:
 -- https://unicode.org/iso15924/iso15924-text.html
 -- https://www.unicode.org/Public/UCD/latest/ucd/Scripts.txt
 -- https://en.wikipedia.org/w/index.php?title=Template:ISO_15924_script_codes_and_related_Unicode_data&oldid=945489720
 
--- Valeurs : code, sens d’écriture, {{nom anglais, nom français}}
--- Sens d’écriture :
--- lr : gauche à droite
--- rl : droite à gauche
--- tb : haut en bas
--- m  : mixte (chorasmien et ogham uniquement)
--- i  : hérité (uniquement pour la plage Inherited, Zinh in ISO 15924)
+-- Values: code, writing direction, {{english name, french name}}
+-- Writing direction:
+-- lr: left to right
+-- rl: right to left
+-- tb: top to bottom
+-- m: mixed
+-- i: inherited (diacritics)
 
 return {{""")
     for unicode_script, unicode_script_data in unicode_scripts.items():
@@ -90,11 +90,11 @@ return {{""")
 """)
 
 with open('../models-modules/données_Unicode/data/script_ranges.lua', mode='w', encoding='UTF-8') as f_out:
-    f_out.write(f"""-- Liste des plages de scripts Unicode.
--- Veuillez ne pas modifier cette page manuellement, elle est générée automatiquement.
--- Dernière génération : {datetime.datetime.now()}
+    f_out.write(f"""-- This page defines the code point ranges of all writing systems.
+-- Do not edit this page manually as it is automatically generated.
+-- Last generation: {datetime.datetime.now()}
 
--- Sources :
+-- Sources:
 -- https://www.unicode.org/Public/UCD/latest/ucd/Scripts.txt
 
 return {{""")

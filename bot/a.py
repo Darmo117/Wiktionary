@@ -3,7 +3,6 @@ import re
 import pywikibot as pwb
 
 pwb.config.put_throttle = 0
-is_category = True
 page_name = 'Modèle:recons'
 
 site = pwb.Site()
@@ -21,6 +20,6 @@ with open('sc.txt', mode='w', encoding='UTF-8') as f:
             if '{{recons' in page.text and re.search(r'\bsc\s*=', page.text):
                 print('sc param detected')
                 f.write(page.title() + '\n')
-            page.save()
+                f.flush()
         except pwb.exceptions.LockedPage:
             print('Page protégée, ignorée.')

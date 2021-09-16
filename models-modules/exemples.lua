@@ -19,9 +19,10 @@ local p = {}
 local function _format_example(text, transcription, meaning, source, link, heading, lang, scriptLang, frame)
   if not text then
     return mw.ustring.format(
-        [=[''[[Aide:Exemples|Exemple d’utilisation]] manquant.'' <span class="plainlinks stubedit">([%s Ajouter])</span>
-        [[Catégorie:Wiktionnaire:Exemples manquants en %s]]]=],
-        mw.title.getCurrentTitle():fullUrl({ action = "edit" }), m_langs.get_nom(lang)
+        [=[<span class="example">''[[Aide:Exemples|Exemple d’utilisation]] manquant.'' <span class="plainlinks stubedit">([%s Ajouter])</span><!--
+        --><span lang="%s" style="display: none"><!-- Balise de marquage pour le gadget wikt.add-examples, ne pas retirer ! --></span></span><!--
+        -->[[Catégorie:Wiktionnaire:Exemples manquants en %s]]]=],
+        mw.title.getCurrentTitle():fullUrl({ action = "edit" }), lang, m_langs.get_nom(lang)
     )
   end
 
@@ -31,6 +32,8 @@ local function _format_example(text, transcription, meaning, source, link, headi
   if source then
     wikicode = wikicode .. " " .. frame:expandTemplate { title = "source", args = { source, lien = link } }
   end
+
+  wikicode = mw.ustring.format('<span class="example">%s</span>', wikicode)
 
   if lang ~= "fr" then
     if transcription then

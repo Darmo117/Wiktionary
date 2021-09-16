@@ -2,7 +2,7 @@ import pywikibot as pwb
 
 pwb.config.put_throttle = 0
 is_category = True
-page_name = 'Modèle:Arab'
+page_name = 'Catégorie:Pages avec des erreurs de script'
 
 site = pwb.Site()
 if page_name.startswith('Catégorie:'):

@@ -1,0 +1,7 @@
+.add-example-form .oo-ui-inputWidget-input {
+  font-family: 'Menlo', 'Consolas', 'Monaco', 'Noto Mono', 'Nimbus Mono L', monospace !important;
+}
+
+.add-example-form .add-example-fieldset {
+  margin-bottom: 1em;
+}

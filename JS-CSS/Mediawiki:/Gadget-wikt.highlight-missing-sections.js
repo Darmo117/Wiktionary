@@ -1,4 +1,4 @@
-/**********************************************************************
+/**
  * (en)
  * This gadget highlights all blue links that feature an anchor which
  * corresponds to a language code but the pointed page does not
@@ -9,8 +9,12 @@
  * correspondant à un code de langue mais dont la page pointée ne
  * contient pas de section pour le code en question.
  **********************************************************************
+ * v1.0 2020-09-18 Initial version
+ * v1.1 2021-10-17 Gadget now goes through redirections
+ **********************************************************************
  * [[Catégorie:JavaScript du Wiktionnaire|highlight missing sections]]
- **********************************************************************/
+ */
+// <nowiki>
 "use strict";
 
 if (mw.config.get("wgAction") === "view") {
@@ -19,9 +23,10 @@ if (mw.config.get("wgAction") === "view") {
   window.wikt.gadgets.highlightMissingSections = {
     NAME: "Highlight Missing Sections",
 
-    VERSION: "1.0",
+    VERSION: "1.1",
 
     init: function () {
+      this.api = new mw.Api();
       $.get(
           "https://fr.wiktionary.org/wiki/MediaWiki:Gadget-translation_editor.js/langues.json?action=raw",
           (function (languages) {
@@ -45,7 +50,7 @@ if (mw.config.get("wgAction") === "view") {
         var match = /^https:\/\/fr\.wiktionary\.org\/wiki\/(.+?)#(.+)$/.exec($link.prop("href"));
 
         if (match) {
-          var pageTitle = match[1];
+          var pageTitle = decodeURIComponent(match[1]);
           var namespace = pageTitle.substring(0, pageTitle.indexOf(":")).toLowerCase();
           var anchor = match[2];
           var namespaces = mw.config.get("wgNamespaceIds");
@@ -55,28 +60,56 @@ if (mw.config.get("wgAction") === "view") {
             links.push({
               $link: $link,
               pageTitle: pageTitle,
-              langCode: anchor
+              langCode: anchor,
             });
           }
         }
       });
 
       var self = this;
-      // Cache page codes in case same page is linked to several times
+      // Cache pages’ code in case same page is linked several times
       var pageCodes = {};
       links.forEach(function (item) {
         if (!pageCodes[item.pageTitle]) {
-          $.get(
-              "https://fr.wiktionary.org/wiki/{0}?action=raw".format(item.pageTitle),
-              function (pageCode) {
-                pageCodes[item.pageTitle] = pageCode;
-                self._highlightLink(item.$link, item.langCode, pageCodes[item.pageTitle]);
-              }
-          );
+          self._getPageContent(item.pageTitle, function (content) {
+            pageCodes[item.pageTitle] = content;
+            self._highlightLink(item.$link, item.langCode, pageCodes[item.pageTitle]);
+          });
         } else {
           self._highlightLink(item.$link, item.langCode, pageCodes[item.pageTitle]);
         }
       });
+    },
+
+    /**
+     * Retrieve the content of the given page, following redirections.
+     * Does not check for redirection loops.
+     * @param pageTitle {string} Page’s title.
+     * @param callback {function} Function to call at the end of the asynchronous call.
+     * Takes in the content of the page.
+     * @private
+     */
+    _getPageContent: function (pageTitle, callback) {
+      this.api.get({
+        action: "query",
+        prop: "revisions",
+        titles: pageTitle,
+        rvslots: "main",
+        rvprop: "content",
+      }).then((function (queryResult) {
+        for (var pageID in queryResult.query.pages) {
+          if (queryResult.query.pages.hasOwnProperty(pageID)) {
+            break;
+          }
+        }
+        var content = queryResult.query.pages[pageID]["revisions"][0]["slots"]["main"]["*"];
+        var match = /^#REDIRECT\[\[([^\[]+)]]$/.exec(content.trim());
+        if (match) {
+          this._getPageContent(match[1], callback);
+        } else {
+          callback(content);
+        }
+      }).bind(this));
     },
 
     /**
@@ -90,10 +123,11 @@ if (mw.config.get("wgAction") === "view") {
     _highlightLink: function ($link, langCode, pageCode) {
       if (!pageCode.includes("{{langue|{0}}}".format(langCode))) {
         $link.addClass(["wikt-missing-entry", "wikt-missing-entry-{0}".format(langCode)]);
-        $link.attr("title", $link.attr("title") + " (section « {0} » manquante)".format(langCode))
+        $link.attr("title", $link.attr("title") + " (section « {0} » manquante)".format(langCode));
       }
     },
   };
 
   wikt.gadgets.highlightMissingSections.init();
 }
+// </nowiki>

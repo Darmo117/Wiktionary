@@ -16,7 +16,7 @@ local p = {}
 --- @param scriptLang string The language code for the script.
 --- @param frame table The frame object for expanding templates.
 --- @return string The wikicode.
-local function _format_example(text, transcription, meaning, source, link, heading, lang, scriptLang, frame)
+local function _formatExample(text, transcription, meaning, source, link, heading, lang, scriptLang, disableTranslation, frame)
   if not text then
     return mw.ustring.format(
         [=[<span class="example">''[[Aide:Exemples|Exemple d’utilisation]] manquant.'' <span class="plainlinks stubedit">([%s Ajouter])</span><!--
@@ -39,11 +39,20 @@ local function _format_example(text, transcription, meaning, source, link, headi
     if transcription then
       wikicode = wikicode .. "<br/>" .. m_bases.balise_langue("''" .. transcription .. "''", scriptLang .. "-Latn")
     end
-    wikicode = wikicode .. mw.ustring.format("\n%s: ", heading)
+  end
+
+  if disableTranslation then
+    wikicode = wikicode .. m_bases.fait_categorie_contenu(
+        mw.ustring.format("Exemples en %s avec traduction désactivée", m_langs.get_nom(lang)))
+  else
+    local translation
     if meaning then
-      wikicode = wikicode .. meaning
-    else
-      wikicode = wikicode .. frame:expandTemplate { title = "trad-exe", args = { lang } }
+      translation = meaning
+    elseif lang ~= "fr" then
+      translation = frame:expandTemplate { title = "trad-exe", args = { lang } }
+    end
+    if translation then
+      wikicode = wikicode .. mw.ustring.format("\n%s: ", heading) .. translation
     end
   end
 
@@ -61,11 +70,11 @@ end
 ---  parent frame.args["tête"] (string): The characters to add before the translation (usually #*).
 ---  parent frame.args["lang"] (string): The quote’s language code.
 --- @return string The wikicode.
-function p.format_example(frame)
-  local actualFrame = frame:getParent()
-  local args = m_params.process(actualFrame.args, {
+function p.formatExample(frame)
+  local parentFrame = frame:getParent()
+  local args = m_params.process(parentFrame.args, {
     [1] = {},
-    ["sens"] = {}, -- TODO permettre de désactiver la traduction si pas lang ≠ fr
+    ["sens"] = {},
     [2] = { alias_of = "sens" },
     ["tr"] = {},
     [3] = { alias_of = "tr" },
@@ -75,12 +84,13 @@ function p.format_example(frame)
     ["lang"] = { required = true, checker = function(lang)
       return m_langs.specialCodes[lang] ~= nil or m_langs.get_nom(lang) ~= nil
     end },
+    ["pas-trad"] = { type = m_params.BOOLEAN, default = false }
   })
 
   local scriptLang = args["lang"]
   local lang = m_langs.specialCodes[args["lang"]] or args["lang"]
 
-  return _format_example(args[1], args["tr"], args["sens"], args["source"], args["lien"], args["tête"], lang, scriptLang, actualFrame)
+  return _formatExample(args[1], args["tr"], args["sens"], args["source"], args["lien"], args["tête"], lang, scriptLang, args["pas-trad"], parentFrame)
 end
 
 return p

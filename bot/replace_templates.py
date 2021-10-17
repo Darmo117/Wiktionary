@@ -1,9 +1,10 @@
+import re
+
 import pywikibot as pwb
 from pywikibot import config as pwb_config
 
 pwb_config.put_throttle = 0
-is_category = True
-page_name = 'Catégorie:hanunóo'
+page_name = 'Modèle:R:Liddell'
 
 site = pwb.Site()
 if page_name.startswith('Catégorie:'):
@@ -14,7 +15,10 @@ else:
 for page in iterator:
     print(page.title())
     try:
-        page.save()
-    except (pwb.exceptions.LockedPageError, pwb.exceptions.OtherPageSaveError) as e:
-        print(e)
+        if 'Liddell|' in page.text:
+            page.text = re.sub(r'{{R([:|])Liddell\|[^}]+}}', r'{{R\1Liddell}}', page.text)
+            page.save(summary='Suppression du paramètre obsolète de [[Modèle:R:Liddell]]')
+        else:
+            print('Template not found, skipped.')
+    except pwb.exceptions.LockedPageError:
         print('Page protégée, ignorée.')

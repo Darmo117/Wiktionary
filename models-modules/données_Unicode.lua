@@ -219,6 +219,7 @@ local directionToDir = {
 --- @param text string The text.
 --- @return string The text which contains span tags with the writing-mode CSS rule and dir attribute.
 function p.setWritingDirection(text)
+  local dirsToIgnore = { lr = true, rl = true }
   local res = ""
   local scripts, intervals = p.getScriptsForText(text, true)
 
@@ -239,9 +240,9 @@ function p.setWritingDirection(text)
         inSpan = false
       end
 
-      if scriptDir == "lr" or prevScriptName == scriptName
-          -- Special case for when text begins with i or m scripts and is followed by script ≠ lr
-          or ((scriptDir == "i" or scriptDir == "m") and (i == 1 and nextScriptDir == "lr" or i > 1 or not nextScript)) then
+      if dirsToIgnore[scriptDir] or prevScriptName == scriptName
+          -- Special case for when text begins with i or m scripts and is followed by script that is not lr nor rl
+          or ((scriptDir == "i" or scriptDir == "m") and ((i == 1 and (dirsToIgnore[nextScriptDir] or nextScriptDir == "i" or nextScriptDir == "m")) or i > 1 or not nextScript)) then
         res = res .. substr
       else
         local dir

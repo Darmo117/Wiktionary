@@ -1,6 +1,7 @@
 import pywikibot as pwb
+from pywikibot import config as pwb_config
 
-pwb.config.put_throttle = 0
+pwb_config.put_throttle = 0
 site = pwb.Site()
 
 template_name = 'Modèle:tifinaghe'

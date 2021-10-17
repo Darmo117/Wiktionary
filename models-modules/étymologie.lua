@@ -1,3 +1,4 @@
+-- <nowiki>
 local m_bases = require('Module:bases')
 local m_params = require('Module:paramètres')
 local m_langues = require('Module:langues')
@@ -10,30 +11,26 @@ end
 
 local p = {}
 
---- Fonction destinée aux modèles {{sigle}}, {{abréviation}}, {{acronyme}}, etc.
----  frame.args["terme"] (chaine) : Le nom du procédé étymologique (sigle, verlan, etc.).
----  frame.args["terme-pluriel"] (chaine, optionnel) : Le pluriel du paramètre précédent ;
----    s’il n’est pas renseigné, le pluriel sera formé en ajoutant un « s » à la fin du terme.
----  frame.args["de"] (chaine, optionnel) : Le mot ou la locution à l’origine du mot vedette.
----  frame.args["de2"] (chaine, optionnel) : Le deuxième mot ou locution à l’origine du mot vedette.
----  frame.args["texte"] (chaine, optionnel) : Le texte à afficher à la place du paramètre « de »
----    dans le lien.
----  frame.args["texte2"] (chaine, optionnel) : Le texte à afficher à la place du paramètre « de2 »
----    dans le lien.
----  frame.args["adjectif"] (chaine, requis si nocat est false) : L’adjectif à ajouter entre
----    le « terme » et le « de ».
----  frame.args["lang"] (chaine, requis si nocat est false) : Le code de langue du mot vedette.
----  frame.args["lang-lien"] (chaine, optionnel) : Le code langue du mot lié (« de ») ; s’il
----    n’est pas renseigné, la paramètre « lang » sera utilisé.
----  frame.args["m"] (chaine, optionnel) : Si vrai, le premier terme aura une majuscule.
----  frame.args["nolien"] (booléen, optionnel) : Si vrai, aucun lien ne sera fait vers le mot
----    lié (« de »).
----  frame.args["nocat"] (booléen, optionnel) : Si vrai, la page ne sera pas catégorisée.
----  frame.args["clé"] (chaine, optionnel) : La clé de tri pour la catégorie.
----  frame.args["nom-cat"] (chaine, optionnel) : Le nom complet de la catégorie.
----  frame.args["nom-cat2"] (chaine, optionnel) : Le début du nom de la deuxième catégorie.
---- @return string Le texte formaté et la catégorie éventuelle.
-function p.modele_etym(frame)
+--- Function for templates {{sigle}}, {{abréviation}}, {{acronyme}}, etc.
+---  frame.args["terme"] (string) : Etymological process’ name (sigle, verlan, etc.).
+---  frame.args["terme-pluriel"] (string, optional) : Plural form of previous parameter.
+---   If not present, an "s" will be appended to the first parameter.
+---  frame.args["de"] (string, optional) : Source word.
+---  frame.args["de2"] (string, optional) : Second source word.
+---  frame.args["texte"] (string, optional) : Text to show in place of source word.
+---  frame.args["texte2"] (string, optional) : Text to show in place of second source word.
+---  frame.args["adjectif"] (string, required if nocat is false) : An adjective to add between words “terme” and “de”.
+---  frame.args["lang"] (string, required if nocat is false) : Language code of target word.
+---  frame.args["lang-lien"] (string, optional) : Language code of source word(s).
+---   If not present, lang parameter will be used instead.
+---  frame.args["m"] (string, optional) : If true, the first word’s initial letter will be in upper case.
+---  frame.args["nolien"] (booléen, optional) : If true, no link will be created to the source word(s).
+---  frame.args["nocat"] (booléen, optional) : If true, no category will be inserted.
+---  frame.args["clé"] (string, optional) : Sort key for the categories.
+---  frame.args["nom-cat"] (string, optional) : First category name.
+---  frame.args["nom-cat2"] (string, optional) : Second category name.
+--- @return string Template’s text and relevant categories.
+function p.templateEtymologyConstruction(frame)
   local params = {
     ["terme"] = { required = true },
     ["terme-pluriel"] = {},
@@ -53,37 +50,37 @@ function p.modele_etym(frame)
   }
   local args = m_params.process(frame.args, params)
   local term = args["terme"]
-  local term_plural = args["terme-pluriel"] or (term .. "s")
+  local termPlural = args["terme-pluriel"] or (term .. "s")
   local caps = args["m"]
   local from = args["de"]
   local from2 = args["de2"]
   local text = args["texte"] or from
   local text2 = args["texte2"] or from2
   local adj = args["adjectif"]
-  local no_link = args["nolien"]
-  local no_categorization = args["nocat"]
+  local noLink = args["nolien"]
+  local noCategorization = args["nocat"]
   local lang = args["lang"]
-  local link_lang = args["lang-lien"] or (lang or "fr")
-  local sorting_key = args["clé"]
+  local linkLang = args["lang-lien"] or (lang or "fr")
+  local sortingKey = args["clé"]
   local category = args["nom-cat"]
   local category2 = args["nom-cat2"]
 
   local res = mw.ustring.format("[[%s#fr|%s]]", term, caps and m_bases.ucfirst(term) or term)
 
-  local format = function(base_word, replacement_text, base_string, additional_text)
-    if base_word then
+  local format = function(baseWord, replacementText, baseString, additionalText)
+    if baseWord then
       local word
-      if no_link then
-        word = base_word
+      if noLink then
+        word = baseWord
       else
-        word = mw.ustring.format("[[%s#%s|%s]]", base_word, link_lang, replacement_text)
+        word = mw.ustring.format("[[%s#%s|%s]]", baseWord, linkLang, replacementText)
       end
-      base_string = base_string .. mw.ustring.format(additional_text .. " de ''%s''", word)
+      baseString = baseString .. mw.ustring.format(additionalText .. " de ''%s''", word)
     end
-    return base_string
+    return baseString
   end
 
-  local get_category = function(cat_name)
+  local getCategory = function(cat_name)
     return m_bases.ucfirst(cat_name) .. " " ..
         (lang and "en " .. m_langues.get_nom(lang) or "sans langue précisée")
   end
@@ -91,26 +88,26 @@ function p.modele_etym(frame)
   res = format(from, text, res, adj and (" " .. adj) or "")
   res = format(from2, text2, res, " et")
 
-  if no_categorization then
+  if noCategorization then
     return res
   else
-    local category_name
+    local categoryName
     if category then
-      category_name = category
+      categoryName = category
     else
       if lang == nil then
         error("Code de langue manquant")
       end
-      category_name = get_category(term_plural)
+      categoryName = getCategory(termPlural)
     end
-    res = res .. m_bases.fait_categorie_contenu(category_name, sorting_key)
+    res = res .. m_bases.fait_categorie_contenu(categoryName, sortingKey)
 
     if category2 then
       if lang == nil then
         error("Code de langue manquant")
       end
-      category_name = get_category(category2)
-      res = res .. m_bases.fait_categorie_contenu(category_name, sorting_key)
+      categoryName = getCategory(category2)
+      res = res .. m_bases.fait_categorie_contenu(categoryName, sortingKey)
     end
 
     return res
@@ -142,26 +139,25 @@ local function getLanguageName(langCode)
   return m_table.contains(LATIN_CODES, langCode) and langCode or m_langues.get_nom(langCode)
 end
 
-local function italicize(text)
+local function italicIfLatinScript(text)
   return m_Unicode_data.shouldItalicize(text) and mw.ustring.format("''%s''", text) or text
 end
 
---- Fonction destinée au modèle {{étyl}}. Si au moins une des deux langues est inconnue
---- ou absente, un message d’erreur est affiché à la place du texte et la catégorie
---- [[:Catégorie:Wiktionnaire:Modèle étyl sans langue précisée]] est insérée.
----  frame.args[1] (string) : Code de la langue d’origine.
----  frame.args[2] (string) : Code de la langue du mot-vedette.
----  frame.args[mot, 3] (string) : Mot d’origine.
----  frame.args[tr, R, 4] (string) : Transcription du mot d’origine.
----  frame.args[sens, 5] (string) : Sens du mot d’origine.
----  frame.args[dif] (string) : Texte à afficher à la place du mot d’origine.
----  frame.args[type] (string) : Code de l’ancre de la section dans la page du mot d’origine.
----  frame.args[num] (int) : Numéro le l’ancre de la section dans la page du mot d’origine.
----  frame.args[nocat] (boolean) : Si vrai, la fonction ne catégorisera pas
----                               (sauf si il y a un problème avec les langues).
----  frame.args[lien] (boolean) : Si vrai, ajoute un lien vers la langue du mot d’origine.
---- @return string Le texte du modèle et les catégories éventuelles.
-function p.modele_etymologie_langue(frame)
+--- Function for template {{étyl}}. If at least one of the two languages is unknown or missing,
+--- an error message is displayed in place of the text and the category
+--- [[Catégorie:Wiktionnaire:Modèle étyl sans langue précisée]] is inserted.
+---  frame.args[1] (string) : Source language code.
+---  frame.args[2] (string) : Target language code.
+---  frame.args["mot", 3] (string, optional) : Source word.
+---  frame.args["tr", R, 4] (string, optional) : Transcription of source word.
+---  frame.args["sens", 5] (string, optional) : Meaning of source word.
+---  frame.args["dif"] (string, optional) : Text to show instead of the source word.
+---  frame.args["type"] (string, optional) : Section code in source word’s page.
+---  frame.args["num"] (int, optional) : Section number in source word’s page.
+---  frame.args["nocat"] (boolean, optional) : If true and no errors are found, no categories will be returned.
+---  frame.args["lien"] (boolean, optinal) : If true, inserts a link to the source language.
+--- @return string Template’s text and relevant categories.
+function p.templateEtyl(frame)
   local args = m_params.process(frame:getParent().args, {
     [1] = {},
     [2] = {},
@@ -213,7 +209,7 @@ function p.modele_etymologie_langue(frame)
       anchor = anchor .. '-' .. tostring(anchorNum)
     end
 
-    content = italicize(m_bases.lien_modele(word, originLang, anchor, alternativeText, true))
+    content = italicIfLatinScript(m_bases.lien_modele(word, originLang, anchor, alternativeText, true))
   end
 
   if transcription then
@@ -257,4 +253,37 @@ function p.modele_etymologie_langue(frame)
   return content .. categories
 end
 
+--- Function for template {{lien-ancre-étym}}.
+---  frame.args[1] (string) : Language code.
+---  frame.args[2] (string) : Section ID.
+---  frame.args[3] (int, optional) : Section’s number.
+---  frame.args["locution"] (int, optional) : Whether the target section is a locution. Changes the displayed text.
+--- @return string Template’s text.
+function p.templateLienAncreEtym(frame)
+  local wordTypes = mw.loadData("Module:types de mots/data")
+  local args = m_params.process(frame:getParent().args, {
+    [1] = { required = true, checker = checkLang },
+    [2] = { required = true, checker = function(v)
+      return wordTypes["alias"][v] ~= nil or wordTypes["texte"][v] ~= nil
+    end },
+    [3] = { type = m_params.INT, checker = function(v)
+      return v > 0
+    end },
+    ["locution"] = { type = m_params.BOOLEAN, default = false },
+  })
+  local langCode = args[1]
+  local wordTypeData = wordTypes["texte"][wordTypes["alias"][args[2]] or args[2]]
+  local locution = args["locution"] and wordTypeData["locution"] ~= nil
+  local text = wordTypeData[locution and "locution" or "mot"]
+  local number = args[3]
+  local anchor = langCode .. "-" .. wordTypeData["abrev"] .. (number ~= nil and ("-" .. tostring(number)) or "")
+  text = m_bases.ucfirst(text)
+  if number ~= nil then
+    text = text .. " " .. tostring(number)
+  end
+
+  return mw.ustring.format("''([[#%s|%s]])''", anchor, text)
+end
+
 return p
+-- </nowiki>

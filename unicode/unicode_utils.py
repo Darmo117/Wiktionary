@@ -1,7 +1,10 @@
 from __future__ import annotations
 
 import dataclasses as dc
+import pathlib
 import typing as typ
+
+ROOT = pathlib.Path('.').absolute()
 
 _BLOCKS: typ.List[UnicodeBlock] = []
 
@@ -58,7 +61,7 @@ def get_codepoints(letters: str) -> typ.List[str]:
 
 def _extract_blocks():
     global _BLOCKS
-    with open('unicode/blocks.csv', encoding='utf-8') as f:
+    with (ROOT / 'unicode/blocks.csv').open(encoding='utf-8') as f:
         header = True
         for line in f.readlines():
             if header:

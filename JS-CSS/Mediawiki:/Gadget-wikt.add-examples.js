@@ -11,6 +11,7 @@
  * ------------------------------------------------------------------------------------
  * v1.0 2021-09-12 Initial version
  * v1.1 2021-09-16 Added input field for "lien" parameter.
+ * v1.1.1 2021-09-17 Fixed bug when text or translation contained the "=" sign.
  * ------------------------------------------------------------------------------------
  * [[Catégorie:JavaScript du Wiktionnaire|add-examples.js]]
  * <nowiki>
@@ -21,7 +22,7 @@ $(function () {
   console.log("Chargement de Gadget-wikt.add-examples.js…");
 
   var NAME = "Ajouter des exemples";
-  var VERSION = "1.1";
+  var VERSION = "1.1.1";
 
   var COOKIE_KEY_TEXT = 'add_examples_text';
   var COOKIE_KEY_SOURCE = 'add_examples_source';
@@ -321,12 +322,19 @@ $(function () {
       // noinspection JSUnresolvedFunction
       var listMarker = "".padStart(this._definitionLevel.length - 1, "#") + "*";
 
-      var code = listMarker + " {{exemple|" + this._textInput.getValue().trim();
+      var text = this._textInput.getValue().trim();
+      if (text.includes("=")) {
+        text = "1=" + text;
+      }
+      var code = listMarker + " {{exemple|" + text;
 
       if (this._language !== "fr") {
         var translation = this._translationInput.getValue().trim();
         var transcription = this._transcriptionInput.getValue().trim();
         if (translation) {
+          if (translation.includes("=")) {
+            translation = "2=" + translation;
+          }
           code += "|" + translation;
         }
         if (transcription) {

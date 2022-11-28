@@ -32,8 +32,9 @@
           add_heading_updater(this);
         });
     // Cache les liens d'ébauche traductions s'il y en a
-    $('.trad-stub').hide();
-    $('.trad-stub').parent('li').hide();
+    var $tradStub = $('.trad-stub');
+    $tradStub.hide();
+    $tradStub.parent('li').hide();
   }
 
 // Ce qu'on appelle 'table' est en fait un 'div' sur fr.wikt
@@ -43,11 +44,11 @@
   }
 
   function get_error_html(message) {
-    return '<img src="//upload.wikimedia.org/wikipedia/commons/4/4e/MW-Icon-AlertMark.png"> ' + message;
+    return '<img src="//upload.wikimedia.org/wikipedia/commons/4/4e/MW-Icon-AlertMark.png" alt="Alerte"> ' + message;
   }
 
   function get_info_html(message) {
-    return '<img src="//upload.wikimedia.org/wikipedia/commons/f/f8/Farm-Fresh_information.png"> ' + message;
+    return '<img src="//upload.wikimedia.org/wikipedia/commons/f/f8/Farm-Fresh_information.png" alt="Info"> ' + message;
   }
 
   function add_heading_updater(table) {
@@ -115,10 +116,12 @@
               e.stopPropagation();
             }).submit(function (e) {
               e.preventDefault();
+              // noinspection JSUnresolvedVariable
               if (this.gloss.value === gloss_to_handle) {
                 error('La description n\'a pas changé');
                 return;
               }
+              // noinspection JSUnresolvedVariable
               var gloss_wikitext = $.trim(this.gloss.value);
               if (!translation.is_trans_top(gloss_wikitext) &&
                   translation.contains_wikitext(gloss_wikitext)) {
@@ -202,8 +205,10 @@
       'birman': 'trans',
       'breton': 'm f p',
       'bulgare': 'm f n p trans',
+      'calabrais centro-méridional': 'm f mf',
       'catalan': 'm f p',
       'chinois': 'trans tradi',
+      'cilentain méridional': 'm f mf',
       'copte': 'm f trans',
       'coréen': 'trans tradi',
       'corse': 'm f p',
@@ -260,6 +265,7 @@
       'romanche': 'm f p',
       'roumain': 'm f n p',
       'russe': 'm f n trans',
+      'salentin': 'm f mf',
       'sanskrit': 'm f n d p trans',
       'sarde': 'm f p',
       'serbe': 'm f n p trans',
@@ -343,7 +349,7 @@
         '</form>'));
 
     // Make radio buttons deselectable
-    form.find(':radio').click(function last_click(e) {
+    form.find(':radio').click(function last_click() {
       if (last_click[this.name] === this) {
         last_click[this.name] = null;
         this.checked = false;
@@ -356,31 +362,30 @@
     form.find('.ed-lang-name')
         // remplacement - si nécessaire - du code langue en nom de langue
         .blur(remplace_code_langue)
-
         .blur(update_options_visibility)
-
         // If the item exists, the value will be used as the value,
         // otherwise it's 'null', which empties (the already empty)
         // text field.
         .val(silentFailStorage.getItem('trans-lang'));
+
     form.find('.ed-more').click(function (e) {
       e.preventDefault();
       show_all_opts = !show_all_opts;
       $(this).text(show_all_opts ? 'Moins' : 'Plus');
       update_options_visibility();
     });
-    form.find('.ed-feedback').click(function (e) {
+    form.find('.ed-feedback').click(function () {
       mw.loader.using('mediawiki.feedback', function () {
-        var
-            mwTitle = new mw.Title('Discussion_MediaWiki:Gadget-translation_editor.js'),
-            feedback = new mw.Feedback({
-              title: mwTitle
-            });
+        var mwTitle = new mw.Title('Discussion_MediaWiki:Gadget-translation_editor.js');
+        var feedback = new mw.Feedback({
+          title: mwTitle
+        });
         feedback.launch({subject: 'Traductions dans \"' + mw.config.get('wgPageName').replace(/_/g, ' ') + '\"'});
         // Afficher un placeholder pour le message
         var placeholder_feedback = 'Veuillez entrer votre message ici';
-        if ($('.mw-feedbackDialog-feedback-form textarea').length) {
-          $('.mw-feedbackDialog-feedback-form textarea').get(0).placeholder = placeholder_feedback;
+        var $textarea = $('.mw-feedbackDialog-feedback-form textarea');
+        if ($textarea.length) {
+          $textarea.get(0).placeholder = placeholder_feedback;
         }
         // Cacher le bouton "Signaler un bogue technique"
         $('.oo-ui-processDialog-actions-other').hide();
@@ -412,7 +417,7 @@
     // fonction pour déterminer si une chaine
     // correspond à un nom de langue dans le tableau
     function is_lang_name(str) {
-      if (tab_langues === undefined) {
+      if (!tab_langues) {
         return undefined;
       }
       for (var code in tab_langues) {
@@ -441,7 +446,7 @@
       // (or c'est aussi un nom de langue et les noms de langue sont gardés comme tels)
       // On le remplace donc par hongrois (aucune traduction en hu n'a jamais été ajoutée via le gadget),
       // en prévenant l'utilisateur
-      if (val == 'hu') {
+      if (val === 'hu') {
         elem.val('hongrois');
         var msg = 'Il a été supposé que vous voulez ajouter une traduction en hongrois.<br>' +
             'Si vous vouliez en fait ajouter une traduction en hu, <span class="ed-info-case ed-click">cliquer ici</span>.';
@@ -478,7 +483,9 @@
           rvprop: 'content'
         }).then(function (data) {
           // Get the first (and only) page from data.query.pages
+          // noinspection LoopStatementThatDoesntLoopJS
           for (var pageid in data.query.pages) break;
+          // noinspection JSUnresolvedVariable
           tab_langues = JSON.parse(data.query.pages[pageid].revisions[0]['*']);
 
           // On crée le tableau des noms de langues pour l'autocomplétion
@@ -491,6 +498,7 @@
           mw.loader.using('jquery.ui', function () {
             $('.ed-lang-name').autocomplete({
               source: function (request, response) {
+                // noinspection JSUnresolvedFunction,JSUnresolvedVariable
                 var matcher = new RegExp("^" +
                     $.ui.autocomplete.escapeRegex(request.term),
                     "i");
@@ -561,12 +569,15 @@
           expected_case.indexOf(lang_name) === -1 &&
           silentFailStorage.getItem('case-knowledge') !== 'ok'
       ) {
+        // noinspection JSCheckFunctionSignatures
         show_error(new CaseWordError());
         return;
       } else if (lang_name === 'français') {
+        // noinspection JSCheckFunctionSignatures
         show_error(new BadLangNameError());
         return;
       } else if (translation.re_wikitext.test(word)) {
+        // noinspection JSCheckFunctionSignatures
         show_error(new BadFormatError());
         return;
       }
@@ -590,7 +601,7 @@
         }
         if (e instanceof NoLangTplError) {
           form.find('.ed-lang-name').addClass('ed-error').focus();
-          e = 'La langue « ' + e.lang_name + ' » n\'est pas définie.';
+          e = 'La langue « ' + e.lang_name + ' » n’est pas définie.';
         } else if (e instanceof NoInputError) {
           form.find('.ed-' + e.input).addClass('ed-error').focus();
           if (e.input === 'lang-name') {
@@ -616,7 +627,7 @@
               'Sinon, veuillez <span class="ed-error-case ed-click">cliquer ici</span>.';
         } else if (e instanceof BadFormatError) {
           form.find('.ed-word').addClass('ed-error').focus();
-          e = 'La traduction n\'est pas dans un format correct : ' +
+          e = 'La traduction n’est pas dans un format correct : ' +
               'elle contient du wikitexte ([]{}|=)';
         } else if (e instanceof HttpError) {
           e = 'Vous ne pouvez pas charger la traduction. Êtes-vous en ligne ?';
@@ -638,7 +649,7 @@
 
       var lang_code;
       // on convertit le nom de langue en code
-      if (tab_langues !== undefined) {
+      if (tab_langues) {
         // Le tableau des langues contient-il le nom de langues donné ?
         for (var code in tab_langues) {
           if (tab_langues[code] === lang_name) {
@@ -648,7 +659,7 @@
         }
         // Si le nom de langue donné n'est pas répertorié
         // on regarde si ce n'est pas un code langue
-        if (lang_code === undefined) {
+        if (!lang_code) {
           if (tab_langues[lang_name]) {
             lang_code = lang_name;
             lang_name = tab_langues[lang_code];
@@ -659,7 +670,7 @@
           }
         }
       } else {
-        throw new Error('Le tableau des langues n\'est pas défini.');
+        throw new Error('Le tableau des langues n’est pas défini.');
       }
 
       word_options.lang_code = lang_code;
@@ -679,6 +690,7 @@
       ).fail(function (error) {
         if (error === 'http') {
           // jQuery HTTP error
+          // noinspection JSCheckFunctionSignatures
           show_error(new HttpError());
         } else {
           show_error(error);
@@ -720,11 +732,11 @@
                 if (match) {
                   // conventions internationales en premier
                   if (match[1] === 'Conventions internationales' &&
-                      lang_name != 'conventions internationales') {
+                      lang_name !== 'conventions internationales') {
                     return 'before';
                   }
-                  if (lang_name == 'conventions internationales' &&
-                      match[1] != 'Conventions internationales') {
+                  if (lang_name === 'conventions internationales' &&
+                      match[1] !== 'Conventions internationales') {
                     return false;
                   }
                   // on ignore les {{ébauche-trad}}
@@ -774,7 +786,10 @@
             // Si le gadget de création de traductions est activé,
             // on colore directement en bleu les traductions à créer
             // pour éviter d'avoir à recharger la page
-            if (window.wikt.gadgets.createTranslation) window.wikt.gadgets.createTranslation.init();
+            if (window.wikt.gadgets.createTranslation) {
+              // noinspection JSCheckFunctionSignatures
+              window.wikt.gadgets.createTranslation.init();
+            }
           },
           undo: function () {
             added_elem.remove();
@@ -834,7 +849,7 @@
 
     if (wm_liens.hasOwnProperty(lang_code)) {
       domain = wm_liens[lang_code] + '.wiktionary';
-    } else if (lang_code == 'conv') {
+    } else if (lang_code === 'conv') {
       domain = 'species.wikimedia';
     } else if ($.inArray(lang_code, wiktios) !== -1) {
       domain = lang_code + '.wiktionary';
@@ -842,7 +857,7 @@
 
     // Si le Wiktionnaire n'existe pas, inutile de faire une requête HTTP
     if (!domain) {
-      return $.Deferred().resolve('trad--').promise();
+      return $.Deferred().resolve('trad').promise();
     }
 
     // traiter l'apostrophe typographique comme une apostrophe dactylographique
@@ -894,15 +909,15 @@
   }
 
   var translation = {
-    re_wikitext: /[[\]{}#|=]/,
+    re_wikitext: /[\[\]{}#|=]/,
 
     contains_wikitext: function (str) {
       return translation.re_wikitext.test(str);
     },
 
-    re_gloss: /\{\{trad-début(.*)\}\}/g,
+    re_gloss: /{{trad-début(.*)}}/g,
 
-    re_section: /(\{\{trad-début.*\}\})([\s\S]*?)(\{\{trad-fin\}\})/g,
+    re_section: /({{trad-début.*}})([\s\S]*?)({{trad-fin}})/g,
 
     is_trans_top: function (gloss) {
       return gloss.replace(translation.re_gloss, '-') === '-';
@@ -918,7 +933,7 @@
 
     get_gloss: function (wikitext, index) {
       // s'il y a un commentaire, l'analyse ne va pas être possible
-      if (/\{\{trad-début\|.*?(?:<!--|-->)/.test(wikitext)) {
+      if (/{{trad-début\|.*?(?:<!--|-->)/.test(wikitext)) {
         mw.notify('Le wikitexte contient un commentaire "<!--". ' +
             'La page doit être modifiée manuellement.');
         throw new Error('Le wikitexte contient un commentaire "<!--". ' +
@@ -937,12 +952,12 @@
           };
         }
       }
-      throw new Error('Le ' + (index + 1) + '-ème {{trad-début}} n\'a pas été trouvé dans le wikitexte.');
+      throw new Error('Le ' + (index + 1) + '-ème {{trad-début}} n’a pas été trouvé dans le wikitexte.');
     },
     set_gloss: function (wikitext, index, gloss) {
       index++;
       var count = 0;
-      return wikitext.replace(translation.re_gloss, function (match, p1, p2) {
+      return wikitext.replace(translation.re_gloss, function (match) {
         count++;
         if (count !== index) {
           return match;
@@ -961,7 +976,7 @@
       opts.tradi && tpl.push('tradi=' + opts.tradi);
       opts.pagename && tpl.push('dif=' + opts.word);
       var res = '{{' + tpl.join('|') + '}}';
-      opts.lang_code == 'conv' && (res = "''" + res + "''"); // Conventions internationales en italique
+      opts.lang_code === 'conv' && (res = "''" + res + "''"); // Conventions internationales en italique
       return res;
     },
     // Options:
@@ -1022,18 +1037,18 @@
           equal_or_before: function (line) {
             // Le regex suivant contient [(:] car on peut avoir un dialecte
             // précisé entre parenthèses après le nom de langue
-            var match_T = /^\*\s*\{\{T\|([^}|]+?)(?:\|trier)?\}\}\s*[(:]/.exec(line);
+            var match_T = /^\*\s*{{T\|([^}|]+?)(?:\|trier)?}}\s*[(:]/.exec(line);
             // Il importe aussi de prendre en compte les cas rares comme les traductions en chinois
             // dans [[arrière-grand-mère]], qui sont indentées à la ligne via *: {{trad|...}}
-            var match_trad_indente = /^\*:\s*\{\{trad[+-]{0,2}\|([^}|]+?)\|/.exec(line);
+            var match_trad_indente = /^\*:\s*{{trad[+-]{0,2}\|([^}|]+?)\|/.exec(line);
             if (match_T || match_trad_indente) {
               var match = match_T || match_trad_indente;
               var code_langue = match[1];
               // conventions internationales en premier
-              if (code_langue === 'conv' && opts.lang_code != 'conv') {
+              if (code_langue === 'conv' && opts.lang_code !== 'conv') {
                 return 'before';
               }
-              if (opts.lang_code == 'conv' && code_langue != 'conv') {
+              if (opts.lang_code === 'conv' && code_langue !== 'conv') {
                 return false;
               }
               // Le code langue contenu dans le modèle T est peut-être une redirection
@@ -1054,7 +1069,7 @@
                 // c'est probablement qu'on a affaire à une langue
                 // avec des dialectes qui seront introduits sur une
                 // nouvelle ligne par « *: » → cas à gérer manuellement
-                if (/^\*\s*\{\{T\|[^}|]+?(?:\|trier)?\}\}\s*:\s*$/.exec(line)) {
+                if (/^\*\s*{{T\|[^}|]+?(?:\|trier)?}}\s*:\s*$/.exec(line)) {
                   mw.notify('Il n\'est pas possible d\'ajouter une traduction' +
                       ' dans cette langue, car le format est inhabituel.');
                   throw new Error('Format incorrect : le wikicode des traductions' +

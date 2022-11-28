@@ -6,7 +6,6 @@ local langues = mw.loadData("Module:langues/data")
 local p = {}
 
 p.specialCodes = {
-  ["zh-Hani"] = "zh",
   ["zh-Hans"] = "zh",
   ["zh-Hant"] = "zh",
   ["ko-Hani"] = "ko",
@@ -148,8 +147,18 @@ function p.get_lien_Wikimedia(code)
   end
 end
 
+--- Indicates whether there exists a local “Portail” for the given language code.
+--- @param code string The language code.
+--- @return boolean True if a “Portail” exists, false otherwise or if the language code is unknown.
 function p.has_portail(code)
   return langues[code] and langues[code]["portail"]
+end
+
+--- Indicates whether there exists a Wiktionary for the given language code.
+--- @param code string The language code.
+--- @return boolean True if a Wiktionary exists, false otherwise or if the language code is unknown.
+function p.has_wiktionary(code)
+  return langues[code] and langues[code]["wiktionnaire"]
 end
 
 --- Looks up the code for the given language name in [[Module:langues/data]].

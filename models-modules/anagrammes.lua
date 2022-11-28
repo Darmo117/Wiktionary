@@ -2,64 +2,53 @@ local m_bases = require("Module:bases")
 local m_params = require("Module:paramètres")
 
 local p = {}
-local diacriticsTable = {}
-diacriticsTable["à"] = "a"
-diacriticsTable["á"] = "a"
-diacriticsTable["â"] = "a"
-diacriticsTable["ã"] = "a"
-diacriticsTable["ä"] = "a"
-diacriticsTable["ç"] = "c"
-diacriticsTable["è"] = "e"
-diacriticsTable["é"] = "e"
-diacriticsTable["ê"] = "e"
-diacriticsTable["ë"] = "e"
-diacriticsTable["ì"] = "i"
-diacriticsTable["í"] = "i"
-diacriticsTable["î"] = "i"
-diacriticsTable["ï"] = "i"
-diacriticsTable["ñ"] = "n"
-diacriticsTable["ò"] = "o"
-diacriticsTable["ó"] = "o"
-diacriticsTable["ô"] = "o"
-diacriticsTable["õ"] = "o"
-diacriticsTable["ö"] = "o"
-diacriticsTable["ù"] = "u"
-diacriticsTable["ú"] = "u"
-diacriticsTable["û"] = "u"
-diacriticsTable["ü"] = "u"
-diacriticsTable["ý"] = "y"
-diacriticsTable["ÿ"] = "y"
+
+--- Remove all diacritics from a UTF-8 string.
+--- @param s string The string.
+--- @return string The same string with all diacritics stripped.
+local function removeDiacritics(s)
+  return mw.ustring.gsub(mw.ustring.lower(s), "%w", function(c)
+    -- Decompose the character into NFD form (letter followed by eventual combining diacritics)
+    -- then keep only the letter (first char)
+    return mw.ustring.sub(mw.ustring.toNFD(c), 1, 1)
+  end)
+end
 
 local function _toTable(title, rawTable)
   local i = 1
   local maxLinks = 200
+  local alphasTable = {}
   local paramsTable = {}
 
   while rawTable[i] ~= nil and i <= maxLinks do
     local item = mw.text.trim(rawTable[i])
 
-    -- To handle [[page (explication)]]
-    local description = (mw.ustring.match(item, " %(([^%(%)%|]*)%)$")) or ""
-    if description ~= "" then
-      description = mw.ustring.format(" ''(%s)''", description)
-      item = mw.ustring.gsub(item, " %([^%(%)%|]*%)$", "")
-    end
+    if item ~= title then
+      local alpha = mw.ustring.gsub(removeDiacritics(item), "-", "")
 
-    -- Caractères spéciaux non représentables avec une page : à écrire comme Lien{{!}}Caractère
-    -- (Bricolage : pas possible de faire mieux ?)
-    local link = mw.ustring.gsub(item, "|.*", "")
-
-    if link ~= "" and link ~= title then
-      table.insert(paramsTable, "[[" .. item .. "]]" .. description)
+      if paramsTable[alpha] ~= nil then
+        paramsTable[alpha] = mw.ustring.format("%s, [[%s]]", paramsTable[alpha], item)
+      else
+        table.insert(alphasTable, alpha)
+        paramsTable[alpha] = "[[" .. item .. "]]"
+      end
     end
     i = i + 1
   end
 
-  return paramsTable
+  return alphasTable, paramsTable
+end
+
+local function _getValues(alphas, args)
+  local values = {}
+  for _, alpha in pairs(alphas) do
+    table.insert(values, args[alpha])
+  end
+  return values
 end
 
 local function _buildListText(list)
-  local text = ""
+  local text
 
   if #list > 0 then
     text = "* " .. table.concat(list, "\n* ")
@@ -72,8 +61,8 @@ local function _buildListText(list)
 end
 
 local function _makeText(title, values)
-  local args = _toTable(title, values)
-  return _buildListText(args)
+  local alphas, args = _toTable(title, values)
+  return _buildListText(_getValues(alphas, args))
 end
 
 function p.listeAnagrammes(frame)
@@ -88,16 +77,26 @@ function p.alphagramme(frame)
 
   -- Do not remove, not used yet.
   local lang = args[1]
-  local pageName = string.lower(args[2]):gsub("[%z\1-\127\194-\244][\128-\191]*", diacriticsTable)
+  local pageName = mw.ustring.gsub(removeDiacritics(args[2]), "[/ ’-]", "")
   local tablePageName = {}
 
-  pageName:gsub(".", function(c)
+  -- Sépare le mot, caractère par caractère
+  mw.ustring.gsub(pageName, ".", function(c)
     table.insert(tablePageName, c)
   end)
-  table.sort(tablePageName, function(a, b)
-    return a < b
-  end)
-  return table.concat(tablePageName, "")
+  -- Trie les lettres
+  table.sort(tablePageName)
+
+  local alphagramme = table.concat(tablePageName, "")
+  local templateName = mw.ustring.format("anagrammes/%s/%s", lang, alphagramme)
+
+  if mw.title.new("Modèle:" .. templateName).exists then
+    return mw.ustring.format("→ [[Spécial:EditPage/Modèle:%s|Modifier la liste d’anagrammes]]", templateName)
+        .. frame:expandTemplate { title = templateName }
+  else
+    return mw.ustring.format('<span style="color:red">Le modèle d’anagrammes n’existe pas. '
+        .. 'Cliquez [[Modèle:%s|ici]] pour le créer.</span>[[Catégorie:Pages avec modèle d’anagrammes manquant]]', templateName)
+  end
 end
 
 return p

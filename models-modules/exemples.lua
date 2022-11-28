@@ -20,14 +20,14 @@ local function _formatExample(text, transcription, meaning, source, link, headin
   if not text then
     return mw.ustring.format(
         [=[<span class="example">''[[Aide:Exemples|Exemple d’utilisation]] manquant.'' <span class="plainlinks stubedit">([%s Ajouter])</span><!--
-        --><span lang="%s" style="display: none"><!-- Balise de marquage pour le gadget wikt.add-examples, ne pas retirer ! --></span></span><!--
-        -->[[Catégorie:Wiktionnaire:Exemples manquants en %s]]]=],
-        mw.title.getCurrentTitle():fullUrl({ action = "edit" }), lang, m_langs.get_nom(lang)
-    )
+        --><bdi lang="%s" style="display: none"><!-- Balise de marquage pour le gadget [[MediaWiki:Gadget-wikt.add-examples]], ne pas retirer ! --></bdi></span>]=],
+        mw.title.getCurrentTitle():fullUrl({ action = "edit" }), lang
+    ) .. m_bases.fait_categorie_contenu(mw.ustring.format("Wiktionnaire:Exemples manquants en %s", m_langs.get_nom(lang)))
   end
 
   local italics = m_unicode.shouldItalicize(text) and "''" or ""
-  local wikicode = m_bases.balise_langue(italics .. m_unicode.setWritingDirection(text) .. italics, scriptLang)
+  local quoteTagOpen = link and mw.ustring.format('<q cite="%s">', mw.ustring.replace(link, '"', '%22')) or '<q>'
+  local wikicode = quoteTagOpen .. m_bases.balise_langue(italics .. m_unicode.setWritingDirection(text) .. italics, scriptLang) .. '</q>'
 
   if source then
     wikicode = wikicode .. " " .. frame:expandTemplate { title = "source", args = { source, lien = link } }
@@ -37,7 +37,7 @@ local function _formatExample(text, transcription, meaning, source, link, headin
 
   if lang ~= "fr" then
     if transcription then
-      wikicode = wikicode .. "<br/>" .. m_bases.balise_langue("''" .. transcription .. "''", scriptLang .. "-Latn")
+      wikicode = wikicode .. "<br>" .. m_bases.balise_langue("''" .. transcription .. "''", scriptLang .. "-Latn")
     end
   end
 
@@ -72,7 +72,7 @@ end
 --- @return string The wikicode.
 function p.formatExample(frame)
   local parentFrame = frame:getParent()
-  local args = m_params.process(parentFrame.args, {
+  local args, success = m_params.process(parentFrame.args, {
     [1] = {},
     ["sens"] = {},
     [2] = { alias_of = "sens" },
@@ -85,12 +85,19 @@ function p.formatExample(frame)
       return m_langs.specialCodes[lang] ~= nil or m_langs.get_nom(lang) ~= nil
     end },
     ["pas-trad"] = { type = m_params.BOOLEAN, default = false }
-  })
+  }, true)
 
-  local scriptLang = args["lang"]
-  local lang = m_langs.specialCodes[args["lang"]] or args["lang"]
+  if success then
+    local scriptLang = args["lang"]
+    local lang = m_langs.specialCodes[args["lang"]] or args["lang"]
 
-  return _formatExample(args[1], args["tr"], args["sens"], args["source"], args["lien"], args["tête"], lang, scriptLang, args["pas-trad"], parentFrame)
+    return _formatExample(args[1], args["tr"], args["sens"], args["source"], args["lien"], args["tête"], lang, scriptLang, args["pas-trad"], parentFrame)
+  else
+    if (args[2] == m_params.MISSING_PARAM or args[2] == m_params.EMPTY_PARAM) and args[1] == "lang" then
+      return "<span style='color: red; font-weight: bold;'>Langue de l’exemple manquante !</span>[[Catégorie:Appels au modèle exemple sans langue précisée]]"
+    end
+    error(args[3])
+  end
 end
 
 return p

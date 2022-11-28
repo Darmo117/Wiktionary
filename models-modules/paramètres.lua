@@ -278,7 +278,7 @@ function p.process(args, definedParameters, silentErrors)
 
       -- Ajout d’une mention pour les erreurs internes.
     elseif m_table.contains(UNCATCHABLE_ERRORS, errorType) then
-      errorMessage = "Erreur interne : " .. errorMessage
+      errorMessage = "Erreur interne : " .. errorMessage
     end
     -- Suppression de la trace de l’erreur, on garde juste le message.
     error(errorMessage, 0)

@@ -87,13 +87,7 @@ local function generateOutgoingLink(langCode, word, status)
   word = mw.ustring.gsub(word, "[’ʼ]", "'") -- apostrophes dactylographique et modificative
   local destination = mw.ustring.format(":%s:%s", wikiLangCode, word)
 
-  -- No status or unknown, do not display anything.
-  if not status then
-    displayedText = ""
-    destination = nil
-
-    -- No matching wiki
-  elseif status == "nowikt" then
+  if not m_langs.has_wiktionary(langCode) and langCode ~= 'conv' then
     displayedText = '<span class="trad-nowikt">(*)</span>'
     destination = "Wiktionnaire:Pas de wiktionnaire dans cette langue"
   elseif status == "existe" then
@@ -102,6 +96,9 @@ local function generateOutgoingLink(langCode, word, status)
     displayedText = mw.ustring.format('<span class="trad-inconnu">(%s)</span>', wikiLangCode)
   elseif status == "absent" then
     displayedText = mw.ustring.format('<span class="trad-absent">(%s)</span>', wikiLangCode)
+  else
+    displayedText = ""
+    destination = nil
   end
 
   return destination

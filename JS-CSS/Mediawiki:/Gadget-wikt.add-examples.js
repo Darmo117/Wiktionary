@@ -12,12 +12,17 @@
  * v1.0 2021-09-12 Initial version
  * v1.1 2021-09-16 Added input field for "lien" parameter.
  * v1.1.1 2021-09-17 Fixed bug when text or translation contained the "=" sign.
+ * v1.1.2 2021-09-20 Restricted to main and “Reconstruction” namespaces.
  * ------------------------------------------------------------------------------------
  * [[Catégorie:JavaScript du Wiktionnaire|add-examples.js]]
  * <nowiki>
  */
 $(function () {
   "use strict";
+
+  if (!wikt.page.hasNamespaceIn(["", "Reconstruction"])) {
+    return;
+  }
 
   console.log("Chargement de Gadget-wikt.add-examples.js…");
 
@@ -125,7 +130,7 @@ $(function () {
 
     if (!$item.next().length) {
       // Get example’s language
-      var language = $item.find("span[lang]")[0].lang;
+      var language = $item.find("bdi[lang]")[0].lang;
 
       // Get section and indices of associated definition
       var definitionLevel = [];
@@ -145,6 +150,7 @@ $(function () {
         $defaultEditLink.remove();
       }
 
+      // TODO réduire taille
       // Add a nice button to open the form
       var $formItem = $("<li>");
       var button = new OO.ui.ButtonWidget({label: "Ajouter un exemple"});
@@ -333,7 +339,7 @@ $(function () {
         var transcription = this._transcriptionInput.getValue().trim();
         if (translation) {
           if (translation.includes("=")) {
-            translation = "2=" + translation;
+            translation = "sens=" + translation;
           }
           code += "|" + translation;
         }
@@ -432,6 +438,7 @@ $(function () {
           }
         }
 
+        // TODO détecter modèles sur plusieurs lignes -> compteur de paires de {{ }}
         // Look for last example of current definition
         for (targetLineIndex += 1; targetLineIndex < lines.length; targetLineIndex++) {
           var line_ = lines[targetLineIndex];

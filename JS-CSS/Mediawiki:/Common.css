@@ -1,5 +1,5 @@
 /* Soulignement des titres niveau 3 + clear + interligne */
-.ns-0 #mw-content-text h3, .ns-106 #mw-content-text h3, .ns-110 #mw-content-text h3 {
+.ns-0 #mw-content-text h3, .ns-106 #mw-content-text h3, .ns-110 #mw-content-text h3, .ns-118 #mw-content-text h3 {
   border-bottom: dotted 1px #aaa;
   line-height: 2;
 }
@@ -90,9 +90,7 @@ table.table-jaune td {
 /*  API  */
 /*********/
 .API {
-  font-family: "Segoe UI", "Calibri", "DejaVu Sans", "Charis SIL", "Doulos SIL",
-  "Gentium Plus", "Gentium", "GentiumAlt", "Lucida Grande",
-  "Arial Unicode MS", sans-serif;
+  font-family: 'DejaVu Sans', 'Segoe UI', 'Lucida Grande', 'Charis SIL', 'Gentium Plus', 'Doulos SIL', sans-serif;
   font-size: 110%;
   text-decoration: none;
 }
@@ -189,6 +187,11 @@ tr.statistics-group-zero {
 .bandeau-texte {
   font-size: 0.9em;
   line-height: 1.2em
+}
+
+.bandeau-voir-systemes {
+  background-color: #eee;
+  font-size: 90%;
 }
 
 /* Cadre des documentations */
@@ -487,7 +490,7 @@ ul.no-dots {
 .source-css,
 .source-javascript,
 .source-lua {
-  font-family: monospace, "Courier New" !important; /* cet ordre des fontes est volontaire */
+  font-family: monospace !important;
 }
 
 /* Message d’erreur */
@@ -507,6 +510,12 @@ q {
   font: inherit;
 }
 
+/* Pas de guillemets pour les exemples */
+.example q {
+  quotes: none;
+  font: inherit;
+}
+
 /* Message d’avertissement des illustrations. */
 .show-illus-btn {
   cursor: pointer;
@@ -519,4 +528,35 @@ q {
 
 .hide-illus-btn {
   cursor: pointer;
+}
+
+kbd {
+  background-color: #eee;
+  border-radius: 3px;
+  border: 1px solid #b4b4b4;
+  box-shadow: 0 1px 1px rgba(0, 0, 0, .2), 0 2px 0 0 rgba(255, 255, 255, .7) inset;
+  color: #333;
+  display: inline-block;
+  font-size: .85em;
+  font-weight: 700;
+  line-height: 1;
+  padding: 2px 4px;
+  white-space: nowrap;
+}
+
+/* Chinois traditionnel et simplifié, vietnamien */
+
+.Hani, .Hans, .Hant {
+  font-size: 120%;
+  line-height: 1;
+}
+
+.Hani, .Hani *, .Hans, .Hans *, .Hant, .Hant * {
+  font-style: normal;
+}
+
+:lang(vi-Hani) {
+  font-family: 'Nom Na Tong', 'HAN NOM A', 'HAN NOM B', Sun-ExtA, Sun-ExtB, Ming-Lt-HKSCS-UNI-H, Ming-Lt-HKSCS-ExtB,
+  HanaMinA, HanaMinB, HanaMin, 'PingFang TC', MingLiU, MingLiU-ExtB, 'MingLiU_HKSCS', 'MingLiU_HKSCS-ExtB', SimSun,
+  SimSun-ExtB, 'Arial Unicode MS', 'TITUS Cyberbit Basic', sans-serif;
 }

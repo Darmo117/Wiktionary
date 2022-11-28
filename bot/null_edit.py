@@ -3,7 +3,7 @@ from pywikibot import config as pwb_config
 
 pwb_config.put_throttle = 0
 is_category = True
-page_name = 'Catégorie:hanunóo'
+page_name = 'Catégorie:Wiktionnaire:Prononciations employant des caractères inconnus en italien'
 
 site = pwb.Site()
 if page_name.startswith('Catégorie:'):

@@ -1,5 +1,6 @@
 #Editnotice-0 .oo-ui-inputWidget-input {
-  font-family: 'Menlo', 'Consolas', 'Monaco', 'Noto Mono', 'Nimbus Mono L', monospace !important;
+  font-family: monospace !important;
+  font-size: 1.2em;
 }
 
 #cnm-title {

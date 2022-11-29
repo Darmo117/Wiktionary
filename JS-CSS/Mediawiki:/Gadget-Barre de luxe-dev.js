@@ -12,20 +12,21 @@
  * Icons (Monobook): http://commons.wikimedia.org/wiki/Category:MediaWiki_edit_toolbar
  * ----
  * [[Catégorie:JavaScript du Wiktionnaire|Barre de luxe-dev.js]]
+ * <nowiki>
  */
-
 $(function () {
   if (["edit", "submit"].includes(mw.config.get("wgAction"))) {
-    window.wikt.gadgets.barreDeLuxe = {
-      NAME: "Barre de luxe",
+    console.log("Chargement de Gadget-Barre_de_luxe-dev.js…");
 
-      VERSION: "2.2",
+    class GadgetBarreDeLuxe {
+      static NAME = "Barre de luxe-dev";
+      static VERSION = "2.2.1";
 
       /**
        * Additional 2010 toolbar groups.
-       * @type {Array<Object<string, string>>}
+       * @type {{id: string, label: string}[]}
        */
-      groups: [
+      groups = [
         {id: "misc_templates", label: "Modèles"},
         {id: "links", label: "Liens"},
         {id: "section_templates", label: "Patrons"},
@@ -33,12 +34,11 @@ $(function () {
         {id: "headers", label: "Bandeaux"},
         {id: "html_tags", label: "Balises"},
         {id: "default", label: ""},
-      ],
+      ];
 
-      sectionId: "advanced",
+      sectionId = "advanced";
 
-      /** @type {Array<Object<string, string>>} */
-      defaultButtons: [
+      defaultButtons = [
         {
           tagOpen: "’",
           imageFileName: "5/57/Apostrophe.png",
@@ -163,7 +163,7 @@ $(function () {
           group: "messages",
         },
         {
-          tagOpen: "{{sup" + "p|",
+          tagOpen: "{{supp|",
           tagClose: "}}",
           imageFileName: "f/f3/Button_broom2.png",
           imageFileNameOOUI: "thumb/d/de/OOjs_UI_icon_trash-destructive.svg/24px-OOjs_UI_icon_trash-destructive.svg.png",
@@ -182,7 +182,7 @@ $(function () {
         },
         {
           tagOpen: "== {{langue|fr}} ==\n=== {{S|étymologie}} ===\n{{ébauche-étym|fr}}\n:",
-          tagClose: " {{" + "date|?|lang=fr}}/{{" + "siècle|?|lang=fr}}\n=== {{S|nom|fr}} ===\n{{fr-rég|}}\n'''{{subst:" + "PAGENAME}}''' {{pron||fr}} {{genre ?}}\n#\n#* ''''\n==== {{S|variantes orthographiques}} ====\n==== {{S|synonymes}} ====\n==== {{S|antonymes}} ====\n==== {{S|dérivés}} ====\n==== {{S|apparentés}} ====\n==== {{S|vocabulaire}} ====\n==== {{S|hyperonymes}} ====\n==== {{S|hyponymes}} ====\n==== {{S|méronymes}} ====\n==== {{S|holonymes}} ====\n==== {{S|traductions}} ====\n{{trad-début}}\n{{ébauche-trad}}\n{{trad-fin}}\n=== {{S|prononciation}} ===\n* {{pron||fr}}\n* {{écouter|<!--  précisez svp la ville ou la région -->||audio=|lang=}}\n==== {{S|homophones|fr}} ====\n==== {{S|paronymes}} ====\n=== {{S|anagrammes}} ===\n=== {{S|voir aussi}} ===\n* {{WP}}\n=== {{S|références}} ===\n{{clé de tri}}",
+          tagClose: " {{date|?|lang=fr}}/{{siècle|?|lang=fr}}\n=== {{S|nom|fr}} ===\n{{fr-rég|}}\n'''{{subst:" + "PAGENAME}}''' {{pron||fr}} {{genre ?}}\n#\n#* ''''\n==== {{S|variantes orthographiques}} ====\n==== {{S|synonymes}} ====\n==== {{S|antonymes}} ====\n==== {{S|dérivés}} ====\n==== {{S|apparentés}} ====\n==== {{S|vocabulaire}} ====\n==== {{S|hyperonymes}} ====\n==== {{S|hyponymes}} ====\n==== {{S|méronymes}} ====\n==== {{S|holonymes}} ====\n==== {{S|traductions}} ====\n{{trad-début}}\n{{ébauche-trad}}\n{{trad-fin}}\n=== {{S|prononciation}} ===\n* {{pron||fr}}\n* {{écouter|<!--  précisez svp la ville ou la région -->||audio=|lang=}}\n==== {{S|homophones|fr}} ====\n==== {{S|paronymes}} ====\n=== {{S|anagrammes}} ===\n=== {{S|voir aussi}} ===\n* {{WP}}\n=== {{S|références}} ===\n{{clé de tri}}",
           imageFileName: "3/32/Button_anular_voto.png",
           imageFileNameOOUI: "thumb/8/81/OOjs_UI_icon_stripeFlow-ltr.svg/24px-OOjs_UI_icon_stripeFlow-ltr.svg.png",
           tooltip: "Patron long",
@@ -224,8 +224,11 @@ $(function () {
           group: "links",
         },
         {
-          tagOpen: "{{" + "refnec|",
-          tagClose: "|lang=<!-- Merci d’indiquer la langue -->}}",
+          action: function (selectedText, language) {
+            return "{{refnec|{0}|lang={1}}}".format(selectedText, language);
+          },
+          promptText: "Langue",
+          promptDefault: "fr",
           imageFileName: "0/0b/Button_fuente.png",
           imageFileNameOOUI: "thumb/6/69/OOjs_UI_icon_help.svg/24px-OOjs_UI_icon_help.svg.png",
           tooltip: "Référence nécessaire",
@@ -233,8 +236,11 @@ $(function () {
           group: "misc_templates",
         },
         {
-          tagOpen: "{{" + "?|",
-          tagClose: "|lang=<!-- Merci d’indiquer la langue -->}}",
+          action: function (selectedText, language) {
+            return "{{?|{0}|lang={1}}}".format(selectedText, language);
+          },
+          promptText: "Langue",
+          promptDefault: "fr",
           imageFileName: "8/89/Button_nosense.png",
           imageFileNameOOUI: "thumb/b/b2/OOjs_UI_icon_help-ltr.svg/24px-OOjs_UI_icon_help-ltr.svg.png",
           tooltip: "À vérifier",
@@ -291,100 +297,82 @@ $(function () {
           buttonId: "desc-sort",
           group: "format",
         },
-      ],
+      ];
+
+      #goToLineTextWidget;
 
       /**
        * Creates the Deluxe bar with the default buttons if the edit toolbar is disabled,
        * or adds the default buttons to the edit toolbar if enabled.
        */
-      init: function () {
-        var self = this;
+      constructor() {
         // 2010 edit toolbar
         if (mw.user.options.get("usebetatoolbar")) {
           $.when(
               mw.loader.using("ext.wikiEditor")
-          ).then(function () {
-            var groups = {};
-
-            for (var i = 0; i < self.groups.length; i++) {
-              var group = self.groups[i];
-
+          ).then(() => {
+            const groups = {};
+            for (const group of this.groups) {
               groups[group.id] = {
                 label: group.label,
               };
             }
-
             wikt.edit.getEditBox().wikiEditor("addToToolbar", {
-              section: self.sectionId,
+              section: this.sectionId,
               groups: groups,
             });
           });
         }
         console.log("Found {0} default buttons.".format(this.defaultButtons.length));
+        // noinspection JSCheckFunctionSignatures
         this.addButtons(this.defaultButtons);
 
         // Load "go to line" widgets
-        var divId = "wikiEditor-section-search";
-        var $div = $('<div id="{0}" class="booklet section" rel="search"></div>'.format(divId));
+        const $div = $(`<div id="wikiEditor-section-search" class="booklet section" rel="search"></div>`);
         if (mw.user.options.get("usebetatoolbar")) {
           $.when(
               mw.loader.using("ext.wikiEditor")
-          ).then(function () {
-            $("#wikiEditor-ui-toolbar .sections").append($div);
-          });
+          ).then(() => $("#wikiEditor-ui-toolbar .sections").append($div));
         } else {
           $("#toolbar").after($div);
         }
 
-        var section = new OO.ui.PanelLayout({
+        const section = new OO.ui.PanelLayout({
           expanded: false,
           framed: true,
         });
 
-        var goToLineButton = new OO.ui.ButtonWidget({
+        const goToLineButton = new OO.ui.ButtonWidget({
           label: 'Aller à la ligne',
         });
-        var goToLine = function () {
-          var lineNb = parseInt(goToLineTextWidget.getValue());
-          if (!isNaN(lineNb)) {
-            // FIXME la sélection n’apparait pas si le CodeMirror n’a pas le focus
-            wikt.edit.selectLines(lineNb);
-            if (!wikt.edit.isCodeMirrorEnabled()) {
-              // noinspection JSUnresolvedFunction
-              wikt.edit.getEditBox().focus();
-            }
-          }
-        };
-        goToLineButton.on("click", goToLine);
+        goToLineButton.on("click", () => this.#goToLine());
 
-        var goToLineTextWidget = new OO.ui.TextInputWidget();
-        goToLineTextWidget.$element.on("keypress", function (e) {
+        this.#goToLineTextWidget = new OO.ui.TextInputWidget();
+        this.#goToLineTextWidget.$element.on("keypress", e => {
           // Prevent enter key from submitting the page edit form; go to line instead
           if (e.key === "Enter") {
             e.preventDefault();
-            goToLine();
+            this.#goToLine();
             return false;
           }
           return true;
         });
 
-        var fieldsetLayout = new OO.ui.FieldsetLayout({
+        const fieldsetLayout = new OO.ui.FieldsetLayout({
           items: [
-            new OO.ui.ActionFieldLayout(goToLineTextWidget, goToLineButton),
-          ]
+            new OO.ui.ActionFieldLayout(this.#goToLineTextWidget, goToLineButton),
+          ],
         });
         fieldsetLayout.$element.attr("style", "margin-top: 0");
         section.$element.append(fieldsetLayout.$element);
         $div.html(section.$element);
-      },
+      }
 
       /**
        * Adds the given list of buttons to the toolbar or Deluxe bar.
-       * @param buttons {Array<Array<string>>|Array<Object<string,string>>} The buttons.
+       * @param buttons {string[][]|Object<string,string|boolean>[]} The buttons.
        */
-      addButtons: function (buttons) {
-        var self = this;
-
+      addButtons(buttons) {
         /**
          * Converts legacy array format to current object format.
          * @param arrayButton The button as an array.
@@ -400,80 +388,20 @@ $(function () {
           };
         }
 
-        /**
-         * Returns a standard button object.
-         * @param button The button definition object.
-         * @return {Object} The full button object.
-         */
-        function getButtonObject(button) {
-          /**
-           * Returns the full URL to the given button sub-URL.
-           * If the sub-URL doesn’t feature an extension, .png is used.
-           * @param urlEnd The end of the URL.
-           * @return {string} The full URL.
-           */
-          function getFileName(urlEnd) {
-            var fullUrl = "//upload.wikimedia.org/wikipedia/commons/{0}".format(urlEnd);
-
-            if (!/\.\w+$/.test(fullUrl)) {
-              fullUrl += ".png";
-            }
-
-            return fullUrl;
-          }
-
-          var b = {
-            imageFile: getFileName(button.imageFileName),
-            imageId: "mw-editbutton-" + button.buttonId,
-            speedTip: button.tooltip,
-            toolbarIgnore: button.toolbarIgnore,
-            group: button.group || "default",
-          };
-
-          if (button.imageFileNameOOUI) {
-            b.imageFileOOUI = getFileName(button.imageFileNameOOUI);
-          }
-          if (button.action) {
-            b.onClick = function () {
-              // Change selection to full lines if button requires
-              if (button.wholeLines) {
-                var range = wikt.edit.getSelectedLineNumbers();
-                wikt.edit.selectLines(range[0], range[1]);
-              }
-
-              var selectedText = wikt.edit.getSelectedText();
-              if (button.promptText) {
-                var inputText = prompt(button.promptText, button.promptDefault).trim();
-                if (inputText) {
-                  var result = button.action(selectedText, inputText);
-                  wikt.edit.replaceSelectedText(result);
-                }
-              } else {
-                wikt.edit.replaceSelectedText(button.action(selectedText));
-              }
-            };
-          } else {
-            b.tagOpen = button.tagOpen;
-            b.tagClose = button.tagClose || "";
-          }
-
-          return b;
-        }
-
         // 2010 edit toolbar
         if (mw.user.options.get("usebetatoolbar")) {
           $.when(
               mw.loader.using("ext.wikiEditor")
-          ).then(function () {
-            buttons.forEach(function (button) {
-              var buttonObject = {};
-              var b = getButtonObject(button instanceof Array ? toObject(button) : button);
-              var action;
-
+          ).then(() => {
+            buttons.forEach(button => {
+              const buttonObject = {};
+              // Array button definition is still maintained for legacy purposes
+              const b = GadgetBarreDeLuxe.#getButtonObject(button instanceof Array ? toObject(button) : button);
               if (b.toolbarIgnore) {
                 return;
               }
 
+              let action;
               if (b.onClick) {
                 action = {
                   type: "callback",
@@ -497,28 +425,96 @@ $(function () {
               };
 
               wikt.edit.getEditBox().wikiEditor("addToToolbar", {
-                section: self.sectionId,
+                section: this.sectionId,
                 group: b.group,
                 tools: buttonObject,
               });
             });
           });
-        } // MW toolbar
-        else {
-          buttons.forEach(function (button) {
-            // noinspection JSUnresolvedFunction
-            mw.toolbar.addButton(getButtonObject(button instanceof Array ? toObject(button) : button));
-          });
+        } else { // MW toolbar
+          // noinspection JSUnresolvedFunction
+          buttons.forEach(button =>
+              mw.toolbar.addButton(GadgetBarreDeLuxe.#getButtonObject(button instanceof Array ? toObject(button) : button)));
         }
-      },
-    };
+      }
 
-    console.log("Chargement de Gadget-Barre_de_luxe-dev.js…");
-    wikt.gadgets.barreDeLuxe.init();
-    // Variable should be declared in user page.
-    if (bdl_buttons && bdl_buttons instanceof Array) {
-      console.log("Found {0} custom user buttons.".format(bdl_buttons.length));
-      wikt.gadgets.barreDeLuxe.addButtons(bdl_buttons);
+      /**
+       * Returns a standard button object.
+       * @param button The button definition object.
+       * @return {Object} The full button object.
+       */
+      static #getButtonObject(button) {
+        const b = {
+          imageFile: GadgetBarreDeLuxe.#getFileName(button.imageFileName),
+          imageId: "mw-editbutton-" + button.buttonId,
+          speedTip: button.tooltip,
+          toolbarIgnore: button.toolbarIgnore,
+          group: button.group || "default",
+        };
+
+        if (button.imageFileNameOOUI) {
+          b.imageFileOOUI = GadgetBarreDeLuxe.#getFileName(button.imageFileNameOOUI);
+        }
+        if (button.action) {
+          b.onClick = () => {
+            // Change selection to full lines if button requires
+            if (button.wholeLines) {
+              const range = wikt.edit.getSelectedLineNumbers();
+              wikt.edit.selectLines(range[0], range[1]);
+            }
+
+            const selectedText = wikt.edit.getSelectedText();
+            if (button.promptText) {
+              const inputText = prompt(button.promptText, button.promptDefault).trim();
+              if (inputText) {
+                const result = button.action(selectedText, inputText);
+                wikt.edit.replaceSelectedText(result);
+              }
+            } else {
+              wikt.edit.replaceSelectedText(button.action(selectedText));
+            }
+          };
+        } else {
+          b.tagOpen = button.tagOpen;
+          b.tagClose = button.tagClose || "";
+        }
+
+        return b;
+      }
+
+      #goToLine() {
+        const lineNb = parseInt(this.#goToLineTextWidget.getValue());
+        if (!isNaN(lineNb)) {
+          // FIXME cursor/selection does not appear if CodeMirror is not in focus
+          wikt.edit.selectLines(lineNb);
+          if (!wikt.edit.isCodeMirrorEnabled()) {
+            wikt.edit.getEditBox().focus();
+          }
+        }
+      }
+
+      /**
+       * Returns the full URL to the given button sub-URL.
+       * If the sub-URL doesn’t feature an extension, .png is used.
+       * @param urlEnd {string} The end of the URL.
+       * @return {string} The full URL.
+       */
+      static #getFileName(urlEnd) {
+        let fullUrl = `//upload.wikimedia.org/wikipedia/commons/${urlEnd}`;
+        if (!/\.\w+$/.test(fullUrl)) {
+          fullUrl += ".png";
+        }
+        return fullUrl;
+      }
+    }
+
+    const bdl = new GadgetBarreDeLuxe();
+    window.gadget_barreDeLuxe = bdl;
+    // Variable 'bdl_buttons' should be declared in user page.
+    if (typeof bdl_buttons !== "undefined" && bdl_buttons instanceof Array) {
+      console.log(`Found ${bdl_buttons.length} custom user button(s).`);
+      bdl.addButtons(bdl_buttons);
     }
   }
 });
+// </nowiki>

@@ -11,6 +11,7 @@
 // <nowiki>
 (function () {
   "use strict";
+
   // Disable unless in Special:Preferences
   if (mw.config.get("wgCanonicalNamespace") !== "Special"
       || mw.config.get("wgCanonicalSpecialPageName") !== "Preferences") {
@@ -27,7 +28,7 @@
      * @return {HTMLElement}
      */
     function getLink(pageName, text) {
-      var $link = $("<a>" + (text || pageName) + "</a>");
+      const $link = $(`<a>${text || pageName}</a>`);
       $link.attr("href", "/wiki/Mediawiki:Gadget-" + pageName);
       $link.attr("target", "_blank");
       return $link;
@@ -38,53 +39,48 @@
      * @return {string[]}
      */
     function split(values) {
-      return $.map(values.split("|"), function (s) {
-        return s.trim();
-      }).filter(function (s) {
-        return s !== "";
-      });
+      return $.map(values.split("|"), s => s.trim()).filter(s => s !== "");
     }
 
     // Grab all checkbox fields for the gadgets tab
-    $("#mw-prefsection-gadgets .mw-htmlform-field-HTMLCheckField").each(function (_, element) {
-      var $element = $(element);
-      var gadgetName = $element.data("ooui").fieldWidget.tag;
-      var gadgetDefPage = gadgetName.substr("mw-input-wpgadget-".length);
-      var regex = new RegExp(
-          "^\\*\\s*" + gadgetDefPage.replace(".", "\\.") + "\\s*\\[(?<options>.+?)\\](?<sources>.+)$",
+    $("#mw-prefsection-gadgets .mw-htmlform-field-HTMLCheckField").each((_, element) => {
+      const $element = $(element);
+      const gadgetName = $element.data("ooui").fieldWidget.tag;
+      const gadgetDefPage = gadgetName.substr("mw-input-wpgadget-".length);
+      const regex = new RegExp(
+          `^\\*\\s*${gadgetDefPage.replace(".", "\\.")}\\s*\\[(?<options>.+?)](?<sources>.+)$`,
           "m"
       );
-      var match = regex.exec(gadgetsDefinition);
+      const match = regex.exec(gadgetsDefinition);
       if (match) {
-        var options = split(match.groups.options);
-        // noinspection JSUnresolvedVariable
-        var sources = split(match.groups.sources);
-        var $links = $("<span style='font-size: 0.8em'>");
+        const options = split(match.groups.options);
+        const sources = split(match.groups.sources);
+        const $links = $('<span style="font-size: 0.8em">');
         if (options.includes("default")) {
-          $links.append("<span style='font-weight: bold'>(Activé par défaut)</span> ");
+          $links.append('<span style="font-weight: bold">(Activé par défaut)</span> ');
         }
-        $links.append(getLink(gadgetDefPage, "Définition"));
+        if (options.includes("requiresES6")) {
+          $links.append('<span style="font-weight: bold">(ES6+)</span> ');
+        }
+        $links.append(getLink(gadgetDefPage, "Description"));
         if (sources.length) {
           $links.append(" - Sources\u00a0: ");
         }
-        for (var i = 0; i < sources.length; i++) {
+        for (const [i, source] of sources.entries()) {
           if (i > 0) {
             $links.append(", ");
           }
-          $links.append(getLink(sources[i], null));
+          $links.append(getLink(source, null));
         }
-        var dependencies = options.filter(function (e) {
-          // noinspection JSUnresolvedFunction
-          return e.startsWith("dependencies=");
-        });
+        const dependencies = options.filter(e => e.startsWith("dependencies="));
         if (dependencies.length) {
-          var deps = dependencies[0].substr("dependencies=".length).split(",");
+          const deps = dependencies[0].substr("dependencies=".length).split(",");
           $links.append(" - Dépendances\u00a0: ");
-          for (var j = 0; j < deps.length; j++) {
-            if (j > 0) {
+          for (const [i, dep] of deps.entries()) {
+            if (i > 0) {
               $links.append(", ");
             }
-            $links.append(deps[j]);
+            $links.append(dep);
           }
         }
         $element.find("label").append("<br>").append($links);

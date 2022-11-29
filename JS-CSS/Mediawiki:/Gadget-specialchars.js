@@ -11,141 +11,141 @@
  ********************************************************************
  * [[Catégorie:JavaScript du Wiktionnaire|specialchars.js]]
  ********************************************************************/
+// <nowiki>
+$(function () {
+  if (window.wikt) {
+    console.log("Chargement de Gadget-specialchars.js…");
 
-if (window.wikt) {
-  window.wikt.gadgets.specialChars = {
-    NAME: "Caractères spéciaux",
+    class GadgetSpecialChars {
+      static NAME = "Caractères spéciaux";
+      static VERSION = "2.1.1";
 
-    VERSION: "2.1",
+      /** @type {Object<string, string>} */
+      static #TAGS = {
+        "$ae": "æ",
+        "$AE": "Æ",
+        "$oe": "œ",
+        "$OE": "Œ",
+        "$aa": "ā",
+        "$AA": "Ā",
+        "$ii": "ī",
+        "$II": "Ī",
+        "$ee": "ē",
+        "$EE": "Ē",
+        "$oo": "ō",
+        "$OO": "Ō",
+        "$uu": "ū",
+        "$UU": "Ū",
+        "$à": "À",
+        "$ç": "Ç",
+        "$é": "É",
+        "$è": "È",
+        "$ù": "Ù",
+        "$ss": "ß",
+        "$SS": "ẞ",
+        "$s": "ſ",
+        "$.": "·",
+        "$-": "–", // En dash
+        "$_": "—", // Em dash
+        "$,": "ʻ",
+        "...": "…",
+        "<<": "«\u00a0",
+        ">>": "\u00a0»",
+      };
 
-    _TAGS: {
-      "$ae": "æ",
-      "$AE": "Æ",
-      "$oe": "œ",
-      "$OE": "Œ",
-      "$aa": "ā",
-      "$AA": "Ā",
-      "$ii": "ī",
-      "$II": "Ī",
-      "$ee": "ē",
-      "$EE": "Ē",
-      "$oo": "ō",
-      "$OO": "Ō",
-      "$uu": "ū",
-      "$UU": "Ū",
-      "...": "…",
-      "$s": "ſ",
-      "$à": "À",
-      "$é": "É",
-      "$è": "È",
-      "$ç": "Ç",
-      "$.": "·",
-      "$-": "–", // En dash
-      "$_": "—", // Em dash
-      "<<": "«\u00a0",
-      ">>": "\u00a0»",
-      "$ù": "Ù",
-      "$,": "ʻ",
-    },
+      /** @type {Object<jQuery, string>} */
+      #previousText;
+      #codeMirrorActive = false;
 
-    codeMirrorActive: false,
+      constructor() {
+        const onKeyUp = e => this.#parse($(e.target));
 
-    init: function () {
-      var self = this;
+        function mark($element) {
+          $element.data("sc-marked", true);
+        }
 
-      function onKeyUp(e) {
-        self.parse($(e.target))
-      }
+        $("input[type='text'], input[type='search'], textarea").keyup(onKeyUp).each((_, element) => mark($(element)));
+        wikt.page.onDOMChanges(mutationsList => {
+          mutationsList.forEach(mutation => {
+            if (mutation.type === "childList") {
+              $(mutation.target)
+                  .find("input[type='text']:not([data-sc-marked]), input[type='search']:not([data-sc-marked]), textarea:not([data-sc-marked])")
+                  .each((_, element) => {
+                    var $element = $(element);
+                    $element.keyup(onKeyUp);
+                    mark($element);
+                  });
 
-      function mark($element) {
-        $element.data("sc-marked", true);
-      }
-
-      $("input[type='text'], input[type='search'], textarea").keyup(onKeyUp).each(function () {
-        mark($(this));
-      });
-      wikt.page.onDOMChanges(function (mutationsList) {
-        mutationsList.forEach(function (mutation) {
-          if (mutation.type === "childList") {
-            $(mutation.target).find("input[type='text']:not([data-sc-marked]), input[type='search']:not([data-sc-marked]), textarea:not([data-sc-marked])").each(function () {
-              var $element = $(this);
-              $element.keyup(onKeyUp);
-              mark($element);
-            });
-
-            if (!self.codeMirrorActive && wikt.edit.isCodeMirrorEnabled()) {
-              wikt.edit.getCodeMirror().on("keyup", function () {
-                self.parse(wikt.edit.getEditBox());
-              });
-              self.codeMirrorActive = true;
-            }
-          }
-        });
-      }, document.body, {subtree: true, childList: true});
-      this._previousText = {};
-    },
-
-    parse: function ($input) {
-      var text = wikt.edit.getText($input);
-
-      if (text !== this._previousText[$input]) {
-        var cursorPos = wikt.edit.getCursorLocation($input);
-        var newPos = -1;
-        var start, end;
-
-        if (!wikt.edit.getSelectedText($input)) {
-          // Do not replace apostrophes when in file name.
-          var inMedia = /\[\[(Fichier|File|Image|Média|Media):[^|\]]+?$/i
-              .test(text.substring(0, cursorPos));
-
-          if (!inMedia && text.charAt(cursorPos - 1) === "'") {
-            start = cursorPos - 2;
-            end = cursorPos;
-            var before = text.charAt(start);
-            var quotes;
-
-            if (before === "\\") {
-              quotes = "'";
-              newPos = cursorPos - 1;
-            } else {
-              quotes = before + "’";
-
-              if (quotes === "’’" || quotes === "'’") {
-                quotes = "''";
+              if (!this.#codeMirrorActive && wikt.edit.isCodeMirrorEnabled()) {
+                // noinspection JSCheckFunctionSignatures
+                wikt.edit.getCodeMirror().on("keyup", () => this.#parse(wikt.edit.getEditBox()));
+                this.#codeMirrorActive = true;
               }
-              newPos = cursorPos;
             }
-            text = text.substring(0, start) + quotes + text.substring(end);
-          } else {
-            for (var tag in this._TAGS) {
-              if (this._TAGS.hasOwnProperty(tag)) {
+          });
+        }, document.body, {subtree: true, childList: true});
+        this.#previousText = {};
+      }
+
+      /**
+       * Parses the text of the given text input.
+       * @param $input {jQuery} The input element.
+       */
+      #parse($input) {
+        let text = wikt.edit.getText($input);
+
+        if (text !== this.#previousText[$input]) {
+          const cursorPos = wikt.edit.getCursorLocation($input);
+          let newPos = -1;
+          let start, end;
+
+          if (!wikt.edit.getSelectedText($input)) {
+            // Do not replace apostrophes when in file name.
+            const inMedia = /\[\[(Fichier|File|Image|Média|Media):[^|\]]+?$/i
+                .test(text.substring(0, cursorPos));
+
+            if (!inMedia && text.charAt(cursorPos - 1) === "'") {
+              start = cursorPos - 2;
+              end = cursorPos;
+              const before = text.charAt(start);
+              let quotes;
+
+              if (before === "\\") {
+                quotes = "'";
+                newPos = cursorPos - 1;
+              } else {
+                quotes = before + "’";
+                if (quotes === "’’" || quotes === "'’") {
+                  quotes = "''";
+                }
+                newPos = cursorPos;
+              }
+              text = text.substring(0, start) + quotes + text.substring(end);
+            } else {
+              for (const [tag, repl] of Object.entries(GadgetSpecialChars.#TAGS)) {
                 start = cursorPos - tag.length;
                 end = cursorPos;
-                var sub = text.substring(start, end);
-
-                if (sub === tag) {
-                  var repl = this._TAGS[tag];
+                if (text.substring(start, end) === tag) {
                   text = text.substring(0, start) + repl + text.substring(end);
                   newPos = start + repl.length;
                   break;
                 }
               }
             }
+
+            if (newPos >= 0) {
+              // noinspection JSCheckFunctionSignatures
+              wikt.edit.setText(text, $input);
+              wikt.edit.setCursorLocation(newPos, $input);
+            }
           }
 
-          if (newPos >= 0) {
-            wikt.edit.setText(text, $input);
-            wikt.edit.setCursorLocation(newPos, $input);
-          }
+          this.#previousText[$input] = text;
         }
-
-        this._previousText[$input] = text;
       }
-    },
-  };
+    }
 
-  (function () {
-    console.log("Chargement de Gadget-specialchars.js…");
-    wikt.gadgets.specialChars.init();
-  })();
-}
+    window.gadget_specialChars = new GadgetSpecialChars();
+  }
+});
+// </nowiki>

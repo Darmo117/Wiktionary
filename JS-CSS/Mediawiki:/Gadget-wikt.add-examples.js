@@ -13,6 +13,8 @@
  * v1.1 2021-09-16 Added input field for "lien" parameter.
  * v1.1.1 2021-09-17 Fixed bug when text or translation contained the "=" sign.
  * v1.1.2 2021-09-20 Restricted to main and “Reconstruction” namespaces.
+ * v1.2 2022-11-29 Better handling of multiline examples. Added checkbox to disable
+ *                 the translation. Link instead of button to show the form.
  * ------------------------------------------------------------------------------------
  * [[Catégorie:JavaScript du Wiktionnaire|add-examples.js]]
  * <nowiki>
@@ -27,13 +29,13 @@ $(function () {
   console.log("Chargement de Gadget-wikt.add-examples.js…");
 
   var NAME = "Ajouter des exemples";
-  var VERSION = "1.1.1";
+  var VERSION = "1.2";
 
-  var COOKIE_KEY_TEXT = 'add_examples_text';
-  var COOKIE_KEY_SOURCE = 'add_examples_source';
-  var COOKIE_KEY_SOURCE_URL = 'add_examples_source_url';
-  var COOKIE_KEY_TRANSLATION = 'add_examples_translation';
-  var COOKIE_KEY_TRANSCRIPTION = 'add_examples_transcription';
+  var COOKIE_KEY_TEXT = "add_examples_text";
+  var COOKIE_KEY_SOURCE = "add_examples_source";
+  var COOKIE_KEY_SOURCE_URL = "add_examples_source_url";
+  var COOKIE_KEY_TRANSLATION = "add_examples_translation";
+  var COOKIE_KEY_TRANSCRIPTION = "add_examples_transcription";
 
   var api = new mw.Api();
   var languages = {};
@@ -145,40 +147,40 @@ $(function () {
       definitionLevel.splice(0, 0, $section.attr("id"));
 
       // Remove default edit link if present
-      var $defaultEditLink = $item.find("span.stubedit");
+      var $defaultEditLink = $item.find("span.example > span.stubedit");
       if ($defaultEditLink.length) {
         $defaultEditLink.remove();
       }
 
-      // TODO réduire taille
       // Add a nice button to open the form
       var $formItem = $("<li>");
-      var button = new OO.ui.ButtonWidget({label: "Ajouter un exemple"});
-      button.on("click", function () {
-        if (!button.getData()) {
-          $formItem.append(new Form($item, button, language, definitionLevel).$element);
+      var $button = $("<a href='#'>Ajouter un exemple</a>");
+      $button.on("click", function () {
+        if (!$button.form) {
+          $formItem.append(new Form($item, $button, language, definitionLevel).$element);
         }
-        button.getData().setVisible(true);
+        $button.form.setVisible(true);
+        return false;
       });
-      $item.after($formItem.append(button.$element));
+      $item.after($formItem.append($button));
     }
   });
 
   /**
    * Constructor for the edit form.
-   * @constructor
    * @param $lastExample {jQuery} The element corresponding to the example right above the button.
-   * @param button {OO.ui.ButtonWidget} The button that shows this form.
+   * @param $button {jQuery} The button that shows this form.
    * @param language {string} Language for the example.
    * @param definitionLevel {Array<string|number>} Indices of the associated definition.
+   * @constructor
    */
-  function Form($lastExample, button, language, definitionLevel) {
+  function Form($lastExample, $button, language, definitionLevel) {
     var self = this;
     this._language = language;
     this._definitionLevel = definitionLevel;
     this._$lastExample = $lastExample;
-    this._button = button;
-    this._button.setData(this);
+    this._$button = $button;
+    this._$button.form = this;
 
     this._textInput = new OO.ui.MultilineTextInputWidget();
     var textInputLayout = new OO.ui.FieldLayout(this._textInput, {
@@ -199,6 +201,8 @@ $(function () {
     var sourceURLInputLayout = new OO.ui.FieldLayout(this._sourceURLInput, {
       label: "Adresse web de l’exemple",
       align: "top",
+      help: "Ne renseigner que dans le cas où le lien n’est pas déjà présent dans la référence de la source.",
+      helpInline: true,
     });
 
     this._translationInput = new OO.ui.MultilineTextInputWidget();
@@ -213,6 +217,17 @@ $(function () {
       align: "top",
       help: "Ne renseigner que dans le cas où le texte de l’exemple n’est pas écrit avec l’alphabet latin.",
       helpInline: true,
+    });
+
+    this._disableTranslationChk = new OO.ui.CheckboxInputWidget();
+    var disableTranslationChkLayout = new OO.ui.FieldLayout(this._disableTranslationChk, {
+      label: "Désactiver la traduction",
+      align: "inline",
+      help: "Permet d’indiquer que la traduction n’est pas nécessaire (ex\u00a0: moyen français).",
+      helpInline: true,
+    });
+    this._disableTranslationChk.on("change", function (selected) {
+      self._translationInput.setDisabled(selected);
     });
 
     this._applyButton = new OO.ui.ButtonWidget({
@@ -238,7 +253,7 @@ $(function () {
 
     var content = [textInputLayout, sourceInputLayout, sourceURLInputLayout];
     if (language !== "fr") {
-      content.push(translationInputLayout, transcriptionInputLayout);
+      content.push(translationInputLayout, transcriptionInputLayout, disableTranslationChkLayout);
     }
     var fieldsLayout = new OO.ui.FieldsetLayout({
       label: "Ajout d’un exemple en " + (languages[this._language] || "langue inconnue"),
@@ -279,7 +294,7 @@ $(function () {
      * @param visible {boolean}
      */
     setVisible: function (visible) {
-      this._button.toggle(!visible);
+      this._$button.toggle(!visible);
       this._frame.toggle(visible);
       if (visible) {
         if (!this._textInput.getValue() && $.cookie(COOKIE_KEY_TEXT)) {
@@ -322,6 +337,7 @@ $(function () {
       self._sourceURLInput.setDisabled(true);
       self._translationInput.setDisabled(true);
       self._transcriptionInput.setDisabled(true);
+      self._disableTranslationChk.setDisabled(true);
       this._applyButton.setDisabled(true);
       this._loadingImage.toggle(true);
 
@@ -341,28 +357,32 @@ $(function () {
           if (translation.includes("=")) {
             translation = "sens=" + translation;
           }
-          code += "|" + translation;
+          code += "\n|" + translation;
         }
         if (transcription) {
-          code += "|tr=" + transcription;
+          code += "\n|tr=" + transcription;
         }
       }
 
       var source = this._sourceInput.getValue().trim();
       if (source) {
-        code += "|source=" + source;
+        code += "\n|source=" + source;
       }
 
       var sourceURL = this._sourceURLInput.getValue().trim();
       if (sourceURL) {
-        code += "|lien=" + sourceURL;
+        code += "\n|lien=" + sourceURL;
       }
 
       if (this._definitionLevel.length > 2) {
-        code += "|tête=" + listMarker;
+        code += "\n|tête=" + listMarker;
       }
 
-      code += "|lang={0}}}".format(this._language);
+      if (this._disableTranslationChk.isSelected()) {
+        code += "\n|pas-trad=1";
+      }
+
+      code += "\n|lang={0}}}".format(this._language);
 
       var sectionIDPattern = new RegExp("^" + this._language + "-(?:(flex)-)?([\\w-]+)-(\\d+)$");
       var match = sectionIDPattern.exec(this._definitionLevel[0]);
@@ -438,14 +458,33 @@ $(function () {
           }
         }
 
-        // TODO détecter modèles sur plusieurs lignes -> compteur de paires de {{ }}
         // Look for last example of current definition
+        var inExample = false;
+        var stack = 0;
         for (targetLineIndex += 1; targetLineIndex < lines.length; targetLineIndex++) {
           var line_ = lines[targetLineIndex];
-          // noinspection JSUnresolvedFunction
-          if (!line_.startsWith(listMarker)
-              // "exemple" template’s arguments may span several lines
-              && !/^\s*\|/.test(line_)) {
+          if (line_.startsWith(listMarker) && line_.includes("{{exemple")) {
+            inExample = true;
+            stack = 0;
+          }
+          if (inExample) {
+            // "exemple" template’s arguments may span several lines
+            // use a stack to detect on which line the template ends
+            for (var ic = 0; ic < line_.length - 1; ic++) {
+              var c = line_.charAt(ic) + line_.charAt(ic + 1);
+              if (c === "{{") {
+                stack++;
+              } else if (c === "}}") {
+                stack--;
+              }
+            }
+            if (stack === 0) {
+              inExample = false;
+            }
+          }
+          // There should be no empty line between examples
+          if (!inExample && (!lines[targetLineIndex + 1] || !lines[targetLineIndex + 1].startsWith(listMarker))) {
+            targetLineIndex++;
             break;
           }
         }
@@ -464,7 +503,7 @@ $(function () {
         api.edit(mw.config.get("wgPageName"), function (_) {
           return {
             text: pageContent.slice(0, langSectionIndex) + lines.join("\n"),
-            summary: "Ajout d’un exemple avec le gadget « {0} » (v{1}).".format(NAME, VERSION),
+            summary: "Ajout d’un exemple avec le gadget «\u00a0{0}\u00a0» (v{1}).".format(NAME, VERSION),
           };
         }).then(function () {
           api.parse(code).done(function (data) {
@@ -511,6 +550,7 @@ $(function () {
         self._sourceURLInput.setDisabled(false);
         self._translationInput.setDisabled(false);
         self._transcriptionInput.setDisabled(false);
+        self._disableTranslationChk.setDisabled(false);
         self._applyButton.setDisabled(false);
         self._cancelButton.setDisabled(false);
         self._loadingImage.toggle(false);

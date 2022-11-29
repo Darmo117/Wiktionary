@@ -42,6 +42,43 @@
       return $.map(values.split("|"), s => s.trim()).filter(s => s !== "");
     }
 
+    /**
+     * @param imageURL {string}
+     * @param alt {string}
+     * @return {string}
+     */
+    function getImage(imageURL, alt) {
+      return `<img alt="${alt}" title="${alt}" style="height: 12px" src="${imageURL}"> `;
+    }
+
+    /**
+     * @param rawOptions {string}
+     * @return {Object<string, string[]>}
+     */
+    function extractOptions(rawOptions) {
+      const options = {};
+      for (const rawOption of split(rawOptions)) {
+        if (rawOption.includes("=")) {
+          const [option, values] = rawOption.split("=");
+          options[option] = values.split(",");
+        } else {
+          options[rawOption] = [];
+        }
+      }
+      return options;
+    }
+
+    function formatList($links, values, text, f) {
+      f = f || (v => v);
+      $links.append(` - ${text}\u00a0: `);
+      for (const [i, value] of values.entries()) {
+        if (i > 0) {
+          $links.append(", ");
+        }
+        $links.append(f(value));
+      }
+    }
+
     // Grab all checkbox fields for the gadgets tab
     $("#mw-prefsection-gadgets .mw-htmlform-field-HTMLCheckField").each((_, element) => {
       const $element = $(element);
@@ -53,36 +90,58 @@
       );
       const match = regex.exec(gadgetsDefinition);
       if (match) {
-        const options = split(match.groups.options);
+        const options = extractOptions(match.groups.options);
         const sources = split(match.groups.sources);
         const $links = $('<span style="font-size: 0.8em">');
-        if (options.includes("default")) {
-          $links.append('<span style="font-weight: bold">(Activé par défaut)</span> ');
+
+        if (options["default"]) {
+          $links.append(getImage(
+              "https://upload.wikimedia.org/wikipedia/commons/8/8e/OOjs_UI_icon_flag-ltr-progressive.svg",
+              "Activé par défaut"
+          ));
         }
-        if (options.includes("requiresES6")) {
-          $links.append('<span style="font-weight: bold">(ES6+)</span> ');
+        if (options["requiresES6"]) {
+          $links.append(getImage(
+              "https://uploads.toptal.io/blog/category/logo/120618/ECMAScript-2e939bbfa79342dcfcdbb9744afb2a50.png",
+              "ES6+"
+          ));
         }
+        if (!options["targets"] || options["targets"].includes("desktop")) {
+          $links.append(getImage(
+              "https://upload.wikimedia.org/wikipedia/commons/0/05/OOjs_UI_icon_desktop-progressive.svg",
+              "Desktop"
+          ));
+        }
+        if (options["targets"] && options["targets"].includes("mobile")) {
+          $links.append(getImage(
+              "https://upload.wikimedia.org/wikipedia/commons/3/34/OOjs_UI_icon_mobile-progressive.svg",
+              "Mobile"
+          ));
+        }
+        // Cannot compare arrays directly, compare their JSON string representations
+        if (JSON.stringify(options["type"]) === JSON.stringify(["styles"])) {
+          $links.append(getImage(
+              "https://upload.wikimedia.org/wikipedia/commons/d/d5/CSS3_logo_and_wordmark.svg",
+              "Style seulement"
+          ));
+        }
+
+        // Description
         $links.append(getLink(gadgetDefPage, "Description"));
+
+        // Sources
         if (sources.length) {
-          $links.append(" - Sources\u00a0: ");
+          formatList($links, sources, "Sources", getLink);
         }
-        for (const [i, source] of sources.entries()) {
-          if (i > 0) {
-            $links.append(", ");
-          }
-          $links.append(getLink(source, null));
+        // Rights
+        if (options["rights"]) {
+          formatList($links, options["rights"], "Droits");
         }
-        const dependencies = options.filter(e => e.startsWith("dependencies="));
-        if (dependencies.length) {
-          const deps = dependencies[0].substr("dependencies=".length).split(",");
-          $links.append(" - Dépendances\u00a0: ");
-          for (const [i, dep] of deps.entries()) {
-            if (i > 0) {
-              $links.append(", ");
-            }
-            $links.append(dep);
-          }
+        // Dependencies
+        if (options["dependencies"]) {
+          formatList($links, options["dependencies"], "Dépendances");
         }
+
         $element.find("label").append("<br>").append($links);
       }
     });

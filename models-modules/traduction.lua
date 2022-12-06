@@ -5,6 +5,8 @@ local m_langs = require("Module:langues")
 local p = {}
 
 local cats = {}
+-- List of languages for which the "’" must be kept
+local keepApos = { fr = true, de = true, }
 -- Shows categories when true.
 -- For debugging purposes, deactivate *before* saving.
 local DEBUG = false
@@ -84,7 +86,9 @@ local function generateOutgoingLink(langCode, word, status)
 
   -- Link destination
   local wikiLangCode = m_langs.get_lien_Wikimedia(langCode) or langCode
-  word = mw.ustring.gsub(word, "[’ʼ]", "'") -- apostrophes dactylographique et modificative
+  if not keepApos[langCode] then
+    word = mw.ustring.gsub(word, "[’ʼ]", "'") -- apostrophes dactylographique et modificative
+  end
   local destination = mw.ustring.format(":%s:%s", wikiLangCode, word)
 
   if not m_langs.has_wiktionary(langCode) and langCode ~= 'conv' then

@@ -22,7 +22,7 @@ $(function () {
       && ["view", "edit", "submit"].includes(mw.config.get("wgAction"))) {
     console.log("Chargement de Gadget-CreerTrad.js…");
 
-    window.wikt.gadgets.createTranslation = {
+    window.gadget_createTranslation = {
       NAME: "Créer traduction",
 
       VERSION: "2.2",
@@ -129,7 +129,7 @@ $(function () {
         for (var i = 0; i < wikicodeLines.length && !translationLine; i++) {
           var line = wikicodeLines[i];
           var translationMatch = new RegExp(
-              "{{trad(?:\\+|-|--)\\|" + this._langCode + "\\|(?:[^}]*?tradi=)?" + this._translation
+              "{{trad[+-]?\\|" + this._langCode + "\\|(?:[^}]*?tradi=)?" + this._translation
           ).exec(line);
           if (translationMatch) {
             translationLineIndex = i;
@@ -143,7 +143,7 @@ $(function () {
         }
 
         var self = this;
-        var tradTemplateArgs = $.grep(translationLine.match(/{{trad(?:\+|-|--)\|[^}]+?}}/g), function (m) {
+        var tradTemplateArgs = $.grep(translationLine.match(/{{trad[+-]?\|[^}]+?}}/g), function (m) {
           return m.includes(self._translation);
         })[0];
         var templateArgsArray = $.map(
@@ -284,7 +284,7 @@ $(function () {
         newWikicode += "[[{0}#fr|{1}]].\n".format(this._word, this._word.charAt(0).toUpperCase() + this._word.substring(1));
         newWikicode += "#* {{exemple|lang={0}}}\n\n".format(this._langCode);
 
-        // Go to translation’s page.
+        // Get HTML code of translation’s page.
         location.href = mw.config.get("wgServer") + mw.config.get("wgScript")
             + "?title={0}&action=edit&preload-edit-text={1}&preload-edit-summary={2}".format(
                 encodeURIComponent(this._translation),
@@ -330,7 +330,7 @@ $(function () {
      */
 
     // Catalan/Catalan
-    wikt.gadgets.createTranslation.registerGeneratorForLanguage(
+    gadget_createTranslation.registerGeneratorForLanguage(
         "ca",
         function (translation, nature, gender) {
           var wikicode = "";
@@ -348,7 +348,7 @@ $(function () {
         }
     );
     // Esperanto/Espéranto
-    wikt.gadgets.createTranslation.registerGeneratorForLanguage(
+    gadget_createTranslation.registerGeneratorForLanguage(
         "eo",
         function (translation, nature) {
           var wikicode = "";
@@ -368,7 +368,7 @@ $(function () {
         }
     );
     // Spanish/Espagnol
-    wikt.gadgets.createTranslation.registerGeneratorForLanguage(
+    gadget_createTranslation.registerGeneratorForLanguage(
         "es",
         function (translation, nature, gender) {
           var wikicode = "";
@@ -386,7 +386,7 @@ $(function () {
         }
     );
     // Italian/Italien
-    wikt.gadgets.createTranslation.registerGeneratorForLanguage(
+    gadget_createTranslation.registerGeneratorForLanguage(
         "it",
         function (translation, nature, gender) {
           var wikicode = "";
@@ -406,7 +406,7 @@ $(function () {
         }
     );
     // Occitan/Occitan
-    wikt.gadgets.createTranslation.registerGeneratorForLanguage(
+    gadget_createTranslation.registerGeneratorForLanguage(
         "oc",
         function (translation, nature, gender) {
           var wikicode = "";
@@ -426,7 +426,7 @@ $(function () {
         }
     );
     // Russian/Russe
-    wikt.gadgets.createTranslation.registerGeneratorForLanguage(
+    gadget_createTranslation.registerGeneratorForLanguage(
         "ru",
         function (translation, nature, gender) {
           var wikicode = "";
@@ -444,7 +444,7 @@ $(function () {
         }
     );
     // Swedish/Suédois
-    wikt.gadgets.createTranslation.registerGeneratorForLanguage(
+    gadget_createTranslation.registerGeneratorForLanguage(
         "sv",
         function (translation, nature, gender) {
           var wikicode = "";
@@ -498,7 +498,7 @@ $(function () {
         }
     );
 
-    wikt.gadgets.createTranslation.init();
+    gadget_createTranslation.init();
   }
 });
 // </nowiki>

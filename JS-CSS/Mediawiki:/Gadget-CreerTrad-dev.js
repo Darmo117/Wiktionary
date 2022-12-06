@@ -20,7 +20,7 @@ $(function () {
       && ["view", "edit", "submit"].includes(mw.config.get("wgAction"))) {
     console.log("Chargement de Gadget-CreerTrad-dev.js…");
 
-    window.wikt.gadgets.createTranslation = {
+    window.gadget_createTranslation = {
       NAME: "Créer traduction",
 
       VERSION: "2.1",
@@ -43,7 +43,7 @@ $(function () {
       /**
        * Initializes this gadget by hooking a callback to
        * every red links in the infoboxes with the "translations" class.
-       * @param editMode {boolean} Whether the gadget should be loaded in edit or view mode.
+       * @param editMode {boolean?} Whether the gadget should be loaded in edit or view mode.
        */
       init: function (editMode) {
         this._editMode = !!editMode;
@@ -338,7 +338,7 @@ $(function () {
      */
 
     // Catalan/Catalan
-    wikt.gadgets.createTranslation.registerGeneratorForLanguage(
+    gadget_createTranslation.registerGeneratorForLanguage(
         "ca",
         function (translation, nature, gender) {
           var wikicode = "";
@@ -356,7 +356,7 @@ $(function () {
         }
     );
     // Esperanto/Espéranto
-    wikt.gadgets.createTranslation.registerGeneratorForLanguage(
+    gadget_createTranslation.registerGeneratorForLanguage(
         "eo",
         function (translation, nature) {
           var wikicode = "";
@@ -376,7 +376,7 @@ $(function () {
         }
     );
     // Spanish/Espagnol
-    wikt.gadgets.createTranslation.registerGeneratorForLanguage(
+    gadget_createTranslation.registerGeneratorForLanguage(
         "es",
         function (translation, nature, gender) {
           var wikicode = "";
@@ -394,7 +394,7 @@ $(function () {
         }
     );
     // Italian/Italien
-    wikt.gadgets.createTranslation.registerGeneratorForLanguage(
+    gadget_createTranslation.registerGeneratorForLanguage(
         "it",
         function (translation, nature, gender) {
           var wikicode = "";
@@ -414,7 +414,7 @@ $(function () {
         }
     );
     // Occitan/Occitan
-    wikt.gadgets.createTranslation.registerGeneratorForLanguage(
+    gadget_createTranslation.registerGeneratorForLanguage(
         "oc",
         function (translation, nature, gender) {
           var wikicode = "";
@@ -434,7 +434,7 @@ $(function () {
         }
     );
     // Russian/Russe
-    wikt.gadgets.createTranslation.registerGeneratorForLanguage(
+    gadget_createTranslation.registerGeneratorForLanguage(
         "ru",
         function (translation, nature, gender) {
           var wikicode = "";
@@ -452,7 +452,7 @@ $(function () {
         }
     );
     // Swedish/Suédois
-    wikt.gadgets.createTranslation.registerGeneratorForLanguage(
+    gadget_createTranslation.registerGeneratorForLanguage(
         "sv",
         function (translation, nature, gender) {
           var wikicode = "";
@@ -507,6 +507,6 @@ $(function () {
     );
 
     var editMode = ["edit", "submit"].includes(mw.config.get("wgAction"));
-    wikt.gadgets.createTranslation.init(editMode);
+    gadget_createTranslation.init(editMode);
   }
 });

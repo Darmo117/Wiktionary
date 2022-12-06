@@ -12,7 +12,7 @@
  * [[Catégorie:JavaScript du Wiktionnaire|translation editor]]
  */
 
-/* global jQuery, mediaWiki, editor, silentFailStorage, wikt.gadgets.createTranslation.init, wgPageName */
+/* global jQuery, mediaWiki, editor, silentFailStorage, gadget_createTranslation, wgPageName */
 
 (function (mw, $) { // Closure (fermée à la toute fin du script)
   'use strict';
@@ -484,7 +484,9 @@
         }).then(function (data) {
           // Get the first (and only) page from data.query.pages
           // noinspection LoopStatementThatDoesntLoopJS
-          for (var pageid in data.query.pages) break;
+          for (var pageid in data.query.pages) {
+            break;
+          }
           // noinspection JSUnresolvedVariable
           tab_langues = JSON.parse(data.query.pages[pageid].revisions[0]['*']);
 
@@ -740,7 +742,9 @@
                     return false;
                   }
                   // on ignore les {{ébauche-trad}}
-                  if (match[1] === 'Traductions manquantes.') return false;
+                  if (match[1] === 'Traductions manquantes.') {
+                    return false;
+                  }
                   if (sortkey(match[1].toLowerCase()) === sortkey(lang_name)) {
                     if ($(item).children('dl').length) { // si la langue
                       // a des dialectes à des niveaux différents
@@ -786,9 +790,9 @@
             // Si le gadget de création de traductions est activé,
             // on colore directement en bleu les traductions à créer
             // pour éviter d'avoir à recharger la page
-            if (window.wikt.gadgets.createTranslation) {
+            if (window.gadget_createTranslation) {
               // noinspection JSCheckFunctionSignatures
-              window.wikt.gadgets.createTranslation.init();
+              window.gadget_createTranslation.init();
             }
           },
           undo: function () {
@@ -816,36 +820,38 @@
   }
 
   function page_exists(lang_code, page) {
-    var
-        domain,
-        wm_liens = {
-          'cmn': 'zh',
-          'fra-nor': 'nrm',
-          'gsw': 'als',
-          'ko-Hani': 'ko',
-          'lzh': 'zh-classical',
-          'nan': 'zh-min-nan',
-          'nb': 'no',
-          'nn': 'no',
-          'rup': 'roa-rup',
-          'yue': 'zh-yue'
-        },
-        wiktios = [
-          'en', 'mg', 'fr', 'zh', 'lt', 'ru', 'es', 'el', 'pl', 'sv', 'ko',
-          'nl', 'de', 'tr', 'ku', 'ta', 'io', 'kn', 'fi', 'vi', 'hu', 'pt',
-          'chr', 'no', 'ml', 'my', 'id', 'it', 'li', 'ro', 'et', 'ja', 'te',
-          'jv', 'fa', 'cs', 'ca', 'ar', 'eu', 'gl', 'lo', 'uk', 'br', 'fj',
-          'eo', 'bg', 'hr', 'th', 'oc', 'is', 'vo', 'ps', 'zh-min-nan',
-          'simple', 'cy', 'uz', 'scn', 'sr', 'af', 'ast', 'az', 'da', 'sw',
-          'fy', 'tl', 'he', 'nn', 'wa', 'ur', 'la', 'sq', 'hy', 'sm', 'sl',
-          'ka', 'pnb', 'nah', 'hi', 'tt', 'bs', 'lb', 'lv', 'tk', 'sk', 'hsb',
-          'nds', 'kk', 'ky', 'be', 'km', 'mk', 'ga', 'wo', 'ms', 'ang', 'co',
-          'sa', 'gn', 'mr', 'csb', 'ug', 'st', 'ia', 'sd', 'sh', 'si', 'mn',
-          'tg', 'or', 'kl', 'vec', 'jbo', 'an', 'ln', 'fo', 'zu', 'gu', 'kw',
-          'gv', 'rw', 'qu', 'ss', 'ie', 'mt', 'om', 'bn', 'pa', 'roa-rup',
-          'iu', 'so', 'am', 'su', 'za', 'gd', 'mi', 'tpi', 'ne', 'yi', 'ti',
-          'sg', 'na', 'dv', 'tn', 'ts', 'ha', 'ks', 'ay'
-        ];
+    var domain;
+    var wm_liens = {
+      'cmn': 'zh',
+      'fra-nor': 'nrm',
+      'gsw': 'als',
+      'ko-Hani': 'ko',
+      'lzh': 'zh-classical',
+      'nan': 'zh-min-nan',
+      'nb': 'no',
+      'nn': 'no',
+      'rup': 'roa-rup',
+      'yue': 'zh-yue',
+    };
+    var wiktios = [
+      'en', 'mg', 'fr', 'zh', 'lt', 'ru', 'es', 'el', 'pl', 'sv', 'ko',
+      'nl', 'de', 'tr', 'ku', 'ta', 'io', 'kn', 'fi', 'vi', 'hu', 'pt',
+      'chr', 'no', 'ml', 'my', 'id', 'it', 'li', 'ro', 'et', 'ja', 'te',
+      'jv', 'fa', 'cs', 'ca', 'ar', 'eu', 'gl', 'lo', 'uk', 'br', 'fj',
+      'eo', 'bg', 'hr', 'th', 'oc', 'is', 'vo', 'ps', 'zh-min-nan',
+      'simple', 'cy', 'uz', 'scn', 'sr', 'af', 'ast', 'az', 'da', 'sw',
+      'fy', 'tl', 'he', 'nn', 'wa', 'ur', 'la', 'sq', 'hy', 'sm', 'sl',
+      'ka', 'pnb', 'nah', 'hi', 'tt', 'bs', 'lb', 'lv', 'tk', 'sk', 'hsb',
+      'nds', 'kk', 'ky', 'be', 'km', 'mk', 'ga', 'wo', 'ms', 'ang', 'co',
+      'sa', 'gn', 'mr', 'csb', 'ug', 'st', 'ia', 'sd', 'sh', 'si', 'mn',
+      'tg', 'or', 'kl', 'vec', 'jbo', 'an', 'ln', 'fo', 'zu', 'gu', 'kw',
+      'gv', 'rw', 'qu', 'ss', 'ie', 'mt', 'om', 'bn', 'pa', 'roa-rup',
+      'iu', 'so', 'am', 'su', 'za', 'gd', 'mi', 'tpi', 'ne', 'yi', 'ti',
+      'sg', 'na', 'dv', 'tn', 'ts', 'ha', 'ks', 'ay',
+    ]
+    var keepApos = [
+      'fr', 'de',
+    ];
 
     if (wm_liens.hasOwnProperty(lang_code)) {
       domain = wm_liens[lang_code] + '.wiktionary';
@@ -862,8 +868,10 @@
 
     // traiter l'apostrophe typographique comme une apostrophe dactylographique
     // dans les liens interwikis, les autres wiktionnaires privilégiant la seconde
-    page = page.replace('’', '\'');
-    page = page.replace('ʼ', '\'');
+    if ($.inArray(lang_code, keepApos) === -1) {
+      page = page.replace('’', "'");
+      page = page.replace('ʼ', "'");
+    }
 
     var def = $.Deferred();
     $.ajax({
@@ -1103,7 +1111,9 @@
   function extend_error(name, p1_name) {
     function E(p1) {
       this.message = p1;
-      if (p1_name) this[p1_name] = p1;
+      if (p1_name) {
+        this[p1_name] = p1;
+      }
     }
 
     E.prototype = new Error();
@@ -1125,5 +1135,4 @@
   window.parse_wikitext = parse_wikitext;
   window.add_heading_updater = add_heading_updater;
   window.add_translation_form = add_translation_form;
-
 }(mediaWiki, jQuery)); // Fin de la closure ouverte au tout début

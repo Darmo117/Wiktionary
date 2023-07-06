@@ -88,6 +88,7 @@ end
 function p.check_pron(langCode, langName, pron)
   local charset = tree[langCode]['charset']
 
+  pron = mw.ustring.gsub(pron, "&nbsp;", "")
   -- Itération sur chaque caractère de la prononciation
   for c in mw.ustring.gmatch(pron, '.') do
     if not m_table.contains(charset, c) then
@@ -162,6 +163,7 @@ end
 --- 1 = pays/région
 --- 2 ou pron = prononciation en API
 --- 3 ou lang = code ISO de la langue (obligatoire)
+--- 4 ou niveau = niveau de maitrise de la langue de la/le locuteurice.
 --- audio = nom du fichier audio (sans le préfixe File:)
 --- titre = texte prononcé si différent du mot vedette
 function p.pron_reg(frame)
@@ -172,7 +174,7 @@ function p.pron_reg(frame)
   }
 
   local params = {
-    [1] = { default = '<small>(Région à préciser)</small>' },
+    [1] = {},
     [2] = {},
     [3] = { required = true },
     [4] = { enum = m_table.keysToList(levels) },
@@ -191,32 +193,54 @@ function p.pron_reg(frame)
   local title = args['titre']
 
   -- Génération du wikicode
-  local text = region .. '&nbsp;: '
+  local formattedRegion = region or '<small>(Région à préciser)</small>'
+  local text = mw.ustring.format(
+      '<span class="audio-pronunciation"><span class="audio-region" data-region="%s">%s</span>&nbsp;: ',
+      mw.text.encode(region or ""),
+      formattedRegion
+  )
 
   if pron or audioFile then
-    if audioFile and audioFile ~= '' then
-      text = text .. 'écouter «&nbsp;' .. title
+    local apiPron = mw.ustring.format(
+        '<span class="audio-ipa" data-ipa="%s">%s</span>',
+        pron or "",
+        p.lua_pron(pron, langCode, '[]', true)
+    )
+    if audioFile then
+      text = text .. mw.ustring.format(
+          'écouter «&nbsp;<span class="audio-word" data-word="%s">%s</span>',
+          mw.text.encode(title),
+          title
+      )
       if langCode and mw.title.getCurrentTitle().namespace == 0 then
         local langName = m_langues.get_nom(langCode)
         if langName then
-          text = text .. '[[Catégorie:Prononciations audio en ' .. langName .. ']]'
+          text = text .. mw.ustring.format('[[Catégorie:Prononciations audio en %s]]', langName)
         else
           text = text .. '[[Catégorie:Prononciations audio sans langue précisée]]'
         end
       end
-      text = text .. ' ' .. p.lua_pron(pron, langCode, '[]', true)
-      text = text .. '&nbsp;»[[File:' .. audioFile .. ']]'
+      text = text .. ' ' .. apiPron
+      text = text .. mw.ustring.format(
+          '&nbsp;» <span class="audio-file" data-file="%s">[[File:%s]]</span>',
+          mw.text.encode(audioFile),
+          audioFile
+      )
     else
-      text = text .. p.lua_pron(pron, langCode, '[]', true)
+      text = text .. apiPron
     end
     if level then
-      text = text .. mw.ustring.format(" (''%s'')", levels[level])
+      text = text .. mw.ustring.format(
+          [[ (''<span class="audio-mastery-level" data-level="%s">%s</span>'')]],
+          level,
+          levels[level]
+      )
     end
   else
     text = text .. '<small>merci de préciser une prononciation phonétique ou un fichier audio (voir la [[Modèle:écouter|notice]])</small>'
   end
 
-  return text
+  return text .. '</span>'
 end
 
 --- Fonction destinée à être utilisée directement depuis le modèle h aspiré.

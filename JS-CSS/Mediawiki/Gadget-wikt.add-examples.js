@@ -316,7 +316,7 @@ $(function () {
     },
 
     /**
-     * Clears all fields contained in this forms.
+     * Clears all fields contained in this form.
      */
     clear: function () {
       this._textInput.setValue("");
@@ -490,8 +490,8 @@ $(function () {
         }
 
         // Insert new example into page content
-        var replace = /#+\*\s*{{exemple\|lang=[^|}]+}}/.test(lines[targetLineIndex - 1]);
-        if (replace) {
+        var emptyTemplate = /#+\* *{{exemple *\| *lang *=[^|}]+}}/.test(lines[targetLineIndex - 1]);
+        if (emptyTemplate) {
           // Replace empty template with new example
           lines.splice(targetLineIndex - 1, 1, code);
         } else {
@@ -510,7 +510,7 @@ $(function () {
             var $renderedExample = $(data).find("ul > li").html();
             var $item;
             // Insert rendered example into page
-            if (replace) {
+            if (emptyTemplate) {
               self._$lastExample.html($renderedExample);
               $item = self._$lastExample;
             } else {

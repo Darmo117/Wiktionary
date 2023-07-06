@@ -1,31 +1,51 @@
 local m_bases = require("Module:bases")
+local m_table = require("Module:table")
 local m_params = require("Module:paramètres")
 
 local p = {}
 
---- Remove all diacritics from a UTF-8 string.
+--- Normalize a string before building its alphagramme.
+--- @param langCode string Language code.
 --- @param s string The string.
 --- @return string The same string with all diacritics stripped.
-local function removeDiacritics(s)
-  return mw.ustring.gsub(mw.ustring.lower(s), "%w", function(c)
-    -- Decompose the character into NFD form (letter followed by eventual combining diacritics)
-    -- then keep only the letter (first char)
-    return mw.ustring.sub(mw.ustring.toNFD(c), 1, 1)
+local function normalize(langCode, s)
+  local langConfig
+  local dataModuleTitle = "Module:anagrammes/" .. langCode
+  if mw.title.new(dataModuleTitle).exists then
+    langConfig = require(dataModuleTitle)
+  else
+    langConfig = {
+      keep = {},
+      mappings = {},
+    }
+  end
+  local res = mw.ustring.gsub(mw.ustring.lower(s), "%w", function(c)
+    if m_table.contains(langConfig.keep, c) then
+      return c
+    else
+      -- Decompose the character into NFD form (base letter followed by eventual combining diacritics)
+      -- then keep only the letter (first char)
+      return mw.ustring.sub(mw.ustring.toNFD(c), 1, 1)
+    end
   end)
+  for k, v in pairs(langConfig.mappings) do
+    res = mw.ustring.gsub(res, k, v)
+  end
+  return res
 end
 
-local function _toTable(title, rawTable)
+local function _toTable(langCode, title, rawTable)
   local i = 1
   local maxLinks = 200
   local alphasTable = {}
   local paramsTable = {}
+  local alpha_title = mw.ustring.gsub(normalize(langCode, title), "[()’ -]", "")
 
   while rawTable[i] ~= nil and i <= maxLinks do
     local item = mw.text.trim(rawTable[i])
 
-    if item ~= title then
-      local alpha = mw.ustring.gsub(removeDiacritics(item), "-", "")
-
+    local alpha = mw.ustring.gsub(normalize(langCode, item), "[()’ -]", "")
+    if alpha ~= alpha_title then
       if paramsTable[alpha] ~= nil then
         paramsTable[alpha] = mw.ustring.format("%s, [[%s]]", paramsTable[alpha], item)
       else
@@ -60,24 +80,32 @@ local function _buildListText(list)
   return text
 end
 
-local function _makeText(title, values)
-  local alphas, args = _toTable(title, values)
+local function _makeText(langCode, title, values)
+  local alphas, args = _toTable(langCode, title, values)
   return _buildListText(_getValues(alphas, args))
 end
 
+--- Invoqué par [[Modèle:anagrammes]]
+--- @param frame frame
 function p.listeAnagrammes(frame)
-  return _makeText(mw.title.getCurrentTitle().fullText, frame:getParent().args)
+  local langCode = frame:getParent().args["lang"]
+  return _makeText(langCode, mw.title.getCurrentTitle().fullText, frame:getParent().args)
 end
 
+--- Invoqué par [[Modèle:voir anagrammes]]
+--- @param frame frame
 function p.alphagramme(frame)
   local args = m_params.process(frame.args, {
     [1] = { },
     [2] = { },
   })
 
-  -- Do not remove, not used yet.
-  local lang = args[1]
-  local pageName = mw.ustring.gsub(removeDiacritics(args[2]), "[/ ’-]", "")
+  local langCode = args[1]
+  if langCode == nil then
+    return '<span style="color:red">Code de langue absent !</span>[[Catégorie:Appel au modèle voir anagrammes sans code de langue]]'
+  end
+
+  local pageName = mw.ustring.gsub(normalize(langCode, args[2]), "[/ ’-]", "")
   local tablePageName = {}
 
   -- Sépare le mot, caractère par caractère
@@ -88,7 +116,7 @@ function p.alphagramme(frame)
   table.sort(tablePageName)
 
   local alphagramme = table.concat(tablePageName, "")
-  local templateName = mw.ustring.format("anagrammes/%s/%s", lang, alphagramme)
+  local templateName = mw.ustring.format("anagrammes/%s/%s", langCode, alphagramme)
 
   if mw.title.new("Modèle:" .. templateName).exists then
     return mw.ustring.format("→ [[Spécial:EditPage/Modèle:%s|Modifier la liste d’anagrammes]]", templateName)

@@ -1,4 +1,5 @@
 local m_langs = require("Module:langues")
+local m_params = require("Module:paramètres")
 
 local p = {}
 
@@ -6,7 +7,7 @@ local topCategoryName = "Personnes ayant un intérêt ou parlant %s"
 
 local levelCategoriesNames = {
   ["Personnes ayant un intérêt ou parlant (.+)"] = {
-    desc = "Ces personnes parlent %s à différents niveaux."
+    desc = "Ces personnes parlent %s à différents niveaux.",
   },
   ["Personnes ne parlant pas (.+) mais s’y intéressant"] = {
     level = "0",
@@ -34,13 +35,15 @@ local levelCategoriesNames = {
   },
 }
 
-local function _description(title)
-  for k, v in pairs(levelCategoriesNames) do
-    local langName = mw.ustring.match(title, "^" .. k .. "$")
+--- @param title string Page title.
+--- @param code string Optional language code if undefined in [[Module:langues/data]].
+local function _description(title, code)
+  for regex, data in pairs(levelCategoriesNames) do
+    local langName = mw.ustring.match(title, "^" .. regex .. "$")
     if langName then
-      local desc = mw.ustring.format(v.desc, langName)
-      local level = v.level
-      local code = m_langs._getLanguageCode(langName)
+      local desc = mw.ustring.format(data.desc, langName)
+      local level = data.level
+      code = code or m_langs._getLanguageCode(langName)
       local categoryName = mw.ustring.format(topCategoryName, langName)
 
       local res = desc
@@ -55,11 +58,18 @@ local function _description(title)
     end
   end
 
-  return '<span style="color: red; font-weight: bold">Le titre de la page ne correspond pas aux critères.</span>'
+  return '<span style="color: red; font-weight: bold">Le titre de la page ne correspond pas aux critères.</span>[[Catégorie:Titre d’une catégorie Babel invalide]]'
 end
 
 function p.description(frame)
-  return _description(mw.title.getCurrentTitle().text)
+  local args, success = m_params.process(frame:getParent().args, {
+    [1] = {},
+  })
+  if success then
+    return _description(mw.title.getCurrentTitle().text, args[1])
+  else
+    error(args[3])
+  end
 end
 
 return p

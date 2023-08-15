@@ -1,19 +1,19 @@
--- Liste des scripts Unicode/ISO 15924.
--- Veuillez ne pas modifier cette page manuellement, elle est générée automatiquement.
--- Dernière génération : 2020-04-04 23:35:02.455315
+-- List of Unicode/ISO 15924 scripts.
+-- Do not edit this page manually as it is automatically generated.
+-- Last generation: 2023-08-15 20:21:48.945480
 
--- Sources :
+-- Sources:
 -- https://unicode.org/iso15924/iso15924-text.html
 -- https://www.unicode.org/Public/UCD/latest/ucd/Scripts.txt
--- https://en.wikipedia.org/w/index.php?title=Template:ISO_15924_script_codes_and_related_Unicode_data&oldid=945489720
+-- https://en.wikipedia.org/w/index.php?title=Template:ISO_15924_script_codes_and_related_Unicode_data&oldid=1116205109
 
--- Valeurs : code, sens d’écriture, {nom anglais, nom français}
--- Sens d’écriture :
--- lr : gauche à droite
--- rl : droite à gauche
--- tb : haut en bas
--- m  : mixte (chorasmien et ogham uniquement)
--- i  : hérité (diacritiques)
+-- Values: code, writing direction, vertical, {english name, french name}
+-- Writing directions:
+-- * lr: left to right
+-- * rl: right to left
+-- * tb: top to bottom
+-- * m: mixed
+-- * i: inherited (diacritics, common characters, etc.)
 
 return {
   ["Adlam"] = { code = "Adlam", direction = "rl", name = { en = "Adlam", fr = "adlam" } },
@@ -39,11 +39,12 @@ return {
   ["Chakma"] = { code = "Chakma", direction = "lr", name = { en = "Chakma", fr = "chakma" } },
   ["Cham"] = { code = "Cham", direction = "lr", name = { en = "Cham", fr = "cham (čam, tcham)" } },
   ["Cherokee"] = { code = "Cherokee", direction = "lr", name = { en = "Cherokee", fr = "tchérokî" } },
-  ["Chorasmian"] = { code = "Chorasmian", direction = "m", name = { en = "Chorasmian", fr = "chorasmien" } },
-  ["Common"] = { code = "Common", direction = "m", name = { en = "Code for undetermined script", fr = "codet pour écriture indéterminée" } },
+  ["Chorasmian"] = { code = "Chorasmian", direction = "rl", name = { en = "Chorasmian", fr = "chorasmien" } },
+  ["Common"] = { code = "Common", direction = "i", name = { en = "Code for undetermined script", fr = "codet pour écriture indéterminée" } },
   ["Coptic"] = { code = "Coptic", direction = "lr", name = { en = "Coptic", fr = "copte" } },
   ["Cuneiform"] = { code = "Cuneiform", direction = "lr", name = { en = "Cuneiform, Sumero-Akkadian", fr = "cunéiforme suméro-akkadien" } },
   ["Cypriot"] = { code = "Cypriot", direction = "rl", name = { en = "Cypriot syllabary", fr = "syllabaire chypriote" } },
+  ["Cypro_Minoan"] = { code = "Cypro_Minoan", direction = "lr", name = { en = "Cypro-Minoan", fr = "syllabaire chypro-minoen" } },
   ["Cyrillic"] = { code = "Cyrillic", direction = "lr", name = { en = "Cyrillic", fr = "cyrillique" } },
   ["Deseret"] = { code = "Deseret", direction = "lr", name = { en = "Deseret (Mormon)", fr = "déseret (mormon)" } },
   ["Devanagari"] = { code = "Devanagari", direction = "lr", name = { en = "Devanagari (Nagari)", fr = "dévanâgarî" } },
@@ -77,6 +78,7 @@ return {
   ["Kaithi"] = { code = "Kaithi", direction = "lr", name = { en = "Kaithi", fr = "kaithî" } },
   ["Kannada"] = { code = "Kannada", direction = "lr", name = { en = "Kannada", fr = "kannara (canara)" } },
   ["Katakana"] = { code = "Katakana", direction = "lr", name = { en = "Katakana", fr = "katakana" } },
+  ["Kawi"] = { code = "Kawi", direction = "lr", name = { en = "Kawi", fr = "kawi" } },
   ["Kayah_Li"] = { code = "Kayah_Li", direction = "lr", name = { en = "Kayah Li", fr = "kayah li" } },
   ["Kharoshthi"] = { code = "Kharoshthi", direction = "rl", name = { en = "Kharoshthi", fr = "kharochthî" } },
   ["Khitan_Small_Script"] = { code = "Khitan_Small_Script", direction = "tb", name = { en = "Khitan small script", fr = "petite écriture khitan" } },
@@ -111,13 +113,14 @@ return {
   ["Multani"] = { code = "Multani", direction = "lr", name = { en = "Multani", fr = "multanî" } },
   ["Myanmar"] = { code = "Myanmar", direction = "lr", name = { en = "Myanmar (Burmese)", fr = "birman" } },
   ["Nabataean"] = { code = "Nabataean", direction = "rl", name = { en = "Nabataean", fr = "nabatéen" } },
+  ["Nag_Mundari"] = { code = "Nag_Mundari", direction = "lr", name = { en = "Nag Mundari", fr = "nag mundari" } },
   ["Nandinagari"] = { code = "Nandinagari", direction = "lr", name = { en = "Nandinagari", fr = "nandinâgarî" } },
   ["New_Tai_Lue"] = { code = "New_Tai_Lue", direction = "lr", name = { en = "New Tai Lue", fr = "nouveau taï-lue" } },
   ["Newa"] = { code = "Newa", direction = "lr", name = { en = "Newa, Newar, Newari, Nepāla lipi", fr = "néwa, néwar, néwari, nepāla lipi" } },
   ["Nko"] = { code = "Nko", direction = "rl", name = { en = "N’Ko", fr = "n’ko" } },
   ["Nushu"] = { code = "Nushu", direction = "lr", name = { en = "Nüshu", fr = "nüshu" } },
   ["Nyiakeng_Puachue_Hmong"] = { code = "Nyiakeng_Puachue_Hmong", direction = "lr", name = { en = "Nyiakeng Puachue Hmong", fr = "nyiakeng puachue hmong" } },
-  ["Ogham"] = { code = "Ogham", direction = "m", name = { en = "Ogham", fr = "ogam" } },
+  ["Ogham"] = { code = "Ogham", direction = "lr", name = { en = "Ogham", fr = "ogam" } },
   ["Ol_Chiki"] = { code = "Ol_Chiki", direction = "lr", name = { en = "Ol Chiki (Ol Cemet’, Ol, Santali)", fr = "ol tchiki" } },
   ["Old_Hungarian"] = { code = "Old_Hungarian", direction = "rl", name = { en = "Old Hungarian (Hungarian Runic)", fr = "runes hongroises (ancien hongrois)" } },
   ["Old_Italic"] = { code = "Old_Italic", direction = "lr", name = { en = "Old Italic (Etruscan, Oscan, etc.)", fr = "ancien italique (étrusque, osque, etc.)" } },
@@ -127,6 +130,7 @@ return {
   ["Old_Sogdian"] = { code = "Old_Sogdian", direction = "rl", name = { en = "Old Sogdian", fr = "ancien sogdien" } },
   ["Old_South_Arabian"] = { code = "Old_South_Arabian", direction = "rl", name = { en = "Old South Arabian", fr = "sud-arabique, himyarite" } },
   ["Old_Turkic"] = { code = "Old_Turkic", direction = "rl", name = { en = "Old Turkic, Orkhon Runic", fr = "orkhon" } },
+  ["Old_Uyghur"] = { code = "Old_Uyghur", direction = "lr", name = { en = "Old Uyghur", fr = "ancien ouïgour" } },
   ["Oriya"] = { code = "Oriya", direction = "lr", name = { en = "Oriya (Odia)", fr = "oriyâ (odia)" } },
   ["Osage"] = { code = "Osage", direction = "lr", name = { en = "Osage", fr = "osage" } },
   ["Osmanya"] = { code = "Osmanya", direction = "lr", name = { en = "Osmanya", fr = "osmanais" } },
@@ -158,6 +162,7 @@ return {
   ["Tai_Viet"] = { code = "Tai_Viet", direction = "lr", name = { en = "Tai Viet", fr = "taï viêt" } },
   ["Takri"] = { code = "Takri", direction = "lr", name = { en = "Takri, Ṭākrī, Ṭāṅkrī", fr = "tâkrî" } },
   ["Tamil"] = { code = "Tamil", direction = "lr", name = { en = "Tamil", fr = "tamoul" } },
+  ["Tangsa"] = { code = "Tangsa", direction = "lr", name = { en = "Tangsa", fr = "tangsa" } },
   ["Tangut"] = { code = "Tangut", direction = "lr", name = { en = "Tangut", fr = "tangoute" } },
   ["Telugu"] = { code = "Telugu", direction = "lr", name = { en = "Telugu", fr = "télougou" } },
   ["Thaana"] = { code = "Thaana", direction = "rl", name = { en = "Thaana", fr = "thâna" } },
@@ -165,13 +170,15 @@ return {
   ["Tibetan"] = { code = "Tibetan", direction = "lr", name = { en = "Tibetan", fr = "tibétain" } },
   ["Tifinagh"] = { code = "Tifinagh", direction = "lr", name = { en = "Tifinagh (Berber)", fr = "tifinagh (berbère)" } },
   ["Tirhuta"] = { code = "Tirhuta", direction = "lr", name = { en = "Tirhuta", fr = "tirhouta" } },
+  ["Toto"] = { code = "Toto", direction = "lr", name = { en = "Toto", fr = "toto" } },
   ["Ugaritic"] = { code = "Ugaritic", direction = "lr", name = { en = "Ugaritic", fr = "ougaritique" } },
   ["Vai"] = { code = "Vai", direction = "lr", name = { en = "Vai", fr = "vaï" } },
+  ["Vithkuqi"] = { code = "Vithkuqi", direction = "lr", name = { en = "Vithkuqi", fr = "vithkuqi" } },
   ["Wancho"] = { code = "Wancho", direction = "lr", name = { en = "Wancho", fr = "wantcho" } },
   ["Warang_Citi"] = { code = "Warang_Citi", direction = "lr", name = { en = "Warang Citi (Varang Kshiti)", fr = "warang citi" } },
   ["Yezidi"] = { code = "Yezidi", direction = "rl", name = { en = "Yezidi", fr = "yézidi" } },
   ["Yi"] = { code = "Yi", direction = "lr", name = { en = "Yi", fr = "yi" } },
   ["Zanabazar_Square"] = { code = "Zanabazar_Square", direction = "lr", name = { en = "Zanabazar Square (Zanabazarin Dörböljin Useg, Xewtee Dörböljin Bicig, Horizontal Square Script)", fr = "zanabazar quadratique" } },
-  -- Pour tous les caractères qui n’ont pas de script associé.
-  ["Unknown"] = { code = "Unknown", direction = nil, name = { en = "Unknown", fr = "Inconnu" } },
+  -- For all characters with no associated script
+  ["Unknown"] = { code = "Unknown", direction = "i", name = { en = "Unknown", fr = "Inconnu" } },
 }

@@ -446,7 +446,7 @@ function p.blockReference(frame)
         block.url, block.name.en, block.version, block.year)
   end
 
-  error(mw.ustring.format("Bloc Unicode «&nbsp;%s&nbsp;» invalide", blockCode))
+  error(mw.ustring.format("Bloc Unicode «&nbsp;%s&nbsp;» invalide", blockCode or ""))
 end
 
 --- Sets the writing direction for the given text, based on its Unicode script,

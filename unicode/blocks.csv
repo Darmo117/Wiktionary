@@ -19,6 +19,7 @@ Range lower,Range upper,Name EN,Name FR,PDF URL,Unicode version,Year
 0800,083F,Samaritan,Samaritain,https://web.archive.org/web/20190613202733/https://www.unicode.org/charts/PDF/U0800.pdf,12.1,2019
 0840,085F,Mandaic,Mandéen,https://web.archive.org/web/20190613202718/https://www.unicode.org/charts/PDF/U0840.pdf,12.1,2019
 0860,086F,Syriac Supplement,Supplément syriaque,https://web.archive.org/web/20190613202735/https://www.unicode.org/charts/PDF/U0860.pdf,12.1,2019
+0870,089F,Arabic Extended-B,Arabe étendu B,http://web.archive.org/web/20210914174136/https://www.unicode.org/charts/PDF/U0870.pdf,14.0,2021
 08A0,08FF,Arabic Extended-A,Arabe étendu A,https://web.archive.org/web/20190613202657/https://www.unicode.org/charts/PDF/U08A0.pdf,12.1,2019
 0900,097F,Devanagari,Devanāgarī,https://web.archive.org/web/20190613202802/https://www.unicode.org/charts/PDF/U0900.pdf,12.1,2019
 0980,09FF,Bengali,Bengali,https://web.archive.org/web/20190613202755/https://www.unicode.org/charts/PDF/U0980.pdf,12.1,2019
@@ -181,7 +182,9 @@ FFF0,FFFF,Specials,Caractères spéciaux,https://web.archive.org/web/20190613203
 104B0,104FF,Osage,Osage,https://web.archive.org/web/20190613203127/https://www.unicode.org/charts/PDF/U104B0.pdf,12.1,2019
 10500,1052F,Elbasan,Elbasan,https://web.archive.org/web/20190613202501/https://www.unicode.org/charts/PDF/U10500.pdf,12.1,2019
 10530,1056F,Caucasian Albanian,Aghbanien,https://web.archive.org/web/20190613202449/https://www.unicode.org/charts/PDF/U10530.pdf,12.1,2019
+10570,105BF,Vithkuqi,Vithkuqi,http://web.archive.org/web/20211029155209/https://www.unicode.org/charts/PDF/U10570.pdf,14.0,2021
 10600,1077F,Linear A,Linéaire A,https://web.archive.org/web/20190613202541/https://www.unicode.org/charts/PDF/U10600.pdf,12.1,2019
+10780,107BF,Latin Extended-F,Latin étendu F,http://web.archive.org/web/20210914174707/https://www.unicode.org/charts/PDF/U10780.pdf,14.0,2021
 10800,1083F,Cypriot Syllabary,Syllabaire chypriote,https://web.archive.org/web/20190613202451/https://www.unicode.org/charts/PDF/U10800.pdf,12.1,2019
 10840,1085F,Imperial Aramaic,Araméen impérial,https://web.archive.org/web/20190613202702/https://www.unicode.org/charts/PDF/U10840.pdf,12.1,2019
 10860,1087F,Palmyrene,Alphabet palmyre,https://web.archive.org/web/20190613202728/https://www.unicode.org/charts/PDF/U10860.pdf,12.1,2019
@@ -204,9 +207,11 @@ FFF0,FFFF,Specials,Caractères spéciaux,https://web.archive.org/web/20190613203
 10D00,10D3F,Hanifi Rohingya,Hanifi,https://web.archive.org/web/20190613202909/https://www.unicode.org/charts/PDF/U10D00.pdf,12.1,2019
 10E60,10E7F,Rumi Numeral Symbols,Symboles numériques rumi,https://web.archive.org/web/20190613203226/https://www.unicode.org/charts/PDF/U10E60.pdf,12.1,2019
 10E80,10EBF,Yezidi,Yézidi (trad),https://www.unicode.org/charts/PDF/U10E80.pdf,13.0,2020
+10EC0,10EFF,Arabic Extended-C,Arabe étendu C,http://web.archive.org/web/20220913193412/https://www.unicode.org/charts/PDF/U10EC0.pdf,15.0,2022
 10F00,10F2F,Old Sogdian,Vieux sogdien,https://web.archive.org/web/20190613202742/https://www.unicode.org/charts/PDF/U10F00.pdf,12.1,2019
 10FB0,10FDF,Chorasmian,Chorasmien,https://www.unicode.org/charts/PDF/U10FB0.pdf,13.0,2020
 10F30,10F6F,Sogdian,Sogdien,https://web.archive.org/web/20190613202747/https://www.unicode.org/charts/PDF/U10F30.pdf,12.1,2019
+10F70,10FAF,Old Uyghur,Ouïghour ancien,http://web.archive.org/web/20220913193412/https://www.unicode.org/charts/PDF/U10EC0.pdf,15.0,2022
 10FE0,10FFF,Elymaic,Élymaïque,https://web.archive.org/web/20190613202715/https://www.unicode.org/charts/PDF/U10FE0.pdf,12.1,2019
 11000,1107F,Brahmi,Brahmî,https://web.archive.org/web/20190613202758/https://www.unicode.org/charts/PDF/U11000.pdf,12.1,2019
 11080,110CF,Kaithi,Khaïthî,https://web.archive.org/web/20190613202812/https://www.unicode.org/charts/PDF/U11080.pdf,12.1,2019
@@ -225,29 +230,34 @@ FFF0,FFFF,Specials,Caractères spéciaux,https://web.archive.org/web/20190613203
 11600,1165F,Modi,Modi,https://web.archive.org/web/20190613202829/https://www.unicode.org/charts/PDF/U11600.pdf,12.1,2019
 11660,1167F,Mongolian Supplement,Supplément Mongol,https://web.archive.org/web/20190613202741/https://www.unicode.org/charts/PDF/U11660.pdf,12.1,2019
 11680,116CF,Takri,Tâkrî,https://web.archive.org/web/20190613202852/https://www.unicode.org/charts/PDF/U11680.pdf,12.1,2019
-11700,1173F,Ahom,Âhom,https://web.archive.org/web/20190613202752/https://www.unicode.org/charts/PDF/U11700.pdf,12.1,2019
+11700,1174F,Ahom,Âhom,https://web.archive.org/web/20190613202752/https://www.unicode.org/charts/PDF/U11700.pdf,12.1,2019
 11800,1184F,Dogra,Dogri,https://web.archive.org/web/20190613202805/https://www.unicode.org/charts/PDF/U11800.pdf,12.1,2019
 118A0,118FF,Warang Citi,Warang Citi,https://web.archive.org/web/20190613202905/https://www.unicode.org/charts/PDF/U118A0.pdf,12.1,2019
 11900,1195F,Dives Akuru,Dives Akuru (trad),https://www.unicode.org/charts/PDF/U11900.pdf,13.0,2020
 119A0,119FF,Nandinagari,Nandinagari,https://web.archive.org/web/20190613202833/https://www.unicode.org/charts/PDF/U119A0.pdf,12.1,2019
 11A00,11A4F,Zanabazar Square,Zanabazar Quadratique,https://web.archive.org/web/20190613202751/https://www.unicode.org/charts/PDF/U11A00.pdf,12.1,2019
 11A50,11AAF,Soyombo,Soyombo,https://web.archive.org/web/20190613202748/https://www.unicode.org/charts/PDF/U11A50.pdf,12.1,2019
+11AB0,11ABF,Unified Canadian Aboriginal Syllabics Extended-A,Syllabaires autochtones canadiens étendu A,http://web.archive.org/web/20210914175109/https://www.unicode.org/charts/PDF/U11AB0.pdf,14.0,2021
 11AC0,11AFF,Pau Cin Hau,Paou chin haou,https://web.archive.org/web/20190613202927/https://www.unicode.org/charts/PDF/U11AC0.pdf,12.1,2019
+11B00,11B5F,Devanagari Extended-A,Devanāgarī étendu,http://web.archive.org/web/20220913193628/https://www.unicode.org/charts/PDF/U11B00.pdf,15.0,2022
 11C00,11C6F,Bhaiksuki,Bhaiksuki,https://web.archive.org/web/20190613202756/https://www.unicode.org/charts/PDF/U11C00.pdf,12.1,2019
 11C70,11CBF,Marchen,Marchen,https://web.archive.org/web/20190613202737/https://www.unicode.org/charts/PDF/U11C70.pdf,12.1,2019
 11D00,11D5F,Masaram Gondi,Masaram Gondi,https://web.archive.org/web/20190613202825/https://www.unicode.org/charts/PDF/U11D00.pdf,12.1,2019
 11D60,11DAF,Gunjala Gondi,Gunjala Gondi,https://web.archive.org/web/20190613202809/https://www.unicode.org/charts/PDF/U11D60.pdf,12.1,2019
 11EE0,11EFF,Makasar,Makassar,https://web.archive.org/web/20190613202943/https://www.unicode.org/charts/PDF/U11EE0.pdf,12.1,2019
+11F00,11F5F,Kawi,Kawi,http://web.archive.org/web/20220913194621/https://www.unicode.org/charts/PDF/U11F00.pdf,15.0,2022
 11FB0,11FBF,Lisu Supplement,Supplément Lissou,https://www.unicode.org/charts/PDF/U11FB0.pdf,13.0,2020
 11FC0,11FFF,Tamil Supplement,Supplément Tamoul,https://web.archive.org/web/20190613202856/https://www.unicode.org/charts/PDF/U11FC0.pdf,12.1,2019
 12000,123FF,Cuneiform,Cunéiforme,https://web.archive.org/web/20190613202704/https://www.unicode.org/charts/PDF/U12000.pdf,12.1,2019
 12400,1247F,Cuneiform Numbers and Punctuation,Ponctuation et nombres cunéiformes,https://web.archive.org/web/20190613202707/https://www.unicode.org/charts/PDF/U12400.pdf,12.1,2019
 12480,1254F,Early Dynastic Cuneiform,Cunéiforme des dynasties archaïques,https://web.archive.org/web/20190613202710/https://www.unicode.org/charts/PDF/U12480.pdf,12.1,2019
+12F90,12FFF,Cypro-Minoan,Chypro-minoen,http://web.archive.org/web/20210914174312/https://www.unicode.org/charts/PDF/U12F90.pdf,14.0,2021
 13000,1342F,Egyptian Hieroglyphs,Hiéroglyphes égyptiens,https://web.archive.org/web/20190613202627/https://www.unicode.org/charts/PDF/U13000.pdf,12.1,2019
-13430,1343F,Egyptian Hieroglyph Format Controls,Contrôles de format des hiéroglyphes égyptiens,https://web.archive.org/web/20190613202630/https://www.unicode.org/charts/PDF/U13430.pdf,12.1,2019
+13430,1345F,Egyptian Hieroglyph Format Controls,Contrôles de format des hiéroglyphes égyptiens,https://web.archive.org/web/20190613202630/https://www.unicode.org/charts/PDF/U13430.pdf,12.1,2019
 14400,1467F,Anatolian Hieroglyphs,Hiéroglyphes anatoliens,https://web.archive.org/web/20190613202651/https://www.unicode.org/charts/PDF/U14400.pdf,12.1,2019
 16800,16A3F,Bamum Supplement,Supplément bamoun,https://web.archive.org/web/20190613202619/https://www.unicode.org/charts/PDF/U16800.pdf,12.1,2019
 16A40,16A6F,Mro,Mro,https://web.archive.org/web/20190613202830/https://www.unicode.org/charts/PDF/U16A40.pdf,12.1,2019
+16A70,16ACF,Tangsa,Tangsa,http://web.archive.org/web/20210914174936/https://www.unicode.org/charts/PDF/U16A70.pdf,14.0,2021
 16AD0,16AFF,Bassa Vah,Bassa,https://web.archive.org/web/20190613202621/https://www.unicode.org/charts/PDF/U16AD0.pdf,12.1,2019
 16B00,16B8F,Pahawh Hmong,Pahawh hmong,https://web.archive.org/web/20190613202925/https://www.unicode.org/charts/PDF/U16B00.pdf,12.1,2019
 16E40,16E9F,Medefaidrin,Medefidrin,https://web.archive.org/web/20190613202639/https://www.unicode.org/charts/PDF/U16E40.pdf,12.1,2019
@@ -256,24 +266,32 @@ FFF0,FFFF,Specials,Caractères spéciaux,https://web.archive.org/web/20190613203
 17000,187FF,Tangut,Tangoute,https://web.archive.org/web/20190613203112/https://www.unicode.org/charts/PDF/U17000.pdf,12.1,2019
 18800,18AFF,Tangut Components,Composants tangoutes,https://web.archive.org/web/20190613203116/https://www.unicode.org/charts/PDF/U18800.pdf,12.1,2019
 18B00,18CFF,Khitan Small Script,Petits caractères khitans (trad),https://www.unicode.org/charts/PDF/U18B00.pdf,13.0,2020
-18D00,18D8F,Tangut Supplement,Supplément Tangoute,https://www.unicode.org/charts/PDF/U18D00.pdf,13.0,2020
+18D00,18D7F,Tangut Supplement,Supplément Tangoute,https://www.unicode.org/charts/PDF/U18D00.pdf,13.0,2020
+1AFF0,1AFFF,Kana Extended-B,Kana étendu B,http://web.archive.org/web/20210914174531/https://www.unicode.org/charts/PDF/U1AFF0.pdf,14.0,2021
 1B000,1B0FF,Kana Supplement,Supplément kana,https://web.archive.org/web/20190613203058/https://www.unicode.org/charts/PDF/U1B000.pdf,12.1,2019
 1B100,1B12F,Kana Extended-A,Kana étendu A,https://web.archive.org/web/20190613203055/https://www.unicode.org/charts/PDF/U1B100.pdf,12.1,2019
 1B130,1B16F,Small Kana Extension,Extension petits kanas,https://web.archive.org/web/20190613203059/https://www.unicode.org/charts/PDF/U1B130.pdf,12.1,2019
 1B170,1B2FF,Nushu,Nüshu,https://web.archive.org/web/20190613203110/https://www.unicode.org/charts/PDF/U1B170.pdf,12.1,2019
 1BC00,1BC9F,Duployan,Sténographie Duployé,https://web.archive.org/web/20190613203137/https://www.unicode.org/charts/PDF/U1BC00.pdf,12.1,2019
 1BCA0,1BCAF,Shorthand Format Controls,Contrôles de raccourcis,https://web.archive.org/web/20190613203139/https://www.unicode.org/charts/PDF/U1BCA0.pdf,12.1,2019
+1CF00,1CFCF,Znamenny Musical Notation,Notation musicale Znamenny,http://web.archive.org/web/20210914175244/https://www.unicode.org/charts/PDF/U1CF00.pdf,14.0,2021
 1D000,1D0FF,Byzantine Musical Symbols,Symboles musicaux byzantins,https://web.archive.org/web/20190613203136/https://www.unicode.org/charts/PDF/U1D000.pdf,12.1,2019
 1D100,1D1FF,Musical Symbols,Symboles musicaux occidentaux,https://web.archive.org/web/20190613203133/https://www.unicode.org/charts/PDF/U1D100.pdf,12.1,2019
 1D200,1D24F,Ancient Greek Musical Notation,Notation musicale grecque ancienne,https://web.archive.org/web/20190613203135/https://www.unicode.org/charts/PDF/U1D200.pdf,12.1,2019
+1D2C0,1D2DF,Kaktovik Numerals,Chiffres de Kaktovik,http://web.archive.org/web/20220913170609/https://www.unicode.org/charts/PDF/U1D2C0.pdf,15.0,2022
 1D2E0,1D2FF,Mayan Numerals,Numéraux mayas,https://web.archive.org/web/20190613203221/https://www.unicode.org/charts/PDF/U1D2E0.pdf,12.1,2019
 1D300,1D35F,Tai Xuan Jing Symbols,Symboles du Classique du mystère suprême,https://web.archive.org/web/20190613203319/https://www.unicode.org/charts/PDF/U1D300.pdf,12.1,2019
 1D360,1D37F,Counting Rod Numerals,Chiffres-bâtonnets chinois,https://web.archive.org/web/20190613203217/https://www.unicode.org/charts/PDF/U1D360.pdf,12.1,2019
 1D400,1D7FF,Mathematical Alphanumeric Symbols,Symboles mathématiques alphanumériques,https://web.archive.org/web/20190613203158/https://www.unicode.org/charts/PDF/U1D400.pdf,12.1,2019
 1D800,1DAAF,Sutton SignWriting,Écriture des signes de Sutton,https://web.archive.org/web/20190613203140/https://www.unicode.org/charts/PDF/U1D800.pdf,12.1,2019
+1DF00,1DFFF,Latin Extended-G,Latin étendu G,http://web.archive.org/web/20210914174745/https://www.unicode.org/charts/PDF/U1DF00.pdf,14.0,2021
 1E000,1E02F,Glagolitic Supplement,Supplément glagolitique,https://web.archive.org/web/20190613202508/https://www.unicode.org/charts/PDF/U1E000.pdf,12.1,2019
+1E030,1E08F,Cyrillic Extended-D,Cyrillique étendu D,http://web.archive.org/web/20220914110720/https://www.unicode.org/charts/PDF/U1E030.pdf,15.0,2022
 1E100,1E14F,Nyiakeng Puachue Hmong,Nyiakeng Puachue Hmong,https://web.archive.org/web/20190613202923/https://www.unicode.org/charts/PDF/U1E100.pdf,12.1,2019
+1E290,1E2BF,Toto,Toto,http://web.archive.org/web/20210914175017/https://www.unicode.org/charts/PDF/U1E290.pdf,14.0,2021
 1E2C0,1E2FF,Wancho,Wancho,https://web.archive.org/web/20190613202904/https://www.unicode.org/charts/PDF/U1E2C0.pdf,12.1,2019
+1E4D0,1E4FF,Nag Mundari,Nag Mundari,http://web.archive.org/web/20220913194731/https://www.unicode.org/charts/PDF/U1E4D0.pdf,15.0,2022
+1E7E0,1E7FF,Ethiopic Extended-B,Éthiopien étendu B,http://web.archive.org/web/20210914174437/https://www.unicode.org/charts/PDF/U1E7E0.pdf,14.0,2021
 1E800,1E8DF,Mende Kikakui,Kikakui mendé,https://web.archive.org/web/20190613202640/https://www.unicode.org/charts/PDF/U1E800.pdf,12.1,2019
 1E900,1E95F,Adlam,Adlam,https://web.archive.org/web/20190613202616/https://www.unicode.org/charts/PDF/U1E900.pdf,12.1,2019
 1EC70,1ECBF,Indic Siyaq Numbers,Nombres Siyaq indiens,https://web.archive.org/web/20190613203220/https://www.unicode.org/charts/PDF/U1EC70.pdf,12.1,2019
@@ -302,6 +320,7 @@ FFF0,FFFF,Specials,Caractères spéciaux,https://web.archive.org/web/20190613203
 2CEB0,2EBEF,CJK Unified Ideographs Extension F,Idéogrammes unifiés CJC - supplément F,https://web.archive.org/web/20190613203027/https://www.unicode.org/charts/PDF/U2CEB0.pdf,12.1,2019
 2F800,2FA1F,CJK Compatibility Ideographs Supplement,Supplément aux idéogrammes de compatibilité CJC,https://web.archive.org/web/20190613203036/https://www.unicode.org/charts/PDF/U2F800.pdf,12.1,2019
 30000,3134F,CJK Unified Ideographs Extension G,Idéogrammes unifiés CJC - supplément G,https://web.archive.org/web/20200324114853/https://www.unicode.org/charts/PDF/U30000.pdf,13.0,2020
+31350,323AF,CJK Unified Ideographs Extension H,Idéogrammes unifiés CJC - supplément H,https://web.archive.org/web/20220920171057/https://www.unicode.org/charts/PDF/U31350.pdf,15.0,2022
 E0000,E007F,Tags,Étiquettes,https://web.archive.org/web/20190613203322/https://www.unicode.org/charts/PDF/UE0000.pdf,12.1,2019
 E0100,E01EF,Variation Selectors Supplement,Sélecteurs de variante - supplément,https://web.archive.org/web/20190613203326/https://www.unicode.org/charts/PDF/UE0100.pdf,12.1,2019
 F0000,FFFFF,Supplementary Private Use Area-A,Zone à usage privé - extension A,https://web.archive.org/web/20190613203330/https://www.unicode.org/charts/PDF/UF0000.pdf,12.1,2019

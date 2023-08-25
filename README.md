@@ -2,4 +2,4 @@ This repository contains various Python scripts used to interact with various wi
 It also contains LUA modules and JavaScript gadgets for some wikis, mainly for the French Wiktionary.
 
 Python scripts are released under MIT License.
-**Warning**: JS and LUA files most likely are under CC-BY-SA-3.0 license, please refer to WMF wikis for more details.
+**Warning**: JS and LUA files most likely are under CC BY-SA license, please refer to WMF wikis for more details.

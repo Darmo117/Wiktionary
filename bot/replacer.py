@@ -38,8 +38,7 @@ for page in iterator:
         try:
             page.save(summary=summary)
             print('Done.')
-        except (pwb.exceptions.LockedPageError, pwb.exceptions.OtherPageSaveError) as e:
-            print(e)
-            print('Protected page, skipped.')
+        except pwb.exceptions.PageSaveRelatedError as e:
+            print('Protected page, skipped:', e)
     else:
         print('No changes, skipped.')

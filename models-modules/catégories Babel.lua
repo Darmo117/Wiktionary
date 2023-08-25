@@ -48,6 +48,9 @@ local function _description(title, code)
 
       local res = desc
       if level then
+        if not code then
+          return '<span style="color: red; font-weight: bold">Le nom de la langue est inconnu.</span>[[Catégorie:Titre d’une catégorie Babel invalide]]'
+        end
         res = res .. mw.ustring.format("\n\nCode Babel&nbsp;: <code>%s-%s</code>\n[[Catégorie:%s|%s]]",
             code, level, categoryName, langName .. "-" .. level)
       else

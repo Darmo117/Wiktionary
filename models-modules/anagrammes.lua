@@ -1,6 +1,7 @@
 local m_bases = require("Module:bases")
 local m_table = require("Module:table")
 local m_params = require("Module:paramètres")
+local m_langues = require("Module:langues")
 
 local p = {}
 
@@ -39,18 +40,18 @@ local function _toTable(langCode, title, rawTable)
   local maxLinks = 200
   local alphasTable = {}
   local paramsTable = {}
-  local alpha_title = mw.ustring.gsub(normalize(langCode, title), "[()’ -]", "")
+  local alpha_title = mw.ustring.gsub(normalize(langCode, title), "[%p%s]", "")
 
   while rawTable[i] ~= nil and i <= maxLinks do
     local item = mw.text.trim(rawTable[i])
 
-    local alpha = mw.ustring.gsub(normalize(langCode, item), "[()’ -]", "")
+    local alpha = mw.ustring.gsub(normalize(langCode, item), "[%p%s]", "")
     if alpha ~= alpha_title then
       if paramsTable[alpha] ~= nil then
-        paramsTable[alpha] = mw.ustring.format("%s, [[%s]]", paramsTable[alpha], item)
+        paramsTable[alpha] = mw.ustring.format("%s, [[%s#%s|%s]]", paramsTable[alpha], item, langCode, item)
       else
         table.insert(alphasTable, alpha)
-        paramsTable[alpha] = "[[" .. item .. "]]"
+        paramsTable[alpha] = "[[" .. item .. "#" .. langCode .. "|" .. item .. "]]"
       end
     end
     i = i + 1
@@ -85,15 +86,30 @@ local function _makeText(langCode, title, values)
   return _buildListText(_getValues(alphas, args))
 end
 
---- Invoqué par [[Modèle:anagrammes]]
---- @param frame frame
+--- Invoqué par [[Modèle:anagrammes]].
+--- Params:
+--- - frame.args["lang"]: Code de langue.
 function p.listeAnagrammes(frame)
-  local langCode = frame:getParent().args["lang"]
-  return _makeText(langCode, mw.title.getCurrentTitle().fullText, frame:getParent().args)
+  local args = frame:getParent().args
+  local langCode = args["lang"]
+  local title = mw.title.getCurrentTitle()
+  local text = _makeText(langCode, title.fullText, args)
+  -- Catégorisation des sous-modèles de [[Modèle:anagrammes]]
+  local pattern = mw.ustring.format("^Modèle:anagrammes/%s/(.+)", langCode)
+  local _, _, match = mw.ustring.find(title.fullText, pattern)
+  if match then
+    text = text .. mw.ustring.format(
+        "[[Catégorie:Modèles d’anagramme en %s|%s]]",
+        m_langues.get_nom(langCode),
+        match
+    )
+  end
+  return text
 end
 
---- Invoqué par [[Modèle:voir anagrammes]]
---- @param frame frame
+--- Invoqué par [[Modèle:voir anagrammes]].
+--- - frame.args[1]: Code de langue.
+--- - frame.args[2]: Texte dont il faut calculer l’alphagramme.
 function p.alphagramme(frame)
   local args = m_params.process(frame.args, {
     [1] = { },
@@ -105,7 +121,7 @@ function p.alphagramme(frame)
     return '<span style="color:red">Code de langue absent !</span>[[Catégorie:Appel au modèle voir anagrammes sans code de langue]]'
   end
 
-  local pageName = mw.ustring.gsub(normalize(langCode, args[2]), "[/ ’-]", "")
+  local pageName = mw.ustring.gsub(normalize(langCode, args[2]), "[%p%s]", "")
   local tablePageName = {}
 
   -- Sépare le mot, caractère par caractère
@@ -121,10 +137,14 @@ function p.alphagramme(frame)
   if mw.title.new("Modèle:" .. templateName).exists then
     return mw.ustring.format("→ [[Spécial:EditPage/Modèle:%s|Modifier la liste d’anagrammes]]", templateName)
         .. frame:expandTemplate { title = templateName }
-  else
-    return mw.ustring.format('<span style="color:red">Le modèle d’anagrammes n’existe pas. '
-        .. 'Cliquez [[Modèle:%s|ici]] pour le créer.</span>[[Catégorie:Pages avec modèle d’anagrammes manquant]]', templateName)
   end
+  return mw.ustring.format(
+      '<span style="color:red">Le modèle d’anagrammes n’existe pas. '
+          .. 'Cliquez [[Modèle:%s|ici]] pour le créer.</span>'
+          .. '[[Catégorie:Pages avec modèle d’anagrammes manquant en %s]]',
+      templateName,
+      m_langues.get_nom(langCode)
+  )
 end
 
 return p

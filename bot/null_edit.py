@@ -1,20 +1,33 @@
+import sys
+
 import pywikibot as pwb
 from pywikibot import config as pwb_config
 
-pwb_config.put_throttle = 0
-is_category = True
-page_name = 'Catégorie:Wiktionnaire:Prononciations employant des caractères inconnus en italien'
 
-site = pwb.Site()
-if page_name.startswith('Catégorie:'):
-    iterator = pwb.Category(site, title=page_name).articles()
-else:
-    iterator = pwb.Page(site, title=page_name).embeddedin()
+def main():
+    if not (2 <= len(sys.argv) <= 3):
+        print(f'Usage: {sys.argv[0]} TITLE [-s]', file=sys.stderr)
+        return
 
-for page in iterator:
-    print(page.title())
-    try:
-        page.save()
-    except (pwb.exceptions.LockedPageError, pwb.exceptions.OtherPageSaveError) as e:
-        print(e)
-        print('Page protégée, ignorée.')
+    pwb_config.put_throttle = 0
+    page_name = sys.argv[1]
+
+    site = pwb.Site()
+    if page_name.startswith('Catégorie:'):
+        subcategories = len(sys.argv) == 3 and sys.argv[2] == '-s'
+        category = pwb.Category(site, title=page_name)
+        iterator = category.subcategories() if subcategories else category.articles()
+    else:
+        iterator = pwb.Page(site, title=page_name).embeddedin()
+
+    for page in iterator:
+        print(page.title())
+        try:
+            page.save()
+        except pwb.exceptions.PageSaveRelatedError as e:
+            print(e)
+            print('Page protégée, ignorée.')
+
+
+if __name__ == '__main__':
+    main()

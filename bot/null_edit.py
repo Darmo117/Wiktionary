@@ -1,7 +1,7 @@
 import sys
 
 import pywikibot as pwb
-from pywikibot import config as pwb_config
+import pywikibot.config as pwb_config
 
 
 def main():

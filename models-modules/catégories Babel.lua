@@ -49,7 +49,7 @@ local function _description(title, code)
       local res = desc
       if level then
         if not code then
-          return '<span style="color: red; font-weight: bold">Le nom de la langue est inconnu.</span>[[Catégorie:Titre d’une catégorie Babel invalide]]'
+          return '<span style="color: red; font-weight: bold">Le nom de la langue est inconnu.</span>[[Catégorie:Langue d’une catégorie Babel inconnue]]'
         end
         res = res .. mw.ustring.format("\n\nCode Babel&nbsp;: <code>%s-%s</code>\n[[Catégorie:%s|%s]]",
             code, level, categoryName, langName .. "-" .. level)
@@ -57,7 +57,7 @@ local function _description(title, code)
         res = res .. mw.ustring.format("\n[[Catégorie:Wiktionnaristes par langue|%s]]", langName)
       end
 
-      return res
+      return res .. "\n\n<small>''Le nom de cette catégorie est généré par l’extension Babel, '''merci de ne pas le changer'''.''</small>"
     end
   end
 

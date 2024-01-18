@@ -316,7 +316,7 @@ $(function () {
     },
 
     /**
-     * Clears all fields contained in this form.
+     * Clears all fields contained in this forms.
      */
     clear: function () {
       this._textInput.setValue("");
@@ -384,7 +384,8 @@ $(function () {
 
       code += "\n|lang={0}}}".format(this._language);
 
-      var sectionIDPattern = new RegExp("^" + this._language + "-(?:(flex)-)?([\\w-]+)-(\\d+)$");
+      var escapedLangCode = this._language.replace(" ", "_"); // Language codes may contain spaces
+      var sectionIDPattern = new RegExp("^" + escapedLangCode + "-(?:(flex)-)?([\\w-]+)-(\\d+)$");
       var match = sectionIDPattern.exec(this._definitionLevel[0]);
       var isInflection = match[1] === "flex";
       var sectionType = match[2];
@@ -490,7 +491,7 @@ $(function () {
         }
 
         // Insert new example into page content
-        var emptyTemplate = /#+\* *{{exemple *\| *lang *=[^|}]+}}/.test(lines[targetLineIndex - 1]);
+        var emptyTemplate = /#+\*\s*{{exemple\s*\|\s*\|?\s*lang\s*=[^|}]+}}/.test(lines[targetLineIndex - 1]);
         if (emptyTemplate) {
           // Replace empty template with new example
           lines.splice(targetLineIndex - 1, 1, code);

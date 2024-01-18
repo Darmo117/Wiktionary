@@ -19,7 +19,7 @@
 
 $(function () {
   if (wikt.page.hasNamespaceIn(["", "Reconstruction"])
-      && ["view", "edit", "submit"].includes(mw.config.get("wgAction"))) {
+    && ["view", "edit", "submit"].includes(mw.config.get("wgAction"))) {
     console.log("Chargement de Gadget-CreerTrad.js…");
 
     window.gadget_createTranslation = {
@@ -105,12 +105,12 @@ $(function () {
 
         // Get current article’s wikicode
         $.get(
-            mw.config.get("wgServer") + mw.config.get("wgScript"),
-            {
-              "title": this._word,
-              "action": "raw",
-            },
-            this._generateWikicode.bind(this)
+          mw.config.get("wgServer") + mw.config.get("wgScript"),
+          {
+            "title": this._word,
+            "action": "raw",
+          },
+          this._generateWikicode.bind(this)
         );
       },
 
@@ -129,7 +129,7 @@ $(function () {
         for (var i = 0; i < wikicodeLines.length && !translationLine; i++) {
           var line = wikicodeLines[i];
           var translationMatch = new RegExp(
-              "{{trad[+-]?\\|" + this._langCode + "\\|(?:[^}]*?tradi=)?" + this._translation
+            "{{trad[+-]?\\|" + this._langCode + "\\|(?:[^}]*?tradi=)?" + this._translation
           ).exec(line);
           if (translationMatch) {
             translationLineIndex = i;
@@ -147,10 +147,10 @@ $(function () {
           return m.includes(self._translation);
         })[0];
         var templateArgsArray = $.map(
-            tradTemplateArgs.substr(2, tradTemplateArgs.length - 4).split("|"),
-            function (s) {
-              return s.trim();
-            }
+          tradTemplateArgs.substr(2, tradTemplateArgs.length - 4).split("|"),
+          function (s) {
+            return s.trim();
+          }
         );
 
         var transcription = "";
@@ -192,23 +192,23 @@ $(function () {
           var tradStartTemplateMatch;
           if (!definitionNumberFound && (tradStartTemplateMatch = /{{trad-début\|[^|]*\|([^|}]+)/.exec(line2))) {
             definitionNumber = $.map(
-                tradStartTemplateMatch[1].toLowerCase().split("."),
-                function (s, i) {
-                  s = s.trim();
-                  var n = parseInt(s);
-                  if (isNaN(n)) {
-                    switch (i) {
-                      case 0:
-                        return NaN;
-                      case 1:
-                        return /^[a-z]$/.test(s) ? s.charCodeAt(0) - "a".charCodeAt(0) + 1 : NaN;
-                      default:
-                        return wikt.text.romanNumeralToInt(s);
-                    }
-                  } else {
-                    return n;
+              tradStartTemplateMatch[1].toLowerCase().split("."),
+              function (s, i) {
+                s = s.trim();
+                var n = parseInt(s);
+                if (isNaN(n)) {
+                  switch (i) {
+                    case 0:
+                      return NaN;
+                    case 1:
+                      return /^[a-z]$/.test(s) ? s.charCodeAt(0) - "a".charCodeAt(0) + 1 : NaN;
+                    default:
+                      return wikt.text.romanNumeralToInt(s);
                   }
+                } else {
+                  return n;
                 }
+              }
             );
             definitionNumberFound = true;
           }
@@ -265,7 +265,6 @@ $(function () {
         // Wikicode generation.
 
         var newWikicode = "== {{langue|{0}}} ==\n".format(this._langCode);
-        newWikicode += "{{ébauche|{0}}}\n".format(this._langCode);
         newWikicode += "=== {{S|étymologie}} ===\n";
         newWikicode += ": {{ébauche-étym|{0}}}\n\n".format(this._langCode);
         newWikicode += "=== {{S|{0}|{1}}} ===\n".format(nature, this._langCode);
@@ -286,11 +285,47 @@ $(function () {
 
         // Get HTML code of translation’s page.
         location.href = mw.config.get("wgServer") + mw.config.get("wgScript")
-            + "?title={0}&action=edit&preload-edit-text={1}&preload-edit-summary={2}".format(
-                encodeURIComponent(this._translation),
-                encodeURIComponent(newWikicode),
-                encodeURIComponent("Création avec [[Aide:Gadget-CreerTrad|{0} v{1}]].".format(this.NAME, this.VERSION))
-            );
+          + "?title={0}&action=edit&preload-edit-text={1}&preload-edit-summary={2}".format(
+            encodeURIComponent(this._translation),
+            encodeURIComponent(newWikicode),
+            encodeURIComponent("Création avec [[Aide:Gadget-CreerTrad|{0} v{1}]].".format(this.NAME, this.VERSION))
+          );
+      },
+
+      /**
+       * Appends the appropriate gender templates to the wikicode, and return the wikicode.
+       *
+       * @param wikicode {string} Current article’s wikicode.
+       * @param nature {string} Part of speech in French ('nom', 'adjectif', etc.).
+       * @param gender {string} Gender parameter extracted from {{trad}}.
+       * @private
+       */
+      _addGender: function (wikicode, nature, gender) {
+        var gender_to_wikicode = {
+          "m": "{{m}}",
+          "f": "{{f}}",
+          "n": "{{n}}",
+          "c": "{{c}}",
+          "s": "{{s}}",
+          "p": "{{p}}",
+          "d": "{{d}}",
+          "mf": "{{mf}}",
+          "mp": "{{m}} {{p}}",
+          "fp": "{{f}} {{p}}",
+          "np": "{{n}} {{p}}",
+          "mfp": "{{mf}} {{p}}",
+          "ma": "{{m|a}}",
+          "mi": "{{m|i}}",
+          "fa": "{{f|a}}",
+          "fi": "{{f|i}}",
+          "na": "{{n|a}}",
+          "ni": "{{n|i}}",
+        };
+
+        if (nature === "nom" && gender in gender_to_wikicode) {
+          wikicode += " {0}".format(gender_to_wikicode[gender]);
+        }
+        return wikicode;
       },
 
       /**
@@ -317,9 +352,7 @@ $(function () {
 
         wikicode += " {{pron||{0}}}".format(this._langCode);
 
-        if (nature === "nom" && gender) {
-          wikicode += " {{{0}}}".format(gender);
-        }
+        wikicode = this._addGender(wikicode, nature, gender);
 
         return wikicode;
       }
@@ -331,171 +364,167 @@ $(function () {
 
     // Catalan/Catalan
     gadget_createTranslation.registerGeneratorForLanguage(
-        "ca",
-        function (translation, nature, gender) {
-          var wikicode = "";
+      "ca",
+      function (translation, nature, gender) {
+        var wikicode = "";
 
-          if (nature === "nom") {
-            wikicode += "{{ca-rég|<!-- Compléter -->}}\n";
-          }
-
-          wikicode += "'''{0}''' {{pron||ca}}".format(translation);
-          if (nature === "nom" && gender) {
-            wikicode += " {{{0}}}".format(gender);
-          }
-
-          return wikicode;
+        if (nature === "nom") {
+          wikicode += "{{ca-rég|<!-- Compléter -->}}\n";
         }
+
+        wikicode += "'''{0}''' {{pron||ca}}".format(translation);
+
+        wikicode = gadget_createTranslation._addGender(wikicode, nature, gender);
+
+        return wikicode;
+      }
     );
     // Esperanto/Espéranto
     gadget_createTranslation.registerGeneratorForLanguage(
-        "eo",
-        function (translation, nature) {
-          var wikicode = "";
+      "eo",
+      function (translation, nature) {
+        var wikicode = "";
 
-          if (nature === "adjectif" || nature === "nom") {
-            wikicode += "{{eo-flexions|<!-- Compléter -->}}\n";
-          } else if (nature === "verbe") {
-            wikicode += "{{eo-verbe}}\n";
-          }
-
-          wikicode += "'''{0}''' {{pron||eo}}".format(translation);
-          if (nature === "verbe") {
-            wikicode += " {{valence ?|eo}} {{conjugaison|eo}}";
-          }
-
-          return wikicode;
+        if (nature === "adjectif" || nature === "nom") {
+          wikicode += "{{eo-flexions|<!-- Compléter -->}}\n";
+        } else if (nature === "verbe") {
+          wikicode += "{{eo-verbe}}\n";
         }
+
+        wikicode += "'''{0}''' {{pron||eo}}".format(translation);
+        if (nature === "verbe") {
+          wikicode += " {{valence ?|eo}} {{conjugaison|eo}}";
+        }
+
+        return wikicode;
+      }
     );
     // Spanish/Espagnol
     gadget_createTranslation.registerGeneratorForLanguage(
-        "es",
-        function (translation, nature, gender) {
-          var wikicode = "";
+      "es",
+      function (translation, nature, gender) {
+        var wikicode = "";
 
-          if (nature === "nom") {
-            wikicode += "{{es-rég|<!-- Compléter -->}}\n";
-          }
-
-          wikicode += "'''{0}''' {{pron||es}}".format(translation);
-          if (nature === "nom" && gender) {
-            wikicode += " {{{0}}}".format(gender);
-          }
-
-          return wikicode;
+        if (nature === "nom") {
+          wikicode += "{{es-rég|<!-- Compléter -->}}\n";
         }
+
+        wikicode += "'''{0}''' {{pron||es}}".format(translation);
+
+        wikicode = gadget_createTranslation._addGender(wikicode, nature, gender);
+
+        return wikicode;
+      }
     );
     // Italian/Italien
     gadget_createTranslation.registerGeneratorForLanguage(
-        "it",
-        function (translation, nature, gender) {
-          var wikicode = "";
+      "it",
+      function (translation, nature, gender) {
+        var wikicode = "";
 
-          if (nature === "nom") {
-            wikicode += "{{it-flexion|<!-- Compléter -->}}\n";
-          }
-
-          wikicode += "'''{0}''' {{pron||it}}".format(translation);
-          if (nature === "nom" && gender) {
-            wikicode += " {{{0}}}".format(gender);
-          } else {
-            wikicode += " {{genre ?|it}}";
-          }
-
-          return wikicode;
+        if (nature === "nom") {
+          wikicode += "{{it-flexion|<!-- Compléter -->}}\n";
         }
+
+        wikicode += "'''{0}''' {{pron||it}}".format(translation);
+        if (nature === "nom" && gender) {
+          wikicode = gadget_createTranslation._addGender(wikicode, nature, gender);
+        } else {
+          wikicode += " {{genre ?|it}}";
+        }
+
+        return wikicode;
+      }
     );
     // Occitan/Occitan
     gadget_createTranslation.registerGeneratorForLanguage(
-        "oc",
-        function (translation, nature, gender) {
-          var wikicode = "";
+      "oc",
+      function (translation, nature, gender) {
+        var wikicode = "";
 
-          if (nature === "adjectif") {
-            wikicode += "{{oc-accord-mixte|<!-- Compléter -->}}\n";
-          } else if (nature === "nom") {
-            wikicode += "{{oc-rég|<!-- Compléter -->}}\n";
-          }
-
-          wikicode += "'''{0}''' {{pron||oc}}".format(translation);
-          if (nature === "nom" && gender) {
-            wikicode += " {{{0}}}".format(gender);
-          }
-
-          return wikicode;
+        if (nature === "adjectif") {
+          wikicode += "{{oc-accord-mixte|<!-- Compléter -->}}\n";
+        } else if (nature === "nom") {
+          wikicode += "{{oc-rég|<!-- Compléter -->}}\n";
         }
+
+        wikicode += "'''{0}''' {{pron||oc}}".format(translation);
+
+        wikicode = gadget_createTranslation._addGender(wikicode, nature, gender);
+
+        return wikicode;
+      }
     );
     // Russian/Russe
     gadget_createTranslation.registerGeneratorForLanguage(
-        "ru",
-        function (translation, nature, gender) {
-          var wikicode = "";
+      "ru",
+      function (translation, nature, gender) {
+        var wikicode = "";
 
-          if (nature === "nom" && gender) {
-            wikicode += "{{ru-décl{0}|<!-- Compléter -->}}\n".format(gender);
-          }
-
-          wikicode += "'''{0}''', ''{{transliterator|ru|{0}}}'' {{pron||ru}}".format(translation);
-          if (nature === "nom" && gender) {
-            wikicode += " {{{0}}}".format(gender);
-          }
-
-          return wikicode;
+        if (nature === "nom" && gender) {
+          wikicode += "{{ru-décl{0}|<!-- Compléter -->}}\n".format(gender);
         }
+
+        wikicode += "'''{0}''', ''{{transliterator|ru|{0}}}'' {{pron||ru}}".format(translation);
+
+        wikicode = gadget_createTranslation._addGender(wikicode, nature, gender);
+
+        return wikicode;
+      }
     );
     // Swedish/Suédois
     gadget_createTranslation.registerGeneratorForLanguage(
-        "sv",
-        function (translation, nature, gender) {
-          var wikicode = "";
+      "sv",
+      function (translation, nature, gender) {
+        var wikicode = "";
 
-          if (nature === "adjectif") {
-            wikicode += "{{sv-adj}}\n";
-          } else if (nature === "nom") {
-            if (translation.endsWith("a")) {
-              wikicode += "{{sv-nom-c-or}}\n";
-            } else if (translation.endsWith("ing")) {
-              wikicode += "{{sv-nom-c-ar}}\n";
-            } else if (translation.endsWith("are")) {
-              wikicode += "{{sv-nom-c-ar|are=}}\n";
-            } else if (translation.endsWith("ande")) {
-              wikicode += "{{sv-nom-n-n}}\n";
-            } else if (translation.endsWith("ende")) {
-              wikicode += "{{sv-nom-n-n}}\n";
-            } else if (translation.endsWith("um")) {
-              wikicode += "{{sv-nom-n-er|um=}}\n";
-            } else if (translation.endsWith("tion")) {
-              wikicode += "{{sv-nom-c-er}}\n";
-            } else if (translation.endsWith("tör")) {
-              wikicode += "{{sv-nom-c-er}}\n";
-            } else if (translation.endsWith("ier")) {
-              wikicode += "{{sv-nom-c-er|r=}}\n";
-            } else if (translation.endsWith("iker")) {
-              wikicode += "{{sv-nom-c-er|r=}}\n";
-            } else if (translation.endsWith("else")) {
-              wikicode += "{{sv-nom-c-er|e=}}\n";
-            } else if (gender === "neutre") {
-              wikicode += "{{sv-nom-n-0}}\n";
-            } else {
-              wikicode += "{{sv-nom-c-er}}\n";
-            }
-          } else if (nature === "verbe") {
-            wikicode += "{{sv-conj-ar}}\n";
+        if (nature === "adjectif") {
+          wikicode += "{{sv-adj}}\n";
+        } else if (nature === "nom") {
+          if (translation.endsWith("a")) {
+            wikicode += "{{sv-nom-c-or}}\n";
+          } else if (translation.endsWith("ing")) {
+            wikicode += "{{sv-nom-c-ar}}\n";
+          } else if (translation.endsWith("are")) {
+            wikicode += "{{sv-nom-c-ar|are=}}\n";
+          } else if (translation.endsWith("ande")) {
+            wikicode += "{{sv-nom-n-n}}\n";
+          } else if (translation.endsWith("ende")) {
+            wikicode += "{{sv-nom-n-n}}\n";
+          } else if (translation.endsWith("um")) {
+            wikicode += "{{sv-nom-n-er|um=}}\n";
+          } else if (translation.endsWith("tion")) {
+            wikicode += "{{sv-nom-c-er}}\n";
+          } else if (translation.endsWith("tör")) {
+            wikicode += "{{sv-nom-c-er}}\n";
+          } else if (translation.endsWith("ier")) {
+            wikicode += "{{sv-nom-c-er|r=}}\n";
+          } else if (translation.endsWith("iker")) {
+            wikicode += "{{sv-nom-c-er|r=}}\n";
+          } else if (translation.endsWith("else")) {
+            wikicode += "{{sv-nom-c-er|e=}}\n";
+          } else if (gender === "neutre") {
+            wikicode += "{{sv-nom-n-0}}\n";
+          } else {
+            wikicode += "{{sv-nom-c-er}}\n";
           }
-
-          wikicode += "'''{0}''' {{pron||sv}}".format(translation);
-          if (nature === "nom") {
-            if (gender) {
-              wikicode += " {{{0}}}".format(gender);
-            } else if (translation.endsWith("ande") || translation.endsWith("ende") || translation.endsWith("um")) {
-              wikicode += " {{n|sv}}";
-            } else {
-              wikicode += " {{c|sv}}";
-            }
-          }
-
-          return wikicode;
+        } else if (nature === "verbe") {
+          wikicode += "{{sv-conj-ar}}\n";
         }
+
+        wikicode += "'''{0}''' {{pron||sv}}".format(translation);
+        if (nature === "nom") {
+          if (gender) {
+            wikicode = gadget_createTranslation._addGender(wikicode, nature, gender);
+          } else if (translation.endsWith("ande") || translation.endsWith("ende") || translation.endsWith("um")) {
+            wikicode += " {{n}}";
+          } else {
+            wikicode += " {{c}}";
+          }
+        }
+
+        return wikicode;
+      }
     );
 
     gadget_createTranslation.init();

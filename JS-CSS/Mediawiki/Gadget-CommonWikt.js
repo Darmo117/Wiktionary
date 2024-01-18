@@ -196,7 +196,7 @@ wikt.edit.getEditBox = function () {
  * Gets the text from the edit textarea.
  * Supports syntax coloring.
  * @param $textInput {Object?} The text input or textarea to use instead of the main edit box.
- * @return text {string}
+ * @return {string} Text
  */
 wikt.edit.getText = function ($textInput) {
   var $editBox = $textInput || this.getEditBox();

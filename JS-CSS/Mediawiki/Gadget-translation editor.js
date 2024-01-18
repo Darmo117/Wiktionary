@@ -205,10 +205,10 @@
       'birman': 'trans',
       'breton': 'm f p',
       'bulgare': 'm f n p trans',
-      'calabrais centro-méridional': 'm f mf',
+      'calabrais centro-méridional': 'm f mf p',
       'catalan': 'm f p',
       'chinois': 'trans tradi',
-      'cilentain méridional': 'm f mf',
+      'cilentain méridional': 'm f mf p',
       'copte': 'm f trans',
       'coréen': 'trans tradi',
       'corse': 'm f p',
@@ -218,13 +218,15 @@
       'espagnol': 'm f p',
       'féroïen': 'm f n',
       'frioulan': 'm f p',
+      'frison occidental': 'c n',
+      'gallo-italique de Sicile' : 'm f p mf',
       'géorgien': 'trans',
       'gaélique écossais': 'm f d p',
       'gaélique irlandais': 'm f p',
       'galicien': 'm f p',
       'gallois': 'm f p',
       'gotique': 'm f n p trans',
-      'goudjarati': 'trans',
+      'gujarati': 'm f n trans',
       'grec': 'trans m f n p',
       'grec ancien': 'trans m f n d p',
       'grec byzantin': 'trans',
@@ -265,12 +267,12 @@
       'romanche': 'm f p',
       'roumain': 'm f n p',
       'russe': 'm f n trans',
-      'salentin': 'm f mf',
+      'salentin': 'm f mf p',
       'sanskrit': 'm f n d p trans',
       'sarde': 'm f p',
       'serbe': 'm f n p trans',
       'sherpa': 'trans',
-      'sicilien': 'm f p',
+      'sicilien': 'm f mf p',
       'slovaque': 'm f n',
       'slovène': 'm f n',
       'suédois': 'c n',
@@ -343,7 +345,7 @@
         '<button type="submit">Ajouter</button> ' +
         '<a href="#" class="ed-more">Plus</a></p>' +
         options +
-        '<p><span class="ed-feedback">Signaler une anomalie – Suggérer une amélioration</span></p>' +
+        '<p><span class="ed-feedback">Signaler une anomalie avec l’outil d’ajout de traduction – Suggérer une amélioration</span></p>' +
         '<div class="ed-errors"></div>' +
         '<div class="ed-info-msg"></div>' +
         '</form>'));
@@ -480,7 +482,8 @@
           format: 'json',
           titles: 'MediaWiki:Gadget-translation editor.js/langues.json',
           prop: 'revisions',
-          rvprop: 'content'
+          rvprop: 'content',
+          rvslots: 'main'
         }).then(function (data) {
           // Get the first (and only) page from data.query.pages
           // noinspection LoopStatementThatDoesntLoopJS

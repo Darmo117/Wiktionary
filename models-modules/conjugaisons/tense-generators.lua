@@ -113,6 +113,10 @@ local eacuteCONSer_verbs = generateGroup1Endings("é", {
   "vr",
 })
 
+local function invalidMutationType(mutationType)
+  error(mw.ustring.format('Valeur invalide pour le paramètre « mutation » ("%s").', mutationType))
+end
+
 local function startsWithAO(s)
   local firstLetter = mw.ustring.sub(s, 1, 1)
   return firstLetter == "a" or firstLetter == "â" or firstLetter == "o"
@@ -263,6 +267,9 @@ local function generateGroup1Forms_yer(infinitive, mutateYe)
   local base = mw.ustring.sub(infinitive, 1, -4)
   local vowel = mw.ustring.sub(base, -1)
   local mutatedRoot
+  if mutateYe and vowel ~= "a" then
+    invalidMutationType(MUTATION_AYER_YE)
+  end
   if vowel == "a" and mutateYe or vowel == "e" then
     mutatedRoot = base .. "y"
   else
@@ -285,8 +292,14 @@ function p.generateGroup1Forms(infinitive, mutationType)
   local last5 = mw.ustring.sub(infinitive, -5)
   local consonants = eCONSer_verbs[last4] or eCONSer_verbs[last5]
   if consonants then
+    if mutationType and (mutationType ~= MUTATION_DOUBLE_CONS or (consonants ~= "l" and consonants ~= "t")) then
+      invalidMutationType(mutationType)
+    end
     local doubleConsonant = (consonants == "l" or consonants == "t") and mutationType == MUTATION_DOUBLE_CONS
     return generateGroup1Forms_eCONSer(infinitive, consonants, doubleConsonant)
+  end
+  if mutationType and mutationType ~= MUTATION_AYER_YE then
+    invalidMutationType(mutationType)
   end
   consonants = eacuteCONSer_verbs[last4] or eacuteCONSer_verbs[last5]
   if consonants then
@@ -300,6 +313,9 @@ function p.generateGroup1Forms(infinitive, mutationType)
   local last3 = mw.ustring.sub(infinitive, -3)
   if last3 == "yer" then
     return generateGroup1Forms_yer(infinitive, mutationType == MUTATION_AYER_YE)
+  end
+  if mutationType then
+    invalidMutationType(mutationType)
   end
   if last3 == "cer" or last3 == "ger" then
     return generateGroup1Forms_cer_ger(infinitive)
@@ -317,6 +333,9 @@ end
 function p.generateGroup2Forms(infinitive, dropDiaeresis)
   local root = mw.ustring.sub(infinitive, 1, -3)
   local hasDiaeresis = mw.ustring.sub(infinitive, -2) == "ïr"
+  if not hasDiaeresis and dropDiaeresis then
+    invalidMutationType(MUTATION_I)
+  end
   local i = hasDiaeresis and "ï" or "i"
   local iCirc = hasDiaeresis and "ï" or "î"
   return {
@@ -417,30 +436,41 @@ end
 
 --- Generate the simple tense forms of the given verb.
 --- @param infinitive string The infinitive form of the verb.
---- @param group number Optional. The verb’s group. If undefined,
----        the function will attempt to detect it based on the infinitive form.
+--- @param group3 boolean If true, the verb will be classified as belonging to group 3.
 --- @param mutationType string The type of mutation to apply to the verb’s root instead of the default one.
 --- @return (table, number) A tuple with a table containing all simple tense forms of the verb, and the verb’s group.
-function p.generateFlexions(infinitive, group, mutationType)
+function p.generateFlexions(infinitive, group3, mutationType)
   if infinitive == "être" then
+    if mutationType then
+      invalidMutationType(mutationType)
+    end
     -- Special case to avoid unnecessary checks
     return p.etreConj, 3
   end
   if infinitive == "avoir" then
+    if mutationType then
+      invalidMutationType(mutationType)
+    end
     -- Special case to avoid unnecessary checks
     return p.avoirConj, 3
   end
+
   local ending = mw.ustring.sub(infinitive, -2)
-  if not group and ending == "er" or group == 1 then
-    return p.generateGroup1Forms(infinitive, mutationType), 1
-  end
-  if not group and (ending == "ir" or ending == "ïr") or group == 2 then
+  if not group3 and (ending == "ir" or ending == "ïr") then
     return p.generateGroup2Forms(infinitive, mutationType == MUTATION_I), 2
   end
-  if not group or group == 3 then
-    return p.generateGroup3Forms(infinitive), 3
+  if mutationType and mutationType == MUTATION_I then
+    invalidMutationType(mutationType)
   end
-  error("Groupe invalide : " .. tostring(group))
+
+  if not group3 and ending == "er" then
+    return p.generateGroup1Forms(infinitive, mutationType), 1
+  end
+  if mutationType and mutationType == MUTATION_DOUBLE_CONS or mutationType == MUTATION_AYER_YE then
+    invalidMutationType(mutationType)
+  end
+
+  return p.generateGroup3Forms(infinitive), 3
 end
 
 return p

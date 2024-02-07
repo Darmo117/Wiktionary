@@ -383,8 +383,8 @@ end
 --- Render the conjugation tables for the given verb.
 --- Parameters:
 ---  frame.args[1] (string): The verb in its infinitive present form.
----  frame.args["aux-être"] (boolean): If true, use the “être” auxiliary instead of “avoir”.
----  frame.args["groupe"] (number): Optional. The verb’s group if it cannot be guessed automatically.
+---  frame.args["aux-être"] (boolean): Optional. If true, use the “être” auxiliary instead of “avoir”.
+---  frame.args["groupe3"] (boolean): Optional. If true, the verb will be classified as belonging to group 3.
 ---  frame.args["pronominal"] (number): Optional. Whether the verb is reflexive.
 ---  frame.args["mutation"] (boolean): Optional. The type of mutation to apply to the verb’s root instead of the default one.
 --- @return string The generated wikicode.
@@ -393,21 +393,21 @@ function p.conj(frame)
   local args = m_params.process(frame.args, {
     [1] = { required = true },
     ["aux-être"] = { type = m_params.BOOLEAN, default = false },
-    ["groupe"] = { type = m_params.INT, enum = { 1, 2, 3 } },
+    ["groupe3"] = { type = m_params.BOOLEAN, default = false },
     ["pronominal"] = { type = m_params.BOOLEAN, default = false },
     ["mutation"] = { enum = m_gen.mutationTypes },
   })
   local infinitive = args[1]
   local reflexive = args["pronominal"]
   local auxiliary = (reflexive or args["aux-être"]) and m_gen.etreConj or m_gen.avoirConj
-  local group = args["groupe"]
+  local group3 = args["groupe3"]
   local mutationType = args["mutation"]
   -- TODO autres paramètres :
   -- * flexions entières
   -- * radicaux de flexions
   -- * h aspirés pour formes contractées des pronoms
   -- * modes/temps/personnes défectives
-  local simpleTenses, actualGroup = m_gen.generateFlexions(infinitive, group, mutationType)
+  local simpleTenses, actualGroup = m_gen.generateFlexions(infinitive, group3, mutationType)
   return renderPage(completeTable(auxiliary, simpleTenses), actualGroup, reflexive)
 end
 

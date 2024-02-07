@@ -1,57 +1,7 @@
 local m_table = require("Module:table")
+local m_gen = require("Module:conjugaisons/tense-generators")
 
 local p = {}
-
-local avoirConj = {
-  infinitif = {
-    present = "avoir",
-  },
-  participe = {
-    present = "ayant",
-    passe = "eu",
-  },
-  indicatif = {
-    present = { "ai", "as", "a", "avons", "avez", "ont" },
-    imparfait = { "avais", "avais", "avait", "avions", "aviez", "avaient" },
-    passeSimple = { "eus", "eus", "eut", "eûmes", "eûtes", "eurent" },
-    futur = { "aurai", "auras", "aura", "aurons", "aurez", "auront" },
-  },
-  subjonctif = {
-    present = { "aie", "aies", "ait", "ayons", "ayez", "aient" },
-    imparfait = { "eusse", "eusses", "eût", "eussions", "eussiez", "eussent" }
-  },
-  conditionnel = {
-    present = { "aurais", "aurais", "aurait", "aurions", "auriez", "auraient" }
-  },
-  imperatif = {
-    present = { "aie", "ayons", "ayez" }
-  },
-}
-local etreConj = {
-  infinitif = {
-    present = "être",
-  },
-  participe = {
-    present = "étant",
-    passe = "été",
-  },
-  indicatif = {
-    present = { "suis", "es", "est", "sommes", "êtes", "sont" },
-    imparfait = { "étais", "étais", "était", "étions", "étiez", "étaient" },
-    passeSimple = { "fus", "fus", "fut", "fûmes", "fûtes", "furent" },
-    futur = { "serai", "seras", "sera", "serons", "serez", "seront" },
-  },
-  subjonctif = {
-    present = { "sois", "sois", "soit", "soyons", "soyez", "soient" },
-    imparfait = { "fusse", "fusses", "fût", "fussions", "fussiez", "fussent" }
-  },
-  conditionnel = {
-    present = { "serais", "serais", "serait", "serions", "seriez", "seraient" }
-  },
-  imperatif = {
-    present = { "sois", "soyons", "soyez" }
-  },
-}
 
 -- TODO distinguer les pronoms des 3èmes personnes
 local pronouns = {
@@ -422,15 +372,38 @@ local function renderPage(verbTable, group, reflexive)
   return tostring(page)
 end
 
+--- Generate the simple tense forms of the given verb.
+--- @param infinitive string The infinitive form of the verb.
+--- @param group number Optional. The verb’s group. If undefined,
+---        the function will attempt to detect it based on the infinitive form.
+--- @return (table, number) A tuple with a table containing all simple tense forms of the verb, and the verb’s group.
+local function generateFlexions(infinitive, group)
+  if not group and mw.ustring.sub(infinitive, -2) == "er" or group == 1 then
+    return m_gen.generateGroup1Forms(infinitive), 1
+  elseif not group and mw.ustring.sub(infinitive, -2) == "ir" or group == 2 then
+    return m_gen.generateGroup2Forms(infinitive), 2
+  elseif not group or group == 3 then
+    return m_gen.generateGroup3Forms(infinitive), 3
+  else
+    error("Groupe invalide : " .. tostring(group))
+  end
+end
+
 --- Render the conjugation tables for the given verb.
 --- Parameters:
 ---  frame.args[1] (string): The verb in its infinitive present form.
 ---  frame.args["aux-être"] (boolean): If true, use the “être” auxiliary instead of “avoir”.
 ---  frame.args["groupe"] (number): Optional. The verb’s group if it cannot be guessed automatically.
+---  frame.args["pronominal"] (number): Optional. Whether the verb is reflexive.
 --- @return string The generated wikicode.
 function p.conj(frame)
-  -- TODO
-  return renderPage(completeTable(avoirConj, etreConj), 3, frame.args.reflexive) -- TEST
+  local infinitive = frame.args[1]
+  local auxiliary = frame.args["aux-être"] and p.etreConj or p.avoirConj
+  local group = frame.args["groupe"] and tonumber(frame.args["groupe"])
+  local reflexive = frame.args["pronominal"] ~= nil
+  -- TODO autres paramètres
+  local simpleTenses, actualGroup = generateFlexions(infinitive, group)
+  return renderPage(completeTable(simpleTenses, auxiliary), actualGroup, reflexive)
 end
 
 return p

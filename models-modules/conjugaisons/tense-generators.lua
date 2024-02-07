@@ -51,45 +51,98 @@ p.etreConj = {
   },
 }
 
+local function generateGroup1Endings(firstLetter, consonants)
+  local endings = {}
+  for _, c in ipairs(consonants) do
+    endings[firstLetter .. c .. "er"] = c
+  end
+  return endings
+end
+
+local eCONSer_verbs = generateGroup1Endings("e", {
+  "c",
+  "d",
+  "g",
+  "m",
+  "n",
+  "p",
+  "r",
+  "s",
+  "v",
+  "vr",
+})
+local eacuteCONSer_verbs = generateGroup1Endings("é", {
+  "b",
+  "br",
+  "c",
+  "ch",
+  "cr",
+  "d",
+  "fl",
+  "g",
+  "gn",
+  "gr",
+  "gu",
+  "j",
+  "l",
+  "m",
+  "n",
+  "p",
+  "qu",
+  "r",
+  "s",
+  "t",
+  "tr",
+  "v",
+  "vr",
+})
+
+local function startsWithAO(s)
+  local firstLetter = mw.ustring.sub(s, 1, 1)
+  return firstLetter == "a" or firstLetter == "â" or firstLetter == "o"
+end
+
 --- Generate the simple tense forms of the given group-1 verb.
 --- @param infinitive string The infinitive form of the verb.
+--- @param mapper function A function that, given the verb’s root and an ending, builds the associated verb form.
 --- @return table A table containing all simple tense forms of the verb.
---- @see [[Conjugaison:français/Premier groupe]] for exceptions.
-function p.generateGroup1Forms(infinitive)
-  -- TODO cas particuliers (https://fr.wiktionary.org/wiki/Conjugaison:fran%C3%A7ais/Premier_groupe)
+local function generateGroup1Forms_(infinitive, mapper)
+  mapper = mapper or function(root, ending)
+    return root .. ending
+  end
   local root = mw.ustring.sub(infinitive, 1, -3)
   return {
     infinitif = {
       present = infinitive,
     },
     participe = {
-      present = root .. "ant",
-      passe = root .. "é",
+      present = mapper(root, "ant"),
+      passe = mapper(root, "é"),
     },
     indicatif = {
       present = {
-        root .. "e",
-        root .. "es",
-        root .. "e",
-        root .. "ons",
-        root .. "ez",
-        root .. "ent"
+        mapper(root, "e"),
+        mapper(root, "es"),
+        mapper(root, "e"),
+        mapper(root, "ons"),
+        mapper(root, "ez"),
+        mapper(root, "ent")
       },
       imparfait = {
-        root .. "ais",
-        root .. "ais",
-        root .. "ait",
-        root .. "ions",
-        root .. "iez",
-        root .. "aient"
+        mapper(root, "ais"),
+        mapper(root, "ais"),
+        mapper(root, "ait"),
+        mapper(root, "ions"),
+        mapper(root, "iez"),
+        mapper(root, "aient")
       },
       passeSimple = {
-        root .. "ai",
-        root .. "as",
-        root .. "a",
-        root .. "âmes",
-        root .. "âtes",
-        root .. "èrent"
+        mapper(root, "ai"),
+        mapper(root, "as"),
+        mapper(root, "a"),
+        mapper(root, "âmes"),
+        mapper(root, "âtes"),
+        mapper(root, "èrent")
       },
       futur = {
         infinitive .. "ai",
@@ -102,20 +155,20 @@ function p.generateGroup1Forms(infinitive)
     },
     subjonctif = {
       present = {
-        root .. "e",
-        root .. "es",
-        root .. "e",
-        root .. "ions",
-        root .. "iez",
-        root .. "ent"
+        mapper(root, "e"),
+        mapper(root, "es"),
+        mapper(root, "e"),
+        mapper(root, "ions"),
+        mapper(root, "iez"),
+        mapper(root, "ent")
       },
       imparfait = {
-        root .. "asse",
-        root .. "asses",
-        root .. "ât",
-        root .. "assions",
-        root .. "assiez",
-        root .. "assent"
+        mapper(root, "asse"),
+        mapper(root, "asses"),
+        mapper(root, "ât"),
+        mapper(root, "assions"),
+        mapper(root, "assiez"),
+        mapper(root, "assent")
       }
     },
     conditionnel = {
@@ -130,17 +183,71 @@ function p.generateGroup1Forms(infinitive)
     },
     imperatif = {
       present = {
-        root .. "e",
-        root .. "ons",
-        root .. "ez"
+        mapper(root, "e"),
+        mapper(root, "ons"),
+        mapper(root, "ez")
       }
     },
   }
 end
 
+--- Generate the simple tense forms of the given group-1 verb ending in `[gc]er`.
+--- @param infinitive string The infinitive form of the verb.
+--- @return table A table containing all simple tense forms of the verb.
+local function generateGroup1Forms_ger_cer(infinitive)
+  local mutation = mw.ustring.sub(infinitive, -3, -3) == "g" and "ge" or "ç"
+  local base = mw.ustring.sub(infinitive, 1, -4)
+  return generateGroup1Forms_(infinitive, function(root, ending)
+    return (startsWithAO(ending) and base .. mutation or root) .. ending
+  end)
+end
+
+--- Generate the simple tense forms of the given group-1 verb.
+--- @param infinitive string The infinitive form of the verb.
+--- @return table A table containing all simple tense forms of the verb.
+--- @see [[Conjugaison:français/Premier groupe]] for exceptions.
+function p.generateGroup1Forms(infinitive)
+  local last4 = mw.ustring.sub(infinitive, -4)
+  local last5 = mw.ustring.sub(infinitive, -5)
+  local consonants = eCONSer_verbs[last4] or eCONSer_verbs[last5]
+  if consonants then
+    return generateGroup1Forms_eCONSer(infinitive, consonants) -- TODO
+  end
+  if last4 == "eler" then
+    return generateGroup1Forms_eler(infinitive) -- TODO
+  end
+  if last4 == "eter" then
+    return generateGroup1Forms_eter(infinitive) -- TODO
+  end
+  consonants = eacuteCONSer_verbs[last4] or eacuteCONSer_verbs[last5]
+  if consonants then
+    return generateGroup1Forms_eacuteCONSer(infinitive, consonants) -- TODO
+  end
+
+  if mw.ustring.sub(infinitive, -7) == "envoyer" then
+    return generateGroup1Forms_envoyer(infinitive) -- TODO
+  end
+  if last4 == "ayer" then
+    return generateGroup1Forms_ayer(infinitive) -- TODO
+  end
+  if last4 == "oyer" or last4 == "uyer" then
+    return generateGroup1Forms_oyer_uyer(infinitive) -- TODO
+  end
+  if last4 == "eyer" then
+    return generateGroup1Forms_eyer(infinitive) -- TODO
+  end
+
+  local last3 = mw.ustring.sub(infinitive, -3)
+  if last3 == "cer" or last3 == "ger" then
+    return generateGroup1Forms_ger_cer(infinitive)
+  end
+
+  return generateGroup1Forms_(infinitive)
+end
+
 --- Generate the simple tense forms of the given group-2 verb.
 --- @param infinitive string The infinitive form of the verb.
---- @param dropDiaeresis boolean Whether to drop the “ï”
+--- @param dropDiaeresis boolean Whether to drop the `ï`
 ---        for the 3 singular persons of indicative and imperative present.
 --- @return table A table containing all simple tense forms of the verb.
 --- @see [[Conjugaison:français/Deuxième groupe]] for exceptions.
@@ -249,7 +356,7 @@ end
 --- @param infinitive string The infinitive form of the verb.
 --- @param group number Optional. The verb’s group. If undefined,
 ---        the function will attempt to detect it based on the infinitive form.
---- @param dropDiaeresis boolean For group-2 verbs in “ïr”, whether to drop the “ï”
+--- @param dropDiaeresis boolean For group-2 verbs in `ïr`, whether to drop the `ï`
 ---        for the 3 singular persons of indicative and imperative present.
 --- @return (table, number) A tuple with a table containing all simple tense forms of the verb, and the verb’s group.
 function p.generateFlexions(infinitive, group, dropDiaeresis)

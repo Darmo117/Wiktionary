@@ -249,6 +249,9 @@ end
 --- @param doubleConsonant boolean True to double the consonant instead of mutating the `e/é` into an `è`.
 --- @return table A table containing all simple tense forms of the verb.
 local function generateGroup1Forms_eCONSer(infinitive, consonants, doubleConsonant)
+  if doubleConsonant and consonants ~= "l" and consonants ~= "t" then
+    invalidMutationType(MUTATION_DOUBLE_CONS)
+  end
   local base = mw.ustring.sub(infinitive, 1, -4 - mw.ustring.len(consonants))
   local mutatedRoot = base .. (doubleConsonant and ("e" .. consonants) or "è") .. consonants
   return generateGroup1Forms_(infinitive, function(root, ending)
@@ -288,35 +291,47 @@ end
 --- @return table A table containing all simple tense forms of the verb.
 --- @see [[Conjugaison:français/Premier groupe]] for exceptions.
 function p.generateGroup1Forms(infinitive, mutationType)
+  if mutationType and mutationType ~= MUTATION_DOUBLE_CONS and mutationType ~= MUTATION_AYER_YE then
+    invalidMutationType(mutationType)
+  end
+
   local last4 = mw.ustring.sub(infinitive, -4)
   local last5 = mw.ustring.sub(infinitive, -5)
   local consonants = eCONSer_verbs[last4] or eCONSer_verbs[last5]
   if consonants then
-    if mutationType and (mutationType ~= MUTATION_DOUBLE_CONS or (consonants ~= "l" and consonants ~= "t")) then
+    if mutationType and mutationType ~= MUTATION_DOUBLE_CONS then
       invalidMutationType(mutationType)
     end
     local doubleConsonant = (consonants == "l" or consonants == "t") and mutationType == MUTATION_DOUBLE_CONS
     return generateGroup1Forms_eCONSer(infinitive, consonants, doubleConsonant)
   end
-  if mutationType and mutationType ~= MUTATION_AYER_YE then
+  if mutationType and mutationType == MUTATION_DOUBLE_CONS then
     invalidMutationType(mutationType)
-  end
-  consonants = eacuteCONSer_verbs[last4] or eacuteCONSer_verbs[last5]
-  if consonants then
-    return generateGroup1Forms_eCONSer(infinitive, consonants)
   end
 
   if mw.ustring.sub(infinitive, -7) == "envoyer" then
+    if mutationType then
+      invalidMutationType(mutationType)
+    end
     return generateGroup1Forms_envoyer(infinitive) -- TODO
   end
 
   local last3 = mw.ustring.sub(infinitive, -3)
   if last3 == "yer" then
+    if mutationType and mutationType ~= MUTATION_AYER_YE then
+      invalidMutationType(mutationType)
+    end
     return generateGroup1Forms_yer(infinitive, mutationType == MUTATION_AYER_YE)
   end
   if mutationType then
     invalidMutationType(mutationType)
   end
+
+  consonants = eacuteCONSer_verbs[last4] or eacuteCONSer_verbs[last5]
+  if consonants then
+    return generateGroup1Forms_eCONSer(infinitive, consonants)
+  end
+
   if last3 == "cer" or last3 == "ger" then
     return generateGroup1Forms_cer_ger(infinitive)
   end
@@ -457,6 +472,9 @@ function p.generateFlexions(infinitive, group3, mutationType)
 
   local ending = mw.ustring.sub(infinitive, -2)
   if not group3 and (ending == "ir" or ending == "ïr") then
+    if mutationType and mutationType ~= MUTATION_I then
+      invalidMutationType(mutationType)
+    end
     return p.generateGroup2Forms(infinitive, mutationType == MUTATION_I), 2
   end
   if mutationType and mutationType == MUTATION_I then

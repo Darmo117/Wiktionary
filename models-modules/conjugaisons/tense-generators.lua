@@ -53,6 +53,7 @@ p.etreConj = {
 
 --- For group-1 verbs ending in `-eler/-eter`, mutate the root in `-ell-/-ett-` instead of `-èl-/-èt-`.
 local MUTATION_DOUBLE_CONS = "double consonne"
+local MUTATION_AYER_YE = "ayer-ye"
 --- For group-2 verbs ending in `-ïr`, replace the `ï` by a `i` for the 3 singular persons of indicative
 --- and the singular imperative present.
 local MUTATION_I = "ï-i"
@@ -60,6 +61,7 @@ local MUTATION_I = "ï-i"
 --- All available root mutation types.
 p.mutationTypes = {
   MUTATION_DOUBLE_CONS,
+  MUTATION_AYER_YE,
   MUTATION_I,
 }
 
@@ -252,6 +254,27 @@ local function generateGroup1Forms_eCONSer(infinitive, consonants, doubleConsona
   end)
 end
 
+--- Generate the simple tense forms of the given group-1 verb ending in `[aeou]yer`.
+--- @param infinitive string The infinitive form of the verb.
+--- @param mutateYe boolean If the verb ends in `ayer` and this argument is true the `y`
+---        in the root is mutated as `i` before neutral endings.
+--- @return table A table containing all simple tense forms of the verb.
+local function generateGroup1Forms_yer(infinitive, mutateYe)
+  local base = mw.ustring.sub(infinitive, 1, -4)
+  local vowel = mw.ustring.sub(base, -1)
+  local mutatedRoot
+  if vowel == "a" and mutateYe or vowel == "e" then
+    mutatedRoot = base .. "y"
+  else
+    mutatedRoot = base .. "i"
+  end
+  return generateGroup1Forms_(infinitive, function(root, ending)
+    return (isGroup1EndingSilent(ending) and mutatedRoot or root) .. ending
+  end, function(ending)
+    return mutatedRoot .. "er" .. ending
+  end)
+end
+
 --- Generate the simple tense forms of the given group-1 verb.
 --- @param infinitive string The infinitive form of the verb.
 --- @param mutationType string The type of mutation to apply to the verb’s root instead of the default one.
@@ -273,17 +296,11 @@ function p.generateGroup1Forms(infinitive, mutationType)
   if mw.ustring.sub(infinitive, -7) == "envoyer" then
     return generateGroup1Forms_envoyer(infinitive) -- TODO
   end
-  if last4 == "ayer" then
-    return generateGroup1Forms_ayer(infinitive) -- TODO
-  end
-  if last4 == "oyer" or last4 == "uyer" then
-    return generateGroup1Forms_oyer_uyer(infinitive) -- TODO
-  end
-  if last4 == "eyer" then
-    return generateGroup1Forms_eyer(infinitive) -- TODO
-  end
 
   local last3 = mw.ustring.sub(infinitive, -3)
+  if last3 == "yer" then
+    return generateGroup1Forms_yer(infinitive, mutationType == MUTATION_AYER_YE)
+  end
   if last3 == "cer" or last3 == "ger" then
     return generateGroup1Forms_cer_ger(infinitive)
   end

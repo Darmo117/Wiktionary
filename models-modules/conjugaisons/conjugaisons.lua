@@ -385,14 +385,17 @@ end
 ---  frame.args["aux-être"] (boolean): If true, use the “être” auxiliary instead of “avoir”.
 ---  frame.args["groupe"] (number): Optional. The verb’s group if it cannot be guessed automatically.
 ---  frame.args["pronominal"] (number): Optional. Whether the verb is reflexive.
+---  frame.args["pas-ï"] (boolean): Optional. For group-2 verbs in “ïr”, whether to drop the “ï”
+---   for the 3 singular persons of indicative and imperative present.
 --- @return string The generated wikicode.
 function p.conj(frame)
   local infinitive = frame.args[1]
   local reflexive = frame.args["pronominal"] ~= nil
   local auxiliary = (reflexive or frame.args["aux-être"]) and m_gen.etreConj or m_gen.avoirConj
   local group = frame.args["groupe"] and tonumber(frame.args["groupe"])
+  local dropDiaeresis = frame.args["pas-ï"] ~= nil
   -- TODO autres paramètres
-  local simpleTenses, actualGroup = m_gen.generateFlexions(infinitive, group)
+  local simpleTenses, actualGroup = m_gen.generateFlexions(infinitive, group, dropDiaeresis)
   return renderPage(completeTable(auxiliary, simpleTenses), actualGroup, reflexive)
 end
 

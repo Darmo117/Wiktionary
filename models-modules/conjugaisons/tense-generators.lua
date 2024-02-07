@@ -67,29 +67,84 @@ function p.generateGroup1Forms(infinitive)
       passe = root .. "é",
     },
     indicatif = {
-      present = { root .. "e", root .. "es", root .. "e", root .. "ons", root .. "ez", root .. "ent" },
-      imparfait = { root .. "ais", root .. "ais", root .. "ait", root .. "ions", root .. "iez", root .. "aient" },
-      passeSimple = { root .. "ai", root .. "as", root .. "a", root .. "âmes", root .. "âtes", root .. "èrent" },
-      futur = { infinitive .. "ai", infinitive .. "as", infinitive .. "a", infinitive .. "ons", infinitive .. "ez", infinitive .. "ont" },
+      present = {
+        root .. "e",
+        root .. "es",
+        root .. "e",
+        root .. "ons",
+        root .. "ez",
+        root .. "ent"
+      },
+      imparfait = {
+        root .. "ais",
+        root .. "ais",
+        root .. "ait",
+        root .. "ions",
+        root .. "iez",
+        root .. "aient"
+      },
+      passeSimple = {
+        root .. "ai",
+        root .. "as",
+        root .. "a",
+        root .. "âmes",
+        root .. "âtes",
+        root .. "èrent"
+      },
+      futur = {
+        infinitive .. "ai",
+        infinitive .. "as",
+        infinitive .. "a",
+        infinitive .. "ons",
+        infinitive .. "ez",
+        infinitive .. "ont"
+      },
     },
     subjonctif = {
-      present = { root .. "e", root .. "es", root .. "e", root .. "ions", root .. "iez", root .. "ent" },
-      imparfait = { root .. "asse", root .. "asses", root .. "ât", root .. "assions", root .. "assiez", root .. "assent" }
+      present = {
+        root .. "e",
+        root .. "es",
+        root .. "e",
+        root .. "ions",
+        root .. "iez",
+        root .. "ent"
+      },
+      imparfait = {
+        root .. "asse",
+        root .. "asses",
+        root .. "ât",
+        root .. "assions",
+        root .. "assiez",
+        root .. "assent"
+      }
     },
     conditionnel = {
-      present = { infinitive .. "ais", infinitive .. "ais", infinitive .. "ait", infinitive .. "ions", infinitive .. "iez", infinitive .. "aient" }
+      present = {
+        infinitive .. "ais",
+        infinitive .. "ais",
+        infinitive .. "ait",
+        infinitive .. "ions",
+        infinitive .. "iez",
+        infinitive .. "aient"
+      }
     },
     imperatif = {
-      present = { root .. "e", root .. "ons", root .. "ez" }
+      present = {
+        root .. "e",
+        root .. "ons",
+        root .. "ez"
+      }
     },
   }
 end
 
 --- Generate the simple tense forms of the given group-2 verb.
 --- @param infinitive string The infinitive form of the verb.
+--- @param dropDiaeresis boolean Whether to drop the “ï”
+---        for the 3 singular persons of indicative and imperative present.
 --- @return table A table containing all simple tense forms of the verb.
 --- @see [[Conjugaison:français/Deuxième groupe]] for exceptions.
-function p.generateGroup2Forms(infinitive)
+function p.generateGroup2Forms(infinitive, dropDiaeresis)
   local root = mw.ustring.sub(infinitive, 1, -3)
   local hasDiaeresis = mw.ustring.sub(infinitive, -2) == "ïr"
   local i = hasDiaeresis and "ï" or "i"
@@ -103,20 +158,73 @@ function p.generateGroup2Forms(infinitive)
       passe = root .. i,
     },
     indicatif = {
-      present = { root .. i .. "s", root .. i .. "s", root .. i .. "t", root .. i .. "ssons", root .. i .. "ssez", root .. i .. "ssent" },
-      imparfait = { root .. i .. "ssais", root .. i .. "ssais", root .. i .. "ssait", root .. i .. "ssions", root .. i .. "ssiez", root .. i .. "ssaient" },
-      passeSimple = { root .. i .. "s", root .. i .. "s", root .. i .. "t", root .. iCirc .. "mes", root .. iCirc .. "tes", root .. i .. "rent" },
-      futur = { infinitive .. "ai", infinitive .. "as", infinitive .. "a", infinitive .. "ons", infinitive .. "ez", infinitive .. "ont" },
+      present = {
+        root .. (dropDiaeresis and "is" or (i .. "s")),
+        root .. (dropDiaeresis and "is" or (i .. "s")),
+        root .. (dropDiaeresis and "it" or (i .. "t")),
+        root .. i .. "ssons",
+        root .. i .. "ssez",
+        root .. i .. "ssent"
+      },
+      imparfait = {
+        root .. i .. "ssais",
+        root .. i .. "ssais",
+        root .. i .. "ssait",
+        root .. i .. "ssions",
+        root .. i .. "ssiez",
+        root .. i .. "ssaient"
+      },
+      passeSimple = {
+        root .. i .. "s",
+        root .. i .. "s",
+        root .. i .. "t",
+        root .. iCirc .. "mes",
+        root .. iCirc .. "tes",
+        root .. i .. "rent"
+      },
+      futur = {
+        infinitive .. "ai",
+        infinitive .. "as",
+        infinitive .. "a",
+        infinitive .. "ons",
+        infinitive .. "ez",
+        infinitive .. "ont"
+      },
     },
     subjonctif = {
-      present = { root .. i .. "sse", root .. i .. "sses", root .. i .. "sse", root .. i .. "ssions", root .. i .. "ssiez", root .. i .. "ssent" },
-      imparfait = { root .. i .. "sse", root .. i .. "sses", root .. iCirc .. "t", root .. i .. "ssions", root .. i .. "ssiez", root .. i .. "ssent" }
+      present = {
+        root .. i .. "sse",
+        root .. i .. "sses",
+        root .. i .. "sse",
+        root .. i .. "ssions",
+        root .. i .. "ssiez",
+        root .. i .. "ssent"
+      },
+      imparfait = {
+        root .. i .. "sse",
+        root .. i .. "sses",
+        root .. iCirc .. "t",
+        root .. i .. "ssions",
+        root .. i .. "ssiez",
+        root .. i .. "ssent"
+      }
     },
     conditionnel = {
-      present = { infinitive .. "ais", infinitive .. "ais", infinitive .. "ait", infinitive .. "ions", infinitive .. "iez", infinitive .. "aient" }
+      present = {
+        infinitive .. "ais",
+        infinitive .. "ais",
+        infinitive .. "ait",
+        infinitive .. "ions",
+        infinitive .. "iez",
+        infinitive .. "aient"
+      }
     },
     imperatif = {
-      present = { root .. i .. "s", root .. i .. "ssons", root .. i .. "ssez" }
+      present = {
+        root .. (dropDiaeresis and "is" or (i .. "s")),
+        root .. i .. "ssons",
+        root .. i .. "ssez"
+      }
     },
   }
 end
@@ -141,8 +249,10 @@ end
 --- @param infinitive string The infinitive form of the verb.
 --- @param group number Optional. The verb’s group. If undefined,
 ---        the function will attempt to detect it based on the infinitive form.
+--- @param dropDiaeresis boolean For group-2 verbs in “ïr”, whether to drop the “ï”
+---        for the 3 singular persons of indicative and imperative present.
 --- @return (table, number) A tuple with a table containing all simple tense forms of the verb, and the verb’s group.
-function p.generateFlexions(infinitive, group)
+function p.generateFlexions(infinitive, group, dropDiaeresis)
   if infinitive == "être" then
     -- Special cases to avoid unnecessary checks
     return p.etreConj, 3
@@ -155,7 +265,7 @@ function p.generateFlexions(infinitive, group)
     return p.generateGroup1Forms(infinitive), 1
   end
   if not group and (ending == "ir" or ending == "ïr") or group == 2 then
-    return p.generateGroup2Forms(infinitive), 2
+    return p.generateGroup2Forms(infinitive, dropDiaeresis), 2
   end
   if not group or group == 3 then
     return p.generateGroup3Forms(infinitive), 3

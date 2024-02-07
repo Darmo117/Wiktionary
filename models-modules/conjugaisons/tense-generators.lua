@@ -285,6 +285,19 @@ local function generateGroup1Forms_yer(infinitive, mutateYe)
   end)
 end
 
+--- Generate the simple tense forms of the given group-1 verb ending in `envoyer`.
+--- @param infinitive string The infinitive form of the verb.
+--- @return table A table containing all simple tense forms of the verb.
+local function generateGroup1Forms_envoyer(infinitive)
+  local mutatedRoot = mw.ustring.sub(infinitive, 1, -4) .. "i"
+  local mutatedInfinitiveRoot = mw.ustring.sub(infinitive, 1, -5) .. "err"
+  return generateGroup1Forms_(infinitive, function(root, ending)
+    return (isGroup1EndingSilent(ending) and mutatedRoot or root) .. ending
+  end, function(ending)
+    return mutatedInfinitiveRoot .. ending
+  end)
+end
+
 --- Generate the simple tense forms of the given group-1 verb.
 --- @param infinitive string The infinitive form of the verb.
 --- @param mutationType string The type of mutation to apply to the verb’s root instead of the default one.
@@ -313,7 +326,7 @@ function p.generateGroup1Forms(infinitive, mutationType)
     if mutationType then
       invalidMutationType(mutationType)
     end
-    return generateGroup1Forms_envoyer(infinitive) -- TODO
+    return generateGroup1Forms_envoyer(infinitive)
   end
 
   local last3 = mw.ustring.sub(infinitive, -3)

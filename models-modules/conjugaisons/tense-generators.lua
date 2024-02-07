@@ -1,5 +1,6 @@
 local p = {}
 
+--- Conjugation of the `avoir` auxiliary verb.
 p.avoirConj = {
   infinitif = {
     present = "avoir",
@@ -25,6 +26,7 @@ p.avoirConj = {
     present = { "aie", "ayons", "ayez" }
   },
 }
+--- Conjugation of the `être` auxiliary verb.
 p.etreConj = {
   infinitif = {
     present = "être",
@@ -53,6 +55,7 @@ p.etreConj = {
 
 --- For group-1 verbs ending in `-eler/-eter`, mutate the root in `-ell-/-ett-` instead of `-èl-/-èt-`.
 local MUTATION_DOUBLE_CONS = "double consonne"
+--- For group-1 verbs ending in `-ayer`, keep the `y` instead of mutating it to `i` before silent endings.
 local MUTATION_AYER_YE = "ayer-ye"
 --- For group-2 verbs ending in `-ïr`, replace the `ï` by a `i` for the 3 singular persons of indicative
 --- and the singular imperative present.
@@ -65,6 +68,10 @@ p.mutationTypes = {
   MUTATION_I,
 }
 
+--- Generate a list of group-1 verb endings of the form `<firstLetter><consonants>er`.
+--- @param firstLetter string The first letter.
+--- @param consonants string[] The list of consonnants to generate endings with.
+--- @return string[] The list of generated endings.
 local function generateGroup1Endings(firstLetter, consonants)
   local endings = {}
   for _, c in ipairs(consonants) do
@@ -73,6 +80,7 @@ local function generateGroup1Endings(firstLetter, consonants)
   return endings
 end
 
+--- The list of all available group-1 endings of the form `e<consonants>er`.
 local eCONSer_verbs = generateGroup1Endings("e", {
   "c",
   "d",
@@ -87,6 +95,7 @@ local eCONSer_verbs = generateGroup1Endings("e", {
   "v",
   "vr",
 })
+--- The list of all available group-1 endings of the form `é<consonants>er`.
 local eacuteCONSer_verbs = generateGroup1Endings("é", {
   "b",
   "br",
@@ -113,15 +122,23 @@ local eacuteCONSer_verbs = generateGroup1Endings("é", {
   "vr",
 })
 
+--- Raise an error for the given mutation type.
+--- @param mutationType string The mutation type.
 local function invalidMutationType(mutationType)
   error(mw.ustring.format('Valeur invalide pour le paramètre « mutation » ("%s").', mutationType))
 end
 
+--- Check whether the given string starts with an `a`, `â` or `o`.
+--- @param s string The string to check.
+--- @return boolean True if the string starts with `a`, `â` or `o`, false otherwise.
 local function startsWithAO(s)
   local firstLetter = mw.ustring.sub(s, 1, 1)
   return firstLetter == "a" or firstLetter == "â" or firstLetter == "o"
 end
 
+--- Check whether the given group-1 ending is silent.
+--- @param ending string The ending to check.
+--- @return boolean True if the ending is silent, false otherwise.
 local function isGroup1EndingSilent(ending)
   return ending == "e" or ending == "es" or ending == "ent"
 end

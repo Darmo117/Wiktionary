@@ -55,14 +55,64 @@ p.etreConj = {
 --- @param infinitive string The infinitive form of the verb.
 --- @return table A table containing all simple tense forms of the verb.
 function p.generateGroup1Forms(infinitive)
-  return {} -- TODO
+  local root = mw.ustring.sub(infinitive, 1, -3)
+  return {
+    infinitif = {
+      present = infinitive,
+    },
+    participe = {
+      present = root .. "ant",
+      passe = root .. "é",
+    },
+    indicatif = {
+      present = { root .. "e", root .. "es", root .. "e", root .. "ons", root .. "ez", root .. "ent" },
+      imparfait = { root .. "ais", root .. "ais", root .. "ait", root .. "ions", root .. "iez", root .. "aient" },
+      passeSimple = { root .. "ai", root .. "as", root .. "a", root .. "âmes", root .. "âtes", root .. "èrent" },
+      futur = { infinitive .. "ai", infinitive .. "as", infinitive .. "a", infinitive .. "ons", infinitive .. "ez", infinitive .. "ont" },
+    },
+    subjonctif = {
+      present = { root .. "e", root .. "es", root .. "e", root .. "ions", root .. "iez", root .. "ent" },
+      imparfait = { root .. "asse", root .. "asses", root .. "ât", root .. "assions", root .. "assiez", root .. "assent" }
+    },
+    conditionnel = {
+      present = { infinitive .. "ais", infinitive .. "ais", infinitive .. "ait", infinitive .. "ions", infinitive .. "iez", infinitive .. "aient" }
+    },
+    imperatif = {
+      present = { root .. "e", root .. "ons", root .. "ez" }
+    },
+  }
 end
 
 --- Generate the simple tense forms of the given group-2 verb.
 --- @param infinitive string The infinitive form of the verb.
 --- @return table A table containing all simple tense forms of the verb.
 function p.generateGroup2Forms(infinitive)
-  return {} -- TODO
+  local root = mw.ustring.sub(infinitive, 1, -3)
+  return {
+    infinitif = {
+      present = infinitive,
+    },
+    participe = {
+      present = root .. "issant",
+      passe = root .. "i",
+    },
+    indicatif = {
+      present = { root .. "is", root .. "is", root .. "it", root .. "issons", root .. "issez", root .. "issent" },
+      imparfait = { root .. "issais", root .. "issais", root .. "issait", root .. "issions", root .. "issiez", root .. "issaient" },
+      passeSimple = { root .. "is", root .. "is", root .. "it", root .. "îmes", root .. "îtes", root .. "irent" },
+      futur = { infinitive .. "ai", infinitive .. "as", infinitive .. "a", infinitive .. "ons", infinitive .. "ez", infinitive .. "ont" },
+    },
+    subjonctif = {
+      present = { root .. "isse", root .. "isses", root .. "isse", root .. "issions", root .. "issiez", root .. "issent" },
+      imparfait = { root .. "isse", root .. "isses", root .. "ît", root .. "issions", root .. "issiez", root .. "issent" }
+    },
+    conditionnel = {
+      present = { infinitive .. "ais", infinitive .. "ais", infinitive .. "ait", infinitive .. "ions", infinitive .. "iez", infinitive .. "aient" }
+    },
+    imperatif = {
+      present = { root .. "is", root .. "issons", root .. "issez" }
+    },
+  }
 end
 
 --- Generate the simple tense forms of the given group-3 verb.
@@ -74,7 +124,7 @@ function p.generateGroup3Forms(infinitive)
   elseif infinitive == "avoir" then
     return p.avoirConj
   else
-    return {} -- TODO détecter type de verbe
+    return {} -- TODO détecter type de verbe et génerer en fonction
   end
 end
 

@@ -12,6 +12,7 @@ local reflexivePronouns = {
 }
 local imperativePronouns = { "toi", "nous", "vous" }
 local liaisonLetters = { "a", "â", "e", "ê", "é", "è", "ë", "i", "î", "ï", "o", "ô", "u", "û", "y", "h" }
+local que = { "que", "qu’" }
 local undefined = tostring(
     mw.html.create("span")
       :attr("style", "color: grey")
@@ -185,7 +186,8 @@ end
 --- @param title2 string Title for the composed tense.
 --- @param reflexive boolean True if the verb is reflexive, false otherwise.
 --- @param tableElement html The table element to add the generated rows to.
-local function generateTensesRows(simpleTense, title1, color1, composedTense, title2, color2, reflexive, tableElement)
+--- @param useQue boolean Optional. If true, “que” will be appended before each pronoun.
+local function generateTensesRows(simpleTense, title1, color1, composedTense, title2, color2, reflexive, tableElement, useQue)
   local headerRow = tableElement:tag("tr")
 
   headerRow:tag("th")
@@ -205,11 +207,16 @@ local function generateTensesRows(simpleTense, title1, color1, composedTense, ti
   --- @return string The pronoun sequence
   function pronounSequence(person, verb)
     local liaison = requiresLiaison(verb)
+    local ps
     if reflexive then
-      return getPronoun(person, false) .. getReflexivePronoun(person, liaison)
+      ps = getPronoun(person, false) .. getReflexivePronoun(person, liaison)
     else
-      return getPronoun(person, liaison)
+      ps = getPronoun(person, liaison)
     end
+    if useQue then
+      ps = getPronounFrom({ que }, 1, requiresLiaison(ps)) .. ps
+    end
+    return ps
   end
 
   for i, simple in ipairs(simpleTense) do
@@ -254,8 +261,8 @@ end
 --- @return string The generated table.
 local function generateSubjunctiveTable(verbTable, reflexive)
   local tableElement = createTable()
-  generateTensesRows(verbTable.subjonctif.present, "Présent", "#ddd", verbTable.subjonctif.passe, "Passé", "#fec", reflexive, tableElement)
-  generateTensesRows(verbTable.subjonctif.imparfait, "Imparfait", "#ddd", verbTable.subjonctif.plusQueParfait, "Plus-que-parfait", "#fec", reflexive, tableElement)
+  generateTensesRows(verbTable.subjonctif.present, "Présent", "#ddd", verbTable.subjonctif.passe, "Passé", "#fec", reflexive, tableElement, "que")
+  generateTensesRows(verbTable.subjonctif.imparfait, "Imparfait", "#ddd", verbTable.subjonctif.plusQueParfait, "Plus-que-parfait", "#fec", reflexive, tableElement, "que")
   return tostring(tableElement)
 end
 
@@ -336,7 +343,7 @@ local function renderPage(verbTable, group, reflexive)
 
   page:wikitext(mw.ustring.format(
       "Conjugaison de '''%s''', ''verbe %s du %s, conjugé avec l’auxiliaire %s''.",
-      link(verbTable.infinitif.present), reflexive and "réflexif" or "", formatGroup(group), link(verbTable.auxiliaire)
+      link(verbTable.infinitif.present), reflexive and "pronominal" or "", formatGroup(group), link(verbTable.auxiliaire)
   ))
 
   page:tag("h3")
@@ -378,14 +385,20 @@ end
 ---        the function will attempt to detect it based on the infinitive form.
 --- @return (table, number) A tuple with a table containing all simple tense forms of the verb, and the verb’s group.
 local function generateFlexions(infinitive, group)
-  if not group and mw.ustring.sub(infinitive, -2) == "er" or group == 1 then
+  if infinitive == "être" then -- Special cases to avoid unnecessary checks
+    return m_gen.etreConj, 3
+  elseif infinitive == "avoir" then
+    return m_gen.avoirConj, 3
+  elseif not group and mw.ustring.sub(infinitive, -2) == "er" or group == 1 then
     return m_gen.generateGroup1Forms(infinitive), 1
   elseif not group and mw.ustring.sub(infinitive, -2) == "ir" or group == 2 then
     return m_gen.generateGroup2Forms(infinitive), 2
   elseif not group or group == 3 then
     return m_gen.generateGroup3Forms(infinitive), 3
-  else
+  elseif group then
     error("Groupe invalide : " .. tostring(group))
+  else
+    error("Verbe non reconnu : " .. infinitive)
   end
 end
 
@@ -398,12 +411,12 @@ end
 --- @return string The generated wikicode.
 function p.conj(frame)
   local infinitive = frame.args[1]
-  local auxiliary = frame.args["aux-être"] and p.etreConj or p.avoirConj
-  local group = frame.args["groupe"] and tonumber(frame.args["groupe"])
   local reflexive = frame.args["pronominal"] ~= nil
+  local auxiliary = (reflexive or frame.args["aux-être"]) and m_gen.etreConj or m_gen.avoirConj
+  local group = frame.args["groupe"] and tonumber(frame.args["groupe"])
   -- TODO autres paramètres
   local simpleTenses, actualGroup = generateFlexions(infinitive, group)
-  return renderPage(completeTable(simpleTenses, auxiliary), actualGroup, reflexive)
+  return renderPage(completeTable(auxiliary, simpleTenses), actualGroup, reflexive)
 end
 
 return p

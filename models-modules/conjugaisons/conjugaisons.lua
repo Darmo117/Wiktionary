@@ -73,7 +73,7 @@ local function link(title)
   return mw.ustring.format("[[%s#fr|%s]]", title, title)
 end
 
---- Create a HTML table element with a width of 100%, center-aligned text and collapsed borders.
+--- Create an HTML table element with a width of 100%, center-aligned text and collapsed borders.
 --- @return html The table element.
 local function createTable()
   return mw.html.create("table")

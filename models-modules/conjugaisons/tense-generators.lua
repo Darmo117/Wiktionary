@@ -54,7 +54,9 @@ p.etreConj = {
 --- Generate the simple tense forms of the given group-1 verb.
 --- @param infinitive string The infinitive form of the verb.
 --- @return table A table containing all simple tense forms of the verb.
+--- @see [[Conjugaison:français/Premier groupe]] for exceptions.
 function p.generateGroup1Forms(infinitive)
+  -- TODO cas particuliers (https://fr.wiktionary.org/wiki/Conjugaison:fran%C3%A7ais/Premier_groupe)
   local root = mw.ustring.sub(infinitive, 1, -3)
   return {
     infinitif = {
@@ -86,31 +88,35 @@ end
 --- Generate the simple tense forms of the given group-2 verb.
 --- @param infinitive string The infinitive form of the verb.
 --- @return table A table containing all simple tense forms of the verb.
+--- @see [[Conjugaison:français/Deuxième groupe]] for exceptions.
 function p.generateGroup2Forms(infinitive)
   local root = mw.ustring.sub(infinitive, 1, -3)
+  local hasDiaeresis = mw.ustring.sub(infinitive, -2) == "ïr"
+  local i = hasDiaeresis and "ï" or "i"
+  local iCirc = hasDiaeresis and "ï" or "î"
   return {
     infinitif = {
       present = infinitive,
     },
     participe = {
-      present = root .. "issant",
-      passe = root .. "i",
+      present = root .. i .. "ssant",
+      passe = root .. i,
     },
     indicatif = {
-      present = { root .. "is", root .. "is", root .. "it", root .. "issons", root .. "issez", root .. "issent" },
-      imparfait = { root .. "issais", root .. "issais", root .. "issait", root .. "issions", root .. "issiez", root .. "issaient" },
-      passeSimple = { root .. "is", root .. "is", root .. "it", root .. "îmes", root .. "îtes", root .. "irent" },
+      present = { root .. i .. "s", root .. i .. "s", root .. i .. "t", root .. i .. "ssons", root .. i .. "ssez", root .. i .. "ssent" },
+      imparfait = { root .. i .. "ssais", root .. i .. "ssais", root .. i .. "ssait", root .. i .. "ssions", root .. i .. "ssiez", root .. i .. "ssaient" },
+      passeSimple = { root .. i .. "s", root .. i .. "s", root .. i .. "t", root .. iCirc .. "mes", root .. iCirc .. "tes", root .. i .. "rent" },
       futur = { infinitive .. "ai", infinitive .. "as", infinitive .. "a", infinitive .. "ons", infinitive .. "ez", infinitive .. "ont" },
     },
     subjonctif = {
-      present = { root .. "isse", root .. "isses", root .. "isse", root .. "issions", root .. "issiez", root .. "issent" },
-      imparfait = { root .. "isse", root .. "isses", root .. "ît", root .. "issions", root .. "issiez", root .. "issent" }
+      present = { root .. i .. "sse", root .. i .. "sses", root .. i .. "sse", root .. i .. "ssions", root .. i .. "ssiez", root .. i .. "ssent" },
+      imparfait = { root .. i .. "sse", root .. i .. "sses", root .. iCirc .. "t", root .. i .. "ssions", root .. i .. "ssiez", root .. i .. "ssent" }
     },
     conditionnel = {
       present = { infinitive .. "ais", infinitive .. "ais", infinitive .. "ait", infinitive .. "ions", infinitive .. "iez", infinitive .. "aient" }
     },
     imperatif = {
-      present = { root .. "is", root .. "issons", root .. "issez" }
+      present = { root .. i .. "s", root .. i .. "ssons", root .. i .. "ssez" }
     },
   }
 end
@@ -118,14 +124,43 @@ end
 --- Generate the simple tense forms of the given group-3 verb.
 --- @param infinitive string The infinitive form of the verb.
 --- @return table A table containing all simple tense forms of the verb.
+--- @see [[Conjugaison:français/Troisième groupe]] for sub-types.
 function p.generateGroup3Forms(infinitive)
   if infinitive == "être" then
     return p.etreConj
   elseif infinitive == "avoir" then
     return p.avoirConj
   else
-    return {} -- TODO détecter type de verbe et génerer en fonction
+    -- TODO détecter type de verbe et génerer en fonction
+    -- cf. https://fr.wiktionary.org/wiki/Conjugaison:fran%C3%A7ais/Troisi%C3%A8me_groupe
+    return {}
   end
+end
+
+--- Generate the simple tense forms of the given verb.
+--- @param infinitive string The infinitive form of the verb.
+--- @param group number Optional. The verb’s group. If undefined,
+---        the function will attempt to detect it based on the infinitive form.
+--- @return (table, number) A tuple with a table containing all simple tense forms of the verb, and the verb’s group.
+function p.generateFlexions(infinitive, group)
+  if infinitive == "être" then
+    -- Special cases to avoid unnecessary checks
+    return p.etreConj, 3
+  end
+  if infinitive == "avoir" then
+    return p.avoirConj, 3
+  end
+  local ending = mw.ustring.sub(infinitive, -2)
+  if not group and ending == "er" or group == 1 then
+    return p.generateGroup1Forms(infinitive), 1
+  end
+  if not group and (ending == "ir" or ending == "ïr") or group == 2 then
+    return p.generateGroup2Forms(infinitive), 2
+  end
+  if not group or group == 3 then
+    return p.generateGroup3Forms(infinitive), 3
+  end
+  error("Groupe invalide : " .. tostring(group))
 end
 
 return p

@@ -379,29 +379,6 @@ local function renderPage(verbTable, group, reflexive)
   return tostring(page)
 end
 
---- Generate the simple tense forms of the given verb.
---- @param infinitive string The infinitive form of the verb.
---- @param group number Optional. The verb’s group. If undefined,
----        the function will attempt to detect it based on the infinitive form.
---- @return (table, number) A tuple with a table containing all simple tense forms of the verb, and the verb’s group.
-local function generateFlexions(infinitive, group)
-  if infinitive == "être" then -- Special cases to avoid unnecessary checks
-    return m_gen.etreConj, 3
-  elseif infinitive == "avoir" then
-    return m_gen.avoirConj, 3
-  elseif not group and mw.ustring.sub(infinitive, -2) == "er" or group == 1 then
-    return m_gen.generateGroup1Forms(infinitive), 1
-  elseif not group and mw.ustring.sub(infinitive, -2) == "ir" or group == 2 then
-    return m_gen.generateGroup2Forms(infinitive), 2
-  elseif not group or group == 3 then
-    return m_gen.generateGroup3Forms(infinitive), 3
-  elseif group then
-    error("Groupe invalide : " .. tostring(group))
-  else
-    error("Verbe non reconnu : " .. infinitive)
-  end
-end
-
 --- Render the conjugation tables for the given verb.
 --- Parameters:
 ---  frame.args[1] (string): The verb in its infinitive present form.
@@ -415,7 +392,7 @@ function p.conj(frame)
   local auxiliary = (reflexive or frame.args["aux-être"]) and m_gen.etreConj or m_gen.avoirConj
   local group = frame.args["groupe"] and tonumber(frame.args["groupe"])
   -- TODO autres paramètres
-  local simpleTenses, actualGroup = generateFlexions(infinitive, group)
+  local simpleTenses, actualGroup = m_gen.generateFlexions(infinitive, group)
   return renderPage(completeTable(auxiliary, simpleTenses), actualGroup, reflexive)
 end
 

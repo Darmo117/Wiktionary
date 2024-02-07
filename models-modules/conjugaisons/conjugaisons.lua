@@ -386,8 +386,7 @@ end
 ---  frame.args["aux-être"] (boolean): If true, use the “être” auxiliary instead of “avoir”.
 ---  frame.args["groupe"] (number): Optional. The verb’s group if it cannot be guessed automatically.
 ---  frame.args["pronominal"] (number): Optional. Whether the verb is reflexive.
----  frame.args["pas-ï"] (boolean): Optional. For group-2 verbs in “ïr”, whether to drop the “ï”
----   for the 3 singular persons of indicative and imperative present.
+---  frame.args["mutation"] (boolean): Optional. The type of mutation to apply to the verb’s root instead of the default one.
 --- @return string The generated wikicode.
 function p.conj(frame)
   -- TODO utiliser frame:getParent().args
@@ -396,19 +395,19 @@ function p.conj(frame)
     ["aux-être"] = { type = m_params.BOOLEAN, default = false },
     ["groupe"] = { type = m_params.INT, enum = { 1, 2, 3 } },
     ["pronominal"] = { type = m_params.BOOLEAN, default = false },
-    ["pas-ï"] = { type = m_params.BOOLEAN, default = false },
+    ["mutation"] = { enum = m_gen.mutationTypes },
   })
   local infinitive = args[1]
   local reflexive = args["pronominal"]
   local auxiliary = (reflexive or args["aux-être"]) and m_gen.etreConj or m_gen.avoirConj
   local group = args["groupe"]
-  local dropDiaeresis = args["pas-ï"]
+  local mutationType = args["mutation"]
   -- TODO autres paramètres :
   -- * flexions entières
   -- * radicaux de flexions
   -- * h aspirés pour formes contractées des pronoms
   -- * modes/temps/personnes défectives
-  local simpleTenses, actualGroup = m_gen.generateFlexions(infinitive, group, dropDiaeresis)
+  local simpleTenses, actualGroup = m_gen.generateFlexions(infinitive, group, mutationType)
   return renderPage(completeTable(auxiliary, simpleTenses), actualGroup, reflexive)
 end
 

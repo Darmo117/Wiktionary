@@ -51,6 +51,18 @@ p.etreConj = {
   },
 }
 
+--- For group-1 verbs ending in `-eler/-eter`, mutate the root in `-ell-/-ett-` instead of `-èl-/-èt-`.
+local MUTATION_DOUBLE_CONS = "double consonne"
+--- For group-2 verbs ending in `-ïr`, replace the `ï` by a `i` for the 3 singular persons of indicative
+--- and the singular imperative present.
+local MUTATION_I = "ï-i"
+
+--- All available root mutation types.
+p.mutationTypes = {
+  MUTATION_DOUBLE_CONS,
+  MUTATION_I,
+}
+
 local function generateGroup1Endings(firstLetter, consonants)
   local endings = {}
   for _, c in ipairs(consonants) do
@@ -63,11 +75,13 @@ local eCONSer_verbs = generateGroup1Endings("e", {
   "c",
   "d",
   "g",
+  "l",
   "m",
   "n",
   "p",
   "r",
   "s",
+  "t",
   "v",
   "vr",
 })
@@ -102,7 +116,7 @@ local function startsWithAO(s)
   return firstLetter == "a" or firstLetter == "â" or firstLetter == "o"
 end
 
-local function isEndingSilent(ending)
+local function isGroup1EndingSilent(ending)
   return ending == "e" or ending == "es" or ending == "ent"
 end
 
@@ -226,12 +240,13 @@ end
 --- Generate the simple tense forms of the given group-1 verb ending in `[eè]<consonant(s)>er`.
 --- @param infinitive string The infinitive form of the verb.
 --- @param consonants string The consonant(s) that precede the mutating `e`.
+--- @param doubleConsonant boolean True to double the consonant instead of mutating the `e/é` into an `è`.
 --- @return table A table containing all simple tense forms of the verb.
-local function generateGroup1Forms_eCONSer(infinitive, consonants)
+local function generateGroup1Forms_eCONSer(infinitive, consonants, doubleConsonant)
   local base = mw.ustring.sub(infinitive, 1, -4 - mw.ustring.len(consonants))
-  local mutatedRoot = base .. "è" .. consonants
+  local mutatedRoot = base .. (doubleConsonant and ("e" .. consonants) or "è") .. consonants
   return generateGroup1Forms_(infinitive, function(root, ending)
-    return mutateRoot_cer_ger(isEndingSilent(ending) and mutatedRoot or root, ending) .. ending
+    return mutateRoot_cer_ger(isGroup1EndingSilent(ending) and mutatedRoot or root, ending) .. ending
   end, function(ending)
     return mutatedRoot .. "er" .. ending
   end)
@@ -239,20 +254,16 @@ end
 
 --- Generate the simple tense forms of the given group-1 verb.
 --- @param infinitive string The infinitive form of the verb.
+--- @param mutationType string The type of mutation to apply to the verb’s root instead of the default one.
 --- @return table A table containing all simple tense forms of the verb.
 --- @see [[Conjugaison:français/Premier groupe]] for exceptions.
-function p.generateGroup1Forms(infinitive)
+function p.generateGroup1Forms(infinitive, mutationType)
   local last4 = mw.ustring.sub(infinitive, -4)
   local last5 = mw.ustring.sub(infinitive, -5)
   local consonants = eCONSer_verbs[last4] or eCONSer_verbs[last5]
   if consonants then
-    return generateGroup1Forms_eCONSer(infinitive, consonants)
-  end
-  if last4 == "eler" then
-    return generateGroup1Forms_eler(infinitive) -- TODO
-  end
-  if last4 == "eter" then
-    return generateGroup1Forms_eter(infinitive) -- TODO
+    local doubleConsonant = (consonants == "l" or consonants == "t") and mutationType == MUTATION_DOUBLE_CONS
+    return generateGroup1Forms_eCONSer(infinitive, consonants, doubleConsonant)
   end
   consonants = eacuteCONSer_verbs[last4] or eacuteCONSer_verbs[last5]
   if consonants then
@@ -391,23 +402,23 @@ end
 --- @param infinitive string The infinitive form of the verb.
 --- @param group number Optional. The verb’s group. If undefined,
 ---        the function will attempt to detect it based on the infinitive form.
---- @param dropDiaeresis boolean For group-2 verbs in `ïr`, whether to drop the `ï`
----        for the 3 singular persons of indicative and imperative present.
+--- @param mutationType string The type of mutation to apply to the verb’s root instead of the default one.
 --- @return (table, number) A tuple with a table containing all simple tense forms of the verb, and the verb’s group.
-function p.generateFlexions(infinitive, group, dropDiaeresis)
+function p.generateFlexions(infinitive, group, mutationType)
   if infinitive == "être" then
-    -- Special cases to avoid unnecessary checks
+    -- Special case to avoid unnecessary checks
     return p.etreConj, 3
   end
   if infinitive == "avoir" then
+    -- Special case to avoid unnecessary checks
     return p.avoirConj, 3
   end
   local ending = mw.ustring.sub(infinitive, -2)
   if not group and ending == "er" or group == 1 then
-    return p.generateGroup1Forms(infinitive), 1
+    return p.generateGroup1Forms(infinitive, mutationType), 1
   end
   if not group and (ending == "ir" or ending == "ïr") or group == 2 then
-    return p.generateGroup2Forms(infinitive, dropDiaeresis), 2
+    return p.generateGroup2Forms(infinitive, mutationType == MUTATION_I), 2
   end
   if not group or group == 3 then
     return p.generateGroup3Forms(infinitive), 3

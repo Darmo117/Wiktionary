@@ -102,13 +102,23 @@ local function startsWithAO(s)
   return firstLetter == "a" or firstLetter == "â" or firstLetter == "o"
 end
 
+local function isEndingSilent(ending)
+  return ending == "e" or ending == "es" or ending == "ent"
+end
+
 --- Generate the simple tense forms of the given group-1 verb.
 --- @param infinitive string The infinitive form of the verb.
---- @param mapper function A function that, given the verb’s root and an ending, builds the associated verb form.
+--- @param rootMapper function Optional. A function that, given the verb’s root and an ending,
+---        builds the associated verb form.
+--- @param infinitiveMapper function Optional. A function that, given a verb’s ending,
+---        builds the associated verb form based on its infinitive.
 --- @return table A table containing all simple tense forms of the verb.
-local function generateGroup1Forms_(infinitive, mapper)
-  mapper = mapper or function(root, ending)
+local function generateGroup1Forms_(infinitive, rootMapper, infinitiveMapper)
+  rootMapper = rootMapper or function(root, ending)
     return root .. ending
+  end
+  infinitiveMapper = infinitiveMapper or function(ending)
+    return infinitive .. ending
   end
   local root = mw.ustring.sub(infinitive, 1, -3)
   return {
@@ -116,89 +126,114 @@ local function generateGroup1Forms_(infinitive, mapper)
       present = infinitive,
     },
     participe = {
-      present = mapper(root, "ant"),
-      passe = mapper(root, "é"),
+      present = rootMapper(root, "ant"),
+      passe = rootMapper(root, "é"),
     },
     indicatif = {
       present = {
-        mapper(root, "e"),
-        mapper(root, "es"),
-        mapper(root, "e"),
-        mapper(root, "ons"),
-        mapper(root, "ez"),
-        mapper(root, "ent")
+        rootMapper(root, "e"),
+        rootMapper(root, "es"),
+        rootMapper(root, "e"),
+        rootMapper(root, "ons"),
+        rootMapper(root, "ez"),
+        rootMapper(root, "ent")
       },
       imparfait = {
-        mapper(root, "ais"),
-        mapper(root, "ais"),
-        mapper(root, "ait"),
-        mapper(root, "ions"),
-        mapper(root, "iez"),
-        mapper(root, "aient")
+        rootMapper(root, "ais"),
+        rootMapper(root, "ais"),
+        rootMapper(root, "ait"),
+        rootMapper(root, "ions"),
+        rootMapper(root, "iez"),
+        rootMapper(root, "aient")
       },
       passeSimple = {
-        mapper(root, "ai"),
-        mapper(root, "as"),
-        mapper(root, "a"),
-        mapper(root, "âmes"),
-        mapper(root, "âtes"),
-        mapper(root, "èrent")
+        rootMapper(root, "ai"),
+        rootMapper(root, "as"),
+        rootMapper(root, "a"),
+        rootMapper(root, "âmes"),
+        rootMapper(root, "âtes"),
+        rootMapper(root, "èrent")
       },
       futur = {
-        infinitive .. "ai",
-        infinitive .. "as",
-        infinitive .. "a",
-        infinitive .. "ons",
-        infinitive .. "ez",
-        infinitive .. "ont"
+        infinitiveMapper("ai"),
+        infinitiveMapper("as"),
+        infinitiveMapper("a"),
+        infinitiveMapper("ons"),
+        infinitiveMapper("ez"),
+        infinitiveMapper("ont")
       },
     },
     subjonctif = {
       present = {
-        mapper(root, "e"),
-        mapper(root, "es"),
-        mapper(root, "e"),
-        mapper(root, "ions"),
-        mapper(root, "iez"),
-        mapper(root, "ent")
+        rootMapper(root, "e"),
+        rootMapper(root, "es"),
+        rootMapper(root, "e"),
+        rootMapper(root, "ions"),
+        rootMapper(root, "iez"),
+        rootMapper(root, "ent")
       },
       imparfait = {
-        mapper(root, "asse"),
-        mapper(root, "asses"),
-        mapper(root, "ât"),
-        mapper(root, "assions"),
-        mapper(root, "assiez"),
-        mapper(root, "assent")
+        rootMapper(root, "asse"),
+        rootMapper(root, "asses"),
+        rootMapper(root, "ât"),
+        rootMapper(root, "assions"),
+        rootMapper(root, "assiez"),
+        rootMapper(root, "assent")
       }
     },
     conditionnel = {
       present = {
-        infinitive .. "ais",
-        infinitive .. "ais",
-        infinitive .. "ait",
-        infinitive .. "ions",
-        infinitive .. "iez",
-        infinitive .. "aient"
+        infinitiveMapper("ais"),
+        infinitiveMapper("ais"),
+        infinitiveMapper("ait"),
+        infinitiveMapper("ions"),
+        infinitiveMapper("iez"),
+        infinitiveMapper("aient")
       }
     },
     imperatif = {
       present = {
-        mapper(root, "e"),
-        mapper(root, "ons"),
-        mapper(root, "ez")
+        rootMapper(root, "e"),
+        rootMapper(root, "ons"),
+        rootMapper(root, "ez")
       }
     },
   }
 end
 
---- Generate the simple tense forms of the given group-1 verb ending in `[gc]er`.
+--- Mutate the given group-1 verb root according to the given ending.
+--- @param root string The verb’s root.
+--- @param ending string A verb ending.
+--- @return string The mutated root if it ends in `g` or `c`, the argument root otherwise.
+local function mutateRoot_cer_ger(root, ending)
+  local lastLetter = mw.ustring.sub(root, -1)
+  if lastLetter ~= "g" and lastLetter ~= "c" then
+    return root
+  end
+  local mutation = lastLetter == "g" and "ge" or "ç"
+  return startsWithAO(ending) and (mw.ustring.sub(root, 1, -2) .. mutation) or root
+end
+
+--- Generate the simple tense forms of the given group-1 verb ending in `[cg]er`.
 --- @param infinitive string The infinitive form of the verb.
 --- @return table A table containing all simple tense forms of the verb.
-local function generateGroup1Forms_ger_cer(infinitive)
-  local mutation = mw.ustring.sub(infinitive, -3, -3) == "g" and "ge" or "ç"
-  local base = mw.ustring.sub(infinitive, 1, -4)
+local function generateGroup1Forms_cer_ger(infinitive)
   return generateGroup1Forms_(infinitive, function(root, ending)
-    return (startsWithAO(ending) and base .. mutation or root) .. ending
+    return mutateRoot_cer_ger(root, ending) .. ending
+  end)
+end
+
+--- Generate the simple tense forms of the given group-1 verb ending in `[eè]<consonant(s)>er`.
+--- @param infinitive string The infinitive form of the verb.
+--- @param consonants string The consonant(s) that precede the mutating `e`.
+--- @return table A table containing all simple tense forms of the verb.
+local function generateGroup1Forms_eCONSer(infinitive, consonants)
+  local base = mw.ustring.sub(infinitive, 1, -4 - mw.ustring.len(consonants))
+  local mutatedRoot = base .. "è" .. consonants
+  return generateGroup1Forms_(infinitive, function(root, ending)
+    return mutateRoot_cer_ger(isEndingSilent(ending) and mutatedRoot or root, ending) .. ending
+  end, function(ending)
+    return mutatedRoot .. "er" .. ending
   end)
 end
 
@@ -211,7 +246,7 @@ function p.generateGroup1Forms(infinitive)
   local last5 = mw.ustring.sub(infinitive, -5)
   local consonants = eCONSer_verbs[last4] or eCONSer_verbs[last5]
   if consonants then
-    return generateGroup1Forms_eCONSer(infinitive, consonants) -- TODO
+    return generateGroup1Forms_eCONSer(infinitive, consonants)
   end
   if last4 == "eler" then
     return generateGroup1Forms_eler(infinitive) -- TODO
@@ -221,7 +256,7 @@ function p.generateGroup1Forms(infinitive)
   end
   consonants = eacuteCONSer_verbs[last4] or eacuteCONSer_verbs[last5]
   if consonants then
-    return generateGroup1Forms_eacuteCONSer(infinitive, consonants) -- TODO
+    return generateGroup1Forms_eCONSer(infinitive, consonants)
   end
 
   if mw.ustring.sub(infinitive, -7) == "envoyer" then
@@ -239,7 +274,7 @@ function p.generateGroup1Forms(infinitive)
 
   local last3 = mw.ustring.sub(infinitive, -3)
   if last3 == "cer" or last3 == "ger" then
-    return generateGroup1Forms_ger_cer(infinitive)
+    return generateGroup1Forms_cer_ger(infinitive)
   end
 
   return generateGroup1Forms_(infinitive)

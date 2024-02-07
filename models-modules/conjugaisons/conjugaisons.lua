@@ -1,3 +1,4 @@
+local m_params = require("Module:paramètres")
 local m_table = require("Module:table")
 local m_gen = require("Module:conjugaisons/tense-generators")
 
@@ -389,12 +390,24 @@ end
 ---   for the 3 singular persons of indicative and imperative present.
 --- @return string The generated wikicode.
 function p.conj(frame)
-  local infinitive = frame.args[1]
-  local reflexive = frame.args["pronominal"] ~= nil
-  local auxiliary = (reflexive or frame.args["aux-être"]) and m_gen.etreConj or m_gen.avoirConj
-  local group = frame.args["groupe"] and tonumber(frame.args["groupe"])
-  local dropDiaeresis = frame.args["pas-ï"] ~= nil
-  -- TODO autres paramètres
+  -- TODO utiliser frame:getParent().args
+  local args = m_params.process(frame.args, {
+    [1] = { required = true },
+    ["aux-être"] = { type = m_params.BOOLEAN, default = false },
+    ["groupe"] = { type = m_params.INT, enum = { 1, 2, 3 } },
+    ["pronominal"] = { type = m_params.BOOLEAN, default = false },
+    ["pas-ï"] = { type = m_params.BOOLEAN, default = false },
+  })
+  local infinitive = args[1]
+  local reflexive = args["pronominal"]
+  local auxiliary = (reflexive or args["aux-être"]) and m_gen.etreConj or m_gen.avoirConj
+  local group = args["groupe"]
+  local dropDiaeresis = args["pas-ï"]
+  -- TODO autres paramètres :
+  -- * flexions entières
+  -- * radicaux de flexions
+  -- * h aspirés pour formes contractées des pronoms
+  -- * modes/temps/personnes défectives
   local simpleTenses, actualGroup = m_gen.generateFlexions(infinitive, group, dropDiaeresis)
   return renderPage(completeTable(auxiliary, simpleTenses), actualGroup, reflexive)
 end

@@ -834,23 +834,23 @@ $(function () {
          * @return {string}
          */
         function formatExample(example) {
-          let template = "#* {{exemple|" + example.text;
+          let template = `#* {{exemple|lang=${langCode}\n | ${example.text}`;
           if (example.translation) {
-            template += "|" + example.translation;
+            template += "\n | " + example.translation;
           }
           if (example.transcription) {
-            template += "|tr=" + example.transcription;
+            template += "\n | tr=" + example.transcription;
           }
           if (example.source) {
-            template += "|source=" + example.source;
+            template += "\n | source=" + example.source;
           }
           if (example.link) {
-            template += "|lien=" + example.link;
+            template += "\n | lien=" + example.link;
           }
           if (example.disableTranslation) {
-            template += "|pas-trad=1";
+            template += "\n | pas-trad=1";
           }
-          return template + `|lang=${langCode}}}`;
+          return template + "\n}}";
         }
 
         for (const [i, definition] of definitions.entries()) {
@@ -1195,7 +1195,7 @@ $(function () {
      * @return {string} Definition’s text.
      */
     DefinitionForm.prototype.getText = function () {
-      return this._definitionFld.getValue().trim();
+      return this._definitionFld.getValue().trim().replace(/^#\s*/, "");
     };
 
     Object.defineProperty(DefinitionForm.prototype, "examples_number", {

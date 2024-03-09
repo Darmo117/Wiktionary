@@ -39,6 +39,7 @@
  *                 (except if there is only one choice).
  * v5.4 2022-11-26 Separate fields for each definition and their associated examples.
  * v5.4.1 2022-11-28 Convert to ES6.
+ * v5.4.2 2024-03-09 Add buttons to format text in some fields (bold and italic).
  * ------------------------------------------------------------------------------------
  * [[Catégorie:JavaScript du Wiktionnaire|CreerNouveauMot.js]]
  * <nowiki>
@@ -83,7 +84,7 @@ $(function () {
     }
 
     /**
-     * An definition example features some text, a translation, a transcription and a language.
+     * A definition example features some text, a translation, a transcription and a language.
      */
     class Example {
       /** @type {string} */
@@ -516,7 +517,7 @@ $(function () {
      */
     class GadgetCreerNouveauMot {
       static NAME = "Créer nouveau mot";
-      static VERSION = "5.4.1";
+      static VERSION = "5.4.2";
 
       static #COOKIE_NAME = "cnm_last_lang";
       /** Cookie duration in days. */
@@ -537,9 +538,9 @@ $(function () {
         d: new Wiki("Data", "WD", "wikidata.org"),
         c: new Wiki("Commons", "Commons", "commons.wikimedia.org"),
         vikidia: new Wiki("Vikidia", "Vikidia", "{0}.vikidia.org", null,
-            ["fr", "ca", "de", "el", "en", "es", "eu", "it", "ru", "scn", "hy"]),
+          ["fr", "ca", "de", "el", "en", "es", "eu", "it", "ru", "scn", "hy"]),
         dicoado: new Wiki("Le Dico des Ados", "Dicoado", "dicoado.org",
-            "wiki/index.php?search=", ["fr"]),
+          "wiki/index.php?search=", ["fr"]),
       };
       /**
        * List of word type subsections.
@@ -578,7 +579,7 @@ $(function () {
        * Edit comment.
        */
       static #EDIT_COMMENT =
-          `Ajout d’un mot assisté par [[Aide:Gadget-CreerNouveauMot|${GadgetCreerNouveauMot.NAME}]] (v${GadgetCreerNouveauMot.VERSION})`;
+        `Ajout d’un mot assisté par [[Aide:Gadget-CreerNouveauMot|${GadgetCreerNouveauMot.NAME}]] (v${GadgetCreerNouveauMot.VERSION})`;
 
       /**
        * Main word.
@@ -682,13 +683,13 @@ $(function () {
         this.#startGUI.remove();
         this.#startGUI = null;
         this.#mainGUI = new MainGUI(
-            this.#word,
-            this.#languages,
-            GadgetCreerNouveauMot.#SECTIONS,
-            lc => this.#onLanguageSelect(lc),
-            lc => this.#onClassSelect(lc),
-            () => this.#insertWikicode(),
-            GadgetCreerNouveauMot.#OTHER_PROJECTS
+          this.#word,
+          this.#languages,
+          GadgetCreerNouveauMot.#SECTIONS,
+          lc => this.#onLanguageSelect(lc),
+          lc => this.#onClassSelect(lc),
+          () => this.#insertWikicode(),
+          GadgetCreerNouveauMot.#OTHER_PROJECTS
         );
 
         const previousLang = wikt.cookie.read(GadgetCreerNouveauMot.#COOKIE_NAME);
@@ -698,7 +699,7 @@ $(function () {
         // Display alert if the page does not exist yet and its title starts with an upper case letter
         if (this.#word && this.#word[0].toUpperCase() === this.#word[0] && $(".mw-newarticletext").length) {
           alert("Êtes-vous certain·e que la majuscule fait partie du mot\u00a0?\n" +
-              "Si tel n’est pas le cas, merci de corriger cela.");
+            "Si tel n’est pas le cas, merci de corriger cela.");
         }
       }
 
@@ -811,11 +812,11 @@ $(function () {
         etymology = etymology.replace(/(^|\n)(?!:)/g, "$1: ");
 
         let wikicode = `== {{langue|${langCode}}} ==\n`
-            + (isDraft ? `{{ébauche|${langCode}}}\n` : "")
-            + "=== {{S|étymologie}} ===\n"
-            + etymology + "\n\n"
-            + `=== {{S|${grammarClass.sectionCode}|${langCode}}} ===\n`
-            + (inflectionsTemplate ? inflectionsTemplate + "\n" : "");
+          + (isDraft ? `{{ébauche|${langCode}}}\n` : "")
+          + "=== {{S|étymologie}} ===\n"
+          + etymology + "\n\n"
+          + `=== {{S|${grammarClass.sectionCode}|${langCode}}} ===\n`
+          + (inflectionsTemplate ? inflectionsTemplate + "\n" : "");
         if (imageName) {
           wikicode += `[[Image:${imageName}|vignette|${imageDescription}]]\n`;
         }
@@ -825,7 +826,7 @@ $(function () {
         } else {
           // trim() to remove trailing space(s) if no gender or number template.
           wikicode += " " + `{{pron|${pron}|${langCode}}} ${gender.template.format(langCode)} ${number.template.format(langCode)}`
-              .replace(/\s+/g, " ").trim() + "\n";
+            .replace(/\s+/g, " ").trim() + "\n";
         }
 
         /**
@@ -833,7 +834,7 @@ $(function () {
          * @return {string}
          */
         function formatExample(example) {
-          var template = "#* {{exemple|" + example.text;
+          let template = "#* {{exemple|" + example.text;
           if (example.translation) {
             template += "|" + example.translation;
           }
@@ -866,7 +867,7 @@ $(function () {
           for (const [j, example] of definition.examples.entries()) {
             if (!example.text) {
               alert(`Exemple n°${j + 1} vide pour la définition ${i + 1}\u00a0!`
-                  + " Veuillez le renseigner ou supprimer l’exemple avant d’insérer le wikicode.");
+                + " Veuillez le renseigner ou supprimer l’exemple avant d’insérer le wikicode.");
               return;
             }
             wikicode += formatExample(example) + "\n";
@@ -899,8 +900,8 @@ $(function () {
 
           if (sectionCode !== "traductions" || langCode === "fr") {
             const content = sectionCode !== "traductions"
-                ? this.#mainGUI.getSectionContent(sectionCode)
-                : "{{trad-début}}\n{{trad-fin}}\n\n";
+              ? this.#mainGUI.getSectionContent(sectionCode)
+              : "{{trad-début}}\n{{trad-fin}}\n\n";
             if (content) {
               const titleLevel = Array(sectionLevel + 1).join("=");
               const section = `${titleLevel} {{S|${sectionCode}}} ${titleLevel}\n${linkify(content)}\n\n`;
@@ -1000,10 +1001,31 @@ $(function () {
         const title = pageName.includes("#") ? pageName.substring(0, pageName.indexOf("#")) : pageName;
         // noinspection HtmlUnknownTarget
         return new OO.ui.HtmlSnippet(
-            `<a href="/wiki/${encodeURIComponent(pageName)}" target="_blank" title="${title} (s’ouvre dans un nouvel onglet)">Page d’aide</a>`
+          `<a href="/wiki/${encodeURIComponent(pageName)}" target="_blank" title="${title} (s’ouvre dans un nouvel onglet)">Page d’aide</a>`
         );
       }
       return "";
+    }
+
+    /**
+     * Format the selected text using the given effect.
+     * @param effect {string} The effect to apply (either "bold" or "italic").
+     * @param $textInput {jQuery} The text input to format the text of.
+     */
+    function formatText(effect, $textInput) {
+      const selectedText = wikt.edit.getSelectedText($textInput);
+      let replText;
+      switch (effect) {
+        case "bold":
+          replText = "'''" + selectedText + "'''";
+          break;
+        case "italic":
+          replText = "''" + selectedText + "''";
+          break;
+        default:
+          throw new Error("Invalid effect: " + effect);
+      }
+      wikt.edit.replaceSelectedText(replText, $textInput);
     }
 
     /**
@@ -1011,20 +1033,50 @@ $(function () {
      * @param list {string[]} The list of strings to convert into links.
      * @param textField {Object} The text field to insert the text into.
      * @param cssClass {string|null?} Optional additonnal CSS classes.
-     * @param text {string?} Some text that will be appended before the links.
+     * @param text {(string|null)?} Some text that will be appended before the links.
+     * @param insertFormatButtons {boolean?} Whether to insert formatting buttons before the list. Defaults to false.
      * @return {jQuery|HTMLElement} A jQuery object.
      */
-    function createLinks(list, textField, cssClass, text) {
+    function createLinks(
+      list,
+      textField,
+      cssClass = null,
+      text = null,
+      insertFormatButtons = false
+    ) {
       const $links = $("<span>");
 
       if (text) {
         $links.append(text + " &mdash; ");
       }
 
+      if (insertFormatButtons) {
+        const $element = textField.$element;
+        let $textInput = $element.find("textarea");
+        if (!$textInput.length) {
+          $textInput = $element.find('input[type="text"]');
+        }
+        const $bold = $('<a href="#" style="font-weight: bold">Gras</a>');
+        $bold.on("click", () => {
+          formatText("bold", $textInput);
+          textField.focus();
+          // Return false to disable default event from triggering.
+          return false;
+        });
+        const $italic = $('<a href="#" style="font-style: italic">Italique</a>');
+        $italic.on("click", () => {
+          formatText("italic", $textInput);
+          textField.focus();
+          // Return false to disable default event from triggering.
+          return false;
+        });
+        $links.append($bold, " ", $italic, " &mdash; ");
+      }
+
       for (const [i, item] of list.entries()) {
-        const $link = $('<a href="#" class="{0}" data-value="{1}">{2}</a>'
-            .format(cssClass, item.replace("&", "&amp;"), item.trim()));
-        $link.click(e => {
+        const dataValue = item.replace("&", "&amp;");
+        const $link = $(`<a href="#" class="${cssClass || ''}" data-value="${dataValue}">${item.trim()}</a>`);
+        $link.on("click", e => {
           textField.insertContent($(e.target).data("value"));
           textField.focus();
           // Return false to disable default event from triggering.
@@ -1091,7 +1143,7 @@ $(function () {
         label: "Définition n°" + definitionID,
         items: [
           new OO.ui.FieldLayout(this._definitionFld, {
-            label: createLinks(SPECIAL_CHARS, this._definitionFld),
+            label: createLinks(SPECIAL_CHARS, this._definitionFld, null, null, true),
             align: "inline",
             help: getPageLink("Aide:Définitions"),
           }),
@@ -1162,12 +1214,12 @@ $(function () {
     DefinitionForm.prototype.getExample = function (index) {
       const exampleForm = this._examplesFlds[index];
       return new Example(
-          exampleForm.getText(),
-          exampleForm.getTranslation(),
-          exampleForm.getTranscription(),
-          exampleForm.getSource(),
-          exampleForm.getLink(),
-          exampleForm.isTranslationDisabled()
+        exampleForm.getText(),
+        exampleForm.getTranslation(),
+        exampleForm.getTranscription(),
+        exampleForm.getSource(),
+        exampleForm.getLink(),
+        exampleForm.isTranslationDisabled()
       );
     };
 
@@ -1197,20 +1249,20 @@ $(function () {
         label: "Exemple n°" + exampleID,
         items: [
           new OO.ui.FieldLayout(this._textFld, {
-            label: createLinks(SPECIAL_CHARS, this._textFld),
+            label: createLinks(SPECIAL_CHARS, this._textFld, null, null, true),
             align: "inline",
             help: getPageLink("Aide:Exemples"),
           }),
           new OO.ui.FieldLayout(this._translationFld, {
-            label: createLinks(SPECIAL_CHARS, this._translationFld, null, "Traduction en français"),
+            label: createLinks(SPECIAL_CHARS, this._translationFld, null, "Traduction en français", true),
             align: "inline",
           }),
           new OO.ui.FieldLayout(this._transcriptionFld, {
-            label: createLinks(SPECIAL_CHARS, this._transcriptionFld, null, "Transcription latine"),
+            label: createLinks(SPECIAL_CHARS, this._transcriptionFld, null, "Transcription latine", true),
             align: "inline",
           }),
           new OO.ui.FieldLayout(this._sourceFld, {
-            label: createLinks(SPECIAL_CHARS, this._sourceFld, null, "Source"),
+            label: createLinks(SPECIAL_CHARS, this._sourceFld, null, "Source", true),
             align: "inline",
           }),
           new OO.ui.FieldLayout(this._linkFld, {
@@ -1416,8 +1468,8 @@ $(function () {
               });
 
               const imageSectionLabel = new OO.ui.HtmlSnippet(
-                  `Image &mdash; <a href="https://commons.wikimedia.org/w/index.php?search=${word}" ` +
-                  'target="_blank" title="S’ouvre dans un nouvel onglet">Rechercher sur Commons</a>'
+                `Image &mdash; <a href="https://commons.wikimedia.org/w/index.php?search=${word}" ` +
+                'target="_blank" title="S’ouvre dans un nouvel onglet">Rechercher sur Commons</a>'
               );
               this.#imageFld = new OO.ui.TextInputWidget({
                 id: "cnm-image-field",
@@ -1480,7 +1532,7 @@ $(function () {
                       }),
                     ],
                     help: "Pour passer à une langue indisponible dans le menu déroulant, "
-                        + "entrez son code dans le champ ci-dessous puis appuyez sur le bouton «\u00a0Passer à cette langue\u00a0».",
+                      + "entrez son code dans le champ ci-dessous puis appuyez sur le bouton «\u00a0Passer à cette langue\u00a0».",
                     helpInline: true,
                   }),
                   new OO.ui.FieldsetLayout({
@@ -1508,7 +1560,7 @@ $(function () {
                       this.#imageDescriptionFld,
                     ],
                     help: "Indiquer seulement le nom de l’image, " +
-                        "sans «\u00a0File:\u00a0», «\u00a0Fichier:\u00a0» ni «\u00a0Image:\u00a0».",
+                      "sans «\u00a0File:\u00a0», «\u00a0Fichier:\u00a0» ni «\u00a0Image:\u00a0».",
                     helpInline: true,
                   }),
                   new OO.ui.FieldsetLayout({
@@ -1524,7 +1576,7 @@ $(function () {
                       this.#categoriesWidget,
                     ],
                     help: "Indiquer seulement les noms des catégories (sans «\u00a0Catégorie:\u00a0»), " +
-                        "en respectant la casse (majuscules/minuscules).",
+                      "en respectant la casse (majuscules/minuscules).",
                     helpInline: true,
                   }),
                 ],
@@ -1539,8 +1591,8 @@ $(function () {
                 autofocus: true,
               });
               const pronSectionLabel = new OO.ui.HtmlSnippet(
-                  'Prononciation (section)<span> &mdash; <a id="cnm-commons-audio-link" href="#" ' +
-                  'target="_blank" title="S’ouvre dans un nouvel onglet">Rechercher des fichiers audio sur Commons</a></span>'
+                'Prononciation (section)<span> &mdash; <a id="cnm-commons-audio-link" href="#" ' +
+                'target="_blank" title="S’ouvre dans un nouvel onglet">Rechercher des fichiers audio sur Commons</a></span>'
               );
               this.#pronunciationSectionFld = new OO.ui.MultilineTextInputWidget({
                 rows: 4,
@@ -1580,14 +1632,14 @@ $(function () {
                     label: "Étymologie",
                     items: [
                       new OO.ui.FieldLayout(this.#etymologyFld, {
-                        label: createLinks(SPECIAL_CHARS, this.#etymologyFld),
+                        label: createLinks(SPECIAL_CHARS, this.#etymologyFld, null, null, true),
                         align: "inline",
                         help: getPageLink("Aide:Étymologies"),
                       }),
                     ],
                     help: new OO.ui.HtmlSnippet(wikt.page.renderWikicode(
-                        "Laisser le champ de texte vide ajoutera le modèle {{M|ébauche-étym}}.",
-                        true
+                      "Laisser le champ de texte vide ajoutera le modèle {{M|ébauche-étym}}.",
+                      true
                     )),
                     helpInline: true,
                   }),
@@ -1595,17 +1647,17 @@ $(function () {
                     label: pronSectionLabel,
                     items: [
                       new OO.ui.FieldLayout(this.#pronunciationSectionFld, {
-                        label: createLinks(SPECIAL_CHARS, this.#pronunciationSectionFld),
+                        label: createLinks(SPECIAL_CHARS, this.#pronunciationSectionFld, null, null, true),
                         align: "inline",
                         help: getPageLink("Aide:Prononciation"),
                       }),
                       new OO.ui.FieldLayout(this.#homophonesFld, {
-                        label: createLinks(SPECIAL_CHARS, this.#homophonesFld, "", "Homophones"),
+                        label: createLinks(SPECIAL_CHARS, this.#homophonesFld, null, "Homophones", true),
                         align: "inline",
                         help: getPageLink("Aide:Homophones et paronymes"),
                       }),
                       new OO.ui.FieldLayout(this.#paronymsFld, {
-                        label: createLinks(SPECIAL_CHARS, this.#paronymsFld, "", "Paronymes"),
+                        label: createLinks(SPECIAL_CHARS, this.#paronymsFld, null, "Paronymes", true),
                         align: "inline",
                         help: getPageLink("Aide:Homophones et paronymes"),
                       }),
@@ -1615,21 +1667,21 @@ $(function () {
                     label: "Références",
                     items: [
                       new OO.ui.FieldLayout(this.#referencesFld, {
-                        label: createLinks(SPECIAL_CHARS, this.#referencesFld),
+                        label: createLinks(SPECIAL_CHARS, this.#referencesFld, null, null, true),
                         align: "inline",
                         help: getPageLink("Aide:Références#Le_format_développé"),
                       }),
                       new OO.ui.FieldLayout(this.#bibliographyFld, {
-                        label: createLinks(SPECIAL_CHARS, this.#bibliographyFld, "", "Bibliographie"),
+                        label: createLinks(SPECIAL_CHARS, this.#bibliographyFld, null, "Bibliographie", true),
                         align: "inline",
                         help: getPageLink("Aide:Références#Le_format_développé"),
                       }),
                     ],
                     help: new OO.ui.HtmlSnippet(wikt.page.renderWikicode(
-                        "La section «&nbsp;Sources&nbsp;» contenant le modèle {{M|Références}} " +
-                        "est insérée automatiquement si le modèle {{M|R}}, {{M|RÉF}} ou {{M|réf}} ou la balise <code>&lt;ref></code> " +
-                        "sont présentes dans les autres champs.",
-                        true
+                      "La section «&nbsp;Sources&nbsp;» contenant le modèle {{M|Références}} " +
+                      "est insérée automatiquement si le modèle {{M|R}}, {{M|RÉF}} ou {{M|réf}} ou la balise <code>&lt;ref></code> " +
+                      "sont présentes dans les autres champs.",
+                      true
                     )),
                     helpInline: true,
                   }),
@@ -1670,13 +1722,13 @@ $(function () {
                 };
 
                 otherProjectsFields.push(new OO.ui.ActionFieldLayout(
-                    checkbox,
-                    textFld,
-                    {
-                      align: "inline",
-                      id: `cnm-sister-project-${projectCode}`,
-                      label: new OO.ui.HtmlSnippet('<a href="#" target="_blank">Rechercher</a>'),
-                    }
+                  checkbox,
+                  textFld,
+                  {
+                    align: "inline",
+                    id: `cnm-sister-project-${projectCode}`,
+                    label: new OO.ui.HtmlSnippet('<a href="#" target="_blank">Rechercher</a>'),
+                  }
                 ));
               }
 
@@ -1689,7 +1741,7 @@ $(function () {
                     label: "Liens vers les autres projets",
                     items: otherProjectsFields,
                     help: "Les champs de texte permettent de renseigner des paramètres" +
-                        " supplémentaire aux modèles de liens interwiki.",
+                      " supplémentaire aux modèles de liens interwiki.",
                     helpInline: true,
                   }),
                   new OO.ui.FieldsetLayout({
@@ -1722,7 +1774,7 @@ $(function () {
           id: "cnm-tabs-widget",
         });
         for (const [i, tabData] of tabs.entries()) {
-          var tab = new Tab(`cnm-tab${i}`, {
+          const tab = new Tab(`cnm-tab${i}`, {
             label: tabData.title,
             expanded: false,
           });
@@ -1737,7 +1789,7 @@ $(function () {
          */
 
         // TODO display this text somewhere
-        // var popup = new OO.ui.PopupWidget({
+        // const popup = new OO.ui.PopupWidget({
         //   // $autoCloseIgnore: button.$element,
         //   $content: $("<p>Le code a été inséré dans la boite d’édition ci-dessous. " +
         //       "Vous devriez <strong>vérifier</strong> que le résultat est conforme à vos souhaits, " +
@@ -1760,7 +1812,7 @@ $(function () {
          * @param title {string} Button’s tooltip text.
          * @param onSelect {function} Callback for when the button is clicked.
          * @param onUpdateState {function?} Callback for when the button changes state (optional).
-         * @param displayBothIconAndLabel {boolean} Whether both the icon and label should be displayed.
+         * @param displayBothIconAndLabel {boolean?} Whether both the icon and label should be displayed.
          */
         function generateButton(toolFactory, name, icon, progressive, title, onSelect, onUpdateState, displayBothIconAndLabel) {
           /** @constructor */
@@ -1826,8 +1878,8 @@ $(function () {
         });
 
         gadgetBox.$element.append(
-            toolbar.$element,
-            contentFrame.$element.append(tabsWidget.$element)
+          toolbar.$element,
+          contentFrame.$element.append(tabsWidget.$element)
         );
 
         toolbar.initialize();
@@ -1849,8 +1901,8 @@ $(function () {
 
         // Enforce fonts for pronunciation text input.
         $("#cnm-pronunciation-field > input")
-            .attr("style", 'font-family: "DejaVu Sans", "Segoe UI", "Lucida Grande", "Charis SIL", ' +
-                '"Gentium Plus", "Doulos SIL", sans-serif !important');
+          .attr("style", 'font-family: "DejaVu Sans", "Segoe UI", "Lucida Grande", "Charis SIL", ' +
+            '"Gentium Plus", "Doulos SIL", sans-serif !important');
       }
 
       /**
@@ -1882,7 +1934,7 @@ $(function () {
         if (language.iso6393Code) {
           const w = this.#word.replace(" ", "_");
           commonsAudioUrl =
-              `https://commons.wikimedia.org/w/index.php?search=${w}.wav+incategory:"Lingua+Libre+pronunciation-${language.iso6393Code}"`;
+            `https://commons.wikimedia.org/w/index.php?search=${w}.wav+incategory:"Lingua+Libre+pronunciation-${language.iso6393Code}"`;
           $span.show();
         } else {
           $span.hide();
@@ -1966,7 +2018,7 @@ $(function () {
       }
 
       /**
-       * Creates an HTML list of IPA symbols from a array of symbols.
+       * Creates an HTML list of IPA symbols from an array of symbols.
        * @param ipaSymbols {string[][]} The list of IPA symbols.
        * @return {Object} A jQuery object.
        */
@@ -2466,48 +2518,48 @@ $(function () {
     }
 
     gadget.addLanguage(new Language(
-        "fr",
-        "fr",
-        "fra",
-        "français",
-        [
-          ["a", "ɑ", "ɑ̃", "ə", "œ", "œ̃", "ø", "e", "ɛ", "ɛ̃", "i", "o", "ɔ", "ɔ̃", "y", "u"],
-          ["b", "d", "f", "ɡ", "k", "l", "m", "n", "ɲ", "ŋ", "p", "ʁ", "s", "ʃ", "t", "v", "z", "ʒ"],
-          ["j", "w", "ɥ"],
-          [".", "‿"],
-        ],
-        [
-          new GrammaticalItem(GRAMMATICAL_CLASSES.ADJECTIVE, [GENDERS.FEMININE_MASCULINE_DIFF, GENDERS.FEMININE_MASCULINE], [NUMBERS.DIFF_SINGULAR_PLURAL, NUMBERS.SAME_SINGULAR_PLURAL, NUMBERS.INVARIABLE], getFrenchModel),
-          new GrammaticalItem(GRAMMATICAL_CLASSES.ADVERB, [GENDERS.NO_GENDER], [NUMBERS.INVARIABLE], getFrenchModel),
-          new GrammaticalItem(GRAMMATICAL_CLASSES.NOUN, [GENDERS.MASCULINE, GENDERS.FEMININE, GENDERS.FEMININE_MASCULINE], [NUMBERS.DIFF_SINGULAR_PLURAL, NUMBERS.SAME_SINGULAR_PLURAL, NUMBERS.SINGULAR_ONLY, NUMBERS.PLURAL_ONLY, NUMBERS.INVARIABLE], (word, grammarClass, gender, number, pron) => getFrenchModel(word, grammarClass, gender, number, pron, true)),
-          new GrammaticalItem(GRAMMATICAL_CLASSES.PROPER_NOUN, [GENDERS.NO_GENDER], [NUMBERS.INVARIABLE], getFrenchModel),
-          new GrammaticalItem(GRAMMATICAL_CLASSES.VERB, [GENDERS.VERB_GROUP1, GENDERS.VERB_GROUP2, GENDERS.VERB_GROUP3]),
+      "fr",
+      "fr",
+      "fra",
+      "français",
+      [
+        ["a", "ɑ", "ɑ̃", "ə", "œ", "œ̃", "ø", "e", "ɛ", "ɛ̃", "i", "o", "ɔ", "ɔ̃", "y", "u"],
+        ["b", "d", "f", "ɡ", "k", "l", "m", "n", "ɲ", "ŋ", "p", "ʁ", "s", "ʃ", "t", "v", "z", "ʒ"],
+        ["j", "w", "ɥ"],
+        [".", "‿"],
+      ],
+      [
+        new GrammaticalItem(GRAMMATICAL_CLASSES.ADJECTIVE, [GENDERS.FEMININE_MASCULINE_DIFF, GENDERS.FEMININE_MASCULINE], [NUMBERS.DIFF_SINGULAR_PLURAL, NUMBERS.SAME_SINGULAR_PLURAL, NUMBERS.INVARIABLE], getFrenchModel),
+        new GrammaticalItem(GRAMMATICAL_CLASSES.ADVERB, [GENDERS.NO_GENDER], [NUMBERS.INVARIABLE], getFrenchModel),
+        new GrammaticalItem(GRAMMATICAL_CLASSES.NOUN, [GENDERS.MASCULINE, GENDERS.FEMININE, GENDERS.FEMININE_MASCULINE], [NUMBERS.DIFF_SINGULAR_PLURAL, NUMBERS.SAME_SINGULAR_PLURAL, NUMBERS.SINGULAR_ONLY, NUMBERS.PLURAL_ONLY, NUMBERS.INVARIABLE], (word, grammarClass, gender, number, pron) => getFrenchModel(word, grammarClass, gender, number, pron, true)),
+        new GrammaticalItem(GRAMMATICAL_CLASSES.PROPER_NOUN, [GENDERS.NO_GENDER], [NUMBERS.INVARIABLE], getFrenchModel),
+        new GrammaticalItem(GRAMMATICAL_CLASSES.VERB, [GENDERS.VERB_GROUP1, GENDERS.VERB_GROUP2, GENDERS.VERB_GROUP3]),
 
-          new GrammaticalItem(GRAMMATICAL_CLASSES.INTERROGATIVE_ADJECTIVE, [GENDERS.MASCULINE, GENDERS.FEMININE, GENDERS.FEMININE_MASCULINE], [NUMBERS.DIFF_SINGULAR_PLURAL, NUMBERS.SAME_SINGULAR_PLURAL, NUMBERS.INVARIABLE], getFrenchModel),
-          new GrammaticalItem(GRAMMATICAL_CLASSES.NUMERAL_ADJECTIVE, [GENDERS.MASCULINE, GENDERS.FEMININE, GENDERS.FEMININE_MASCULINE], [NUMBERS.DIFF_SINGULAR_PLURAL, NUMBERS.SAME_SINGULAR_PLURAL, NUMBERS.INVARIABLE], getFrenchModel),
-          new GrammaticalItem(GRAMMATICAL_CLASSES.POSSESSIVE_ADJECTIVE, [GENDERS.MASCULINE, GENDERS.FEMININE, GENDERS.FEMININE_MASCULINE], [NUMBERS.DIFF_SINGULAR_PLURAL, NUMBERS.SAME_SINGULAR_PLURAL, NUMBERS.INVARIABLE], getFrenchModel),
-          new GrammaticalItem(GRAMMATICAL_CLASSES.INTERROGATIVE_ADVERB, [GENDERS.NO_GENDER], [NUMBERS.INVARIABLE], getFrenchModel),
-          new GrammaticalItem(GRAMMATICAL_CLASSES.DEFINITE_ARTICLE, [GENDERS.MASCULINE, GENDERS.FEMININE, GENDERS.FEMININE_MASCULINE], [NUMBERS.DIFF_SINGULAR_PLURAL, NUMBERS.SAME_SINGULAR_PLURAL, NUMBERS.SINGULAR_ONLY, NUMBERS.PLURAL_ONLY, NUMBERS.INVARIABLE], getFrenchModel),
-          new GrammaticalItem(GRAMMATICAL_CLASSES.INDEFINITE_ARTICLE, [GENDERS.MASCULINE, GENDERS.FEMININE, GENDERS.FEMININE_MASCULINE], [NUMBERS.DIFF_SINGULAR_PLURAL, NUMBERS.SAME_SINGULAR_PLURAL, NUMBERS.SINGULAR_ONLY, NUMBERS.PLURAL_ONLY, NUMBERS.INVARIABLE], getFrenchModel),
-          new GrammaticalItem(GRAMMATICAL_CLASSES.PARTITIVE_ARTICLE, [GENDERS.MASCULINE, GENDERS.FEMININE, GENDERS.FEMININE_MASCULINE], [NUMBERS.DIFF_SINGULAR_PLURAL, NUMBERS.SAME_SINGULAR_PLURAL, NUMBERS.SINGULAR_ONLY, NUMBERS.PLURAL_ONLY, NUMBERS.INVARIABLE], getFrenchModel),
-          new GrammaticalItem(GRAMMATICAL_CLASSES.CONJUNCTION, [GENDERS.NO_GENDER], [NUMBERS.INVARIABLE], getFrenchModel),
-          new GrammaticalItem(GRAMMATICAL_CLASSES.COORDINATION_CONJUNCTION, [GENDERS.NO_GENDER], [NUMBERS.INVARIABLE], getFrenchModel),
-          new GrammaticalItem(GRAMMATICAL_CLASSES.INTERJECTION, [GENDERS.NO_GENDER], [NUMBERS.INVARIABLE], getFrenchModel),
-          new GrammaticalItem(GRAMMATICAL_CLASSES.LAST_NAME, [GENDERS.NO_GENDER], [NUMBERS.INVARIABLE], getFrenchModel),
-          new GrammaticalItem(GRAMMATICAL_CLASSES.PARTICLE, [GENDERS.NO_GENDER], [NUMBERS.INVARIABLE], getFrenchModel),
-          new GrammaticalItem(GRAMMATICAL_CLASSES.POSTPOSITION, [GENDERS.NO_GENDER], [NUMBERS.INVARIABLE], getFrenchModel),
-          new GrammaticalItem(GRAMMATICAL_CLASSES.PREFIX, [GENDERS.NO_GENDER]),
-          new GrammaticalItem(GRAMMATICAL_CLASSES.FIRST_NAME, [GENDERS.NO_GENDER], [NUMBERS.INVARIABLE], getFrenchModel),
-          new GrammaticalItem(GRAMMATICAL_CLASSES.PREPOSITION, [GENDERS.NO_GENDER], [NUMBERS.INVARIABLE], getFrenchModel),
-          new GrammaticalItem(GRAMMATICAL_CLASSES.PRONOUN, [GENDERS.MASCULINE, GENDERS.FEMININE, GENDERS.FEMININE_MASCULINE], [NUMBERS.DIFF_SINGULAR_PLURAL, NUMBERS.SAME_SINGULAR_PLURAL, NUMBERS.SINGULAR_ONLY, NUMBERS.PLURAL_ONLY, NUMBERS.INVARIABLE], getFrenchModel),
-          new GrammaticalItem(GRAMMATICAL_CLASSES.DEMONSTRATIVE_PRONOUN, [GENDERS.MASCULINE, GENDERS.FEMININE, GENDERS.FEMININE_MASCULINE], [NUMBERS.DIFF_SINGULAR_PLURAL, NUMBERS.SAME_SINGULAR_PLURAL, NUMBERS.SINGULAR_ONLY, NUMBERS.PLURAL_ONLY, NUMBERS.INVARIABLE], (word, grammarClass, gender, number, pron) => getFrenchModel(word, grammarClass, gender, number, pron, true)),
-          new GrammaticalItem(GRAMMATICAL_CLASSES.INDEFINITE_PRONOUN, [GENDERS.MASCULINE, GENDERS.FEMININE, GENDERS.FEMININE_MASCULINE], [NUMBERS.DIFF_SINGULAR_PLURAL, NUMBERS.SAME_SINGULAR_PLURAL, NUMBERS.SINGULAR_ONLY, NUMBERS.PLURAL_ONLY, NUMBERS.INVARIABLE], (word, grammarClass, gender, number, pron) => getFrenchModel(word, grammarClass, gender, number, pron, true)),
-          new GrammaticalItem(GRAMMATICAL_CLASSES.INTERROGATIVE_PRONOUN, [GENDERS.MASCULINE, GENDERS.FEMININE, GENDERS.FEMININE_MASCULINE], [NUMBERS.DIFF_SINGULAR_PLURAL, NUMBERS.SAME_SINGULAR_PLURAL, NUMBERS.SINGULAR_ONLY, NUMBERS.PLURAL_ONLY, NUMBERS.INVARIABLE], (word, grammarClass, gender, number, pron) => getFrenchModel(word, grammarClass, gender, number, pron, true)),
-          new GrammaticalItem(GRAMMATICAL_CLASSES.PERSONAL_PRONOUN, [GENDERS.MASCULINE, GENDERS.FEMININE, GENDERS.FEMININE_MASCULINE], [NUMBERS.DIFF_SINGULAR_PLURAL, NUMBERS.SAME_SINGULAR_PLURAL, NUMBERS.SINGULAR_ONLY, NUMBERS.PLURAL_ONLY, NUMBERS.INVARIABLE], (word, grammarClass, gender, number, pron) => getFrenchModel(word, grammarClass, gender, number, pron, true)),
-          new GrammaticalItem(GRAMMATICAL_CLASSES.POSSESSIVE_PRONOUN, [GENDERS.MASCULINE, GENDERS.FEMININE, GENDERS.FEMININE_MASCULINE], [NUMBERS.DIFF_SINGULAR_PLURAL, NUMBERS.SAME_SINGULAR_PLURAL, NUMBERS.SINGULAR_ONLY, NUMBERS.PLURAL_ONLY, NUMBERS.INVARIABLE], (word, grammarClass, gender, number, pron) => getFrenchModel(word, grammarClass, gender, number, pron, true)),
-          new GrammaticalItem(GRAMMATICAL_CLASSES.RELATIVE_PRONOUN, [GENDERS.MASCULINE, GENDERS.FEMININE, GENDERS.FEMININE_MASCULINE], [NUMBERS.DIFF_SINGULAR_PLURAL, NUMBERS.SAME_SINGULAR_PLURAL, NUMBERS.SINGULAR_ONLY, NUMBERS.PLURAL_ONLY, NUMBERS.INVARIABLE], (word, grammarClass, gender, number, pron) => getFrenchModel(word, grammarClass, gender, number, pron, true)),
-          new GrammaticalItem(GRAMMATICAL_CLASSES.SUFFIX, [GENDERS.NO_GENDER]),
-        ]
+        new GrammaticalItem(GRAMMATICAL_CLASSES.INTERROGATIVE_ADJECTIVE, [GENDERS.MASCULINE, GENDERS.FEMININE, GENDERS.FEMININE_MASCULINE], [NUMBERS.DIFF_SINGULAR_PLURAL, NUMBERS.SAME_SINGULAR_PLURAL, NUMBERS.INVARIABLE], getFrenchModel),
+        new GrammaticalItem(GRAMMATICAL_CLASSES.NUMERAL_ADJECTIVE, [GENDERS.MASCULINE, GENDERS.FEMININE, GENDERS.FEMININE_MASCULINE], [NUMBERS.DIFF_SINGULAR_PLURAL, NUMBERS.SAME_SINGULAR_PLURAL, NUMBERS.INVARIABLE], getFrenchModel),
+        new GrammaticalItem(GRAMMATICAL_CLASSES.POSSESSIVE_ADJECTIVE, [GENDERS.MASCULINE, GENDERS.FEMININE, GENDERS.FEMININE_MASCULINE], [NUMBERS.DIFF_SINGULAR_PLURAL, NUMBERS.SAME_SINGULAR_PLURAL, NUMBERS.INVARIABLE], getFrenchModel),
+        new GrammaticalItem(GRAMMATICAL_CLASSES.INTERROGATIVE_ADVERB, [GENDERS.NO_GENDER], [NUMBERS.INVARIABLE], getFrenchModel),
+        new GrammaticalItem(GRAMMATICAL_CLASSES.DEFINITE_ARTICLE, [GENDERS.MASCULINE, GENDERS.FEMININE, GENDERS.FEMININE_MASCULINE], [NUMBERS.DIFF_SINGULAR_PLURAL, NUMBERS.SAME_SINGULAR_PLURAL, NUMBERS.SINGULAR_ONLY, NUMBERS.PLURAL_ONLY, NUMBERS.INVARIABLE], getFrenchModel),
+        new GrammaticalItem(GRAMMATICAL_CLASSES.INDEFINITE_ARTICLE, [GENDERS.MASCULINE, GENDERS.FEMININE, GENDERS.FEMININE_MASCULINE], [NUMBERS.DIFF_SINGULAR_PLURAL, NUMBERS.SAME_SINGULAR_PLURAL, NUMBERS.SINGULAR_ONLY, NUMBERS.PLURAL_ONLY, NUMBERS.INVARIABLE], getFrenchModel),
+        new GrammaticalItem(GRAMMATICAL_CLASSES.PARTITIVE_ARTICLE, [GENDERS.MASCULINE, GENDERS.FEMININE, GENDERS.FEMININE_MASCULINE], [NUMBERS.DIFF_SINGULAR_PLURAL, NUMBERS.SAME_SINGULAR_PLURAL, NUMBERS.SINGULAR_ONLY, NUMBERS.PLURAL_ONLY, NUMBERS.INVARIABLE], getFrenchModel),
+        new GrammaticalItem(GRAMMATICAL_CLASSES.CONJUNCTION, [GENDERS.NO_GENDER], [NUMBERS.INVARIABLE], getFrenchModel),
+        new GrammaticalItem(GRAMMATICAL_CLASSES.COORDINATION_CONJUNCTION, [GENDERS.NO_GENDER], [NUMBERS.INVARIABLE], getFrenchModel),
+        new GrammaticalItem(GRAMMATICAL_CLASSES.INTERJECTION, [GENDERS.NO_GENDER], [NUMBERS.INVARIABLE], getFrenchModel),
+        new GrammaticalItem(GRAMMATICAL_CLASSES.LAST_NAME, [GENDERS.NO_GENDER], [NUMBERS.INVARIABLE], getFrenchModel),
+        new GrammaticalItem(GRAMMATICAL_CLASSES.PARTICLE, [GENDERS.NO_GENDER], [NUMBERS.INVARIABLE], getFrenchModel),
+        new GrammaticalItem(GRAMMATICAL_CLASSES.POSTPOSITION, [GENDERS.NO_GENDER], [NUMBERS.INVARIABLE], getFrenchModel),
+        new GrammaticalItem(GRAMMATICAL_CLASSES.PREFIX, [GENDERS.NO_GENDER]),
+        new GrammaticalItem(GRAMMATICAL_CLASSES.FIRST_NAME, [GENDERS.NO_GENDER], [NUMBERS.INVARIABLE], getFrenchModel),
+        new GrammaticalItem(GRAMMATICAL_CLASSES.PREPOSITION, [GENDERS.NO_GENDER], [NUMBERS.INVARIABLE], getFrenchModel),
+        new GrammaticalItem(GRAMMATICAL_CLASSES.PRONOUN, [GENDERS.MASCULINE, GENDERS.FEMININE, GENDERS.FEMININE_MASCULINE], [NUMBERS.DIFF_SINGULAR_PLURAL, NUMBERS.SAME_SINGULAR_PLURAL, NUMBERS.SINGULAR_ONLY, NUMBERS.PLURAL_ONLY, NUMBERS.INVARIABLE], getFrenchModel),
+        new GrammaticalItem(GRAMMATICAL_CLASSES.DEMONSTRATIVE_PRONOUN, [GENDERS.MASCULINE, GENDERS.FEMININE, GENDERS.FEMININE_MASCULINE], [NUMBERS.DIFF_SINGULAR_PLURAL, NUMBERS.SAME_SINGULAR_PLURAL, NUMBERS.SINGULAR_ONLY, NUMBERS.PLURAL_ONLY, NUMBERS.INVARIABLE], (word, grammarClass, gender, number, pron) => getFrenchModel(word, grammarClass, gender, number, pron, true)),
+        new GrammaticalItem(GRAMMATICAL_CLASSES.INDEFINITE_PRONOUN, [GENDERS.MASCULINE, GENDERS.FEMININE, GENDERS.FEMININE_MASCULINE], [NUMBERS.DIFF_SINGULAR_PLURAL, NUMBERS.SAME_SINGULAR_PLURAL, NUMBERS.SINGULAR_ONLY, NUMBERS.PLURAL_ONLY, NUMBERS.INVARIABLE], (word, grammarClass, gender, number, pron) => getFrenchModel(word, grammarClass, gender, number, pron, true)),
+        new GrammaticalItem(GRAMMATICAL_CLASSES.INTERROGATIVE_PRONOUN, [GENDERS.MASCULINE, GENDERS.FEMININE, GENDERS.FEMININE_MASCULINE], [NUMBERS.DIFF_SINGULAR_PLURAL, NUMBERS.SAME_SINGULAR_PLURAL, NUMBERS.SINGULAR_ONLY, NUMBERS.PLURAL_ONLY, NUMBERS.INVARIABLE], (word, grammarClass, gender, number, pron) => getFrenchModel(word, grammarClass, gender, number, pron, true)),
+        new GrammaticalItem(GRAMMATICAL_CLASSES.PERSONAL_PRONOUN, [GENDERS.MASCULINE, GENDERS.FEMININE, GENDERS.FEMININE_MASCULINE], [NUMBERS.DIFF_SINGULAR_PLURAL, NUMBERS.SAME_SINGULAR_PLURAL, NUMBERS.SINGULAR_ONLY, NUMBERS.PLURAL_ONLY, NUMBERS.INVARIABLE], (word, grammarClass, gender, number, pron) => getFrenchModel(word, grammarClass, gender, number, pron, true)),
+        new GrammaticalItem(GRAMMATICAL_CLASSES.POSSESSIVE_PRONOUN, [GENDERS.MASCULINE, GENDERS.FEMININE, GENDERS.FEMININE_MASCULINE], [NUMBERS.DIFF_SINGULAR_PLURAL, NUMBERS.SAME_SINGULAR_PLURAL, NUMBERS.SINGULAR_ONLY, NUMBERS.PLURAL_ONLY, NUMBERS.INVARIABLE], (word, grammarClass, gender, number, pron) => getFrenchModel(word, grammarClass, gender, number, pron, true)),
+        new GrammaticalItem(GRAMMATICAL_CLASSES.RELATIVE_PRONOUN, [GENDERS.MASCULINE, GENDERS.FEMININE, GENDERS.FEMININE_MASCULINE], [NUMBERS.DIFF_SINGULAR_PLURAL, NUMBERS.SAME_SINGULAR_PLURAL, NUMBERS.SINGULAR_ONLY, NUMBERS.PLURAL_ONLY, NUMBERS.INVARIABLE], (word, grammarClass, gender, number, pron) => getFrenchModel(word, grammarClass, gender, number, pron, true)),
+        new GrammaticalItem(GRAMMATICAL_CLASSES.SUFFIX, [GENDERS.NO_GENDER]),
+      ]
     )); // fr
 
     /*
@@ -2528,49 +2580,49 @@ $(function () {
     }
 
     gadget.addLanguage(new Language(
-        "en",
-        "en",
-        "eng",
-        "anglais",
-        [
-          ["i", "iː", "ɪ", "ɛ", "æ", "ə", "ɚ", "ɜː", "ɝ", "uː", "u", "ʊ", "ʌ", "ɔː", "ɑː", "ɒ"],
-          ["aɪ", "aʊ", "eə", "eɪ", "əʊ", "oʊ", "ɔə", "ɔɪ", "ɪə", "ʊə", "uə"],
-          ["b", "d", "f", "ɡ", "h", "k", "l", "m", "n", "ŋ", "ɲ", "p", "ɹ", "ɻ", "s", "ʃ", "t", "θ", "ð", "v", "z", "ʒ"],
-          ["j", "w"],
-          [".", "ˈ", "ˌ", "ː"],
-        ],
-        [
-          new GrammaticalItem(GRAMMATICAL_CLASSES.ADJECTIVE, [GENDERS.NO_GENDER], [NUMBERS.INVARIABLE], (word, grammarClass, gender, number, pron) => getEnglishModel(grammarClass, number, pron)),
-          new GrammaticalItem(GRAMMATICAL_CLASSES.ADVERB, [GENDERS.NO_GENDER], [NUMBERS.INVARIABLE], (word, grammarClass, gender, number, pron) => getEnglishModel(grammarClass, number, pron)),
-          new GrammaticalItem(GRAMMATICAL_CLASSES.NOUN, [GENDERS.NO_GENDER], [NUMBERS.DIFF_SINGULAR_PLURAL, NUMBERS.SAME_SINGULAR_PLURAL, NUMBERS.SINGULAR_ONLY, NUMBERS.PLURAL_ONLY, NUMBERS.INVARIABLE], (word, grammarClass, gender, number, pron) => number !== NUMBERS.DIFF_SINGULAR_PLURAL.label ? getEnglishModel(grammarClass, number, pron) : `{{en-nom-rég|${pron}}}`),
-          new GrammaticalItem(GRAMMATICAL_CLASSES.PROPER_NOUN, [GENDERS.NO_GENDER], [NUMBERS.INVARIABLE], (word, grammarClass, gender, number, pron) => getEnglishModel(grammarClass, number, pron)),
-          new GrammaticalItem(GRAMMATICAL_CLASSES.VERB, [GENDERS.REGULAR_VERB, GENDERS.IRREGULAR_VERB], null, (word, grammarClass, gender, number, pron) => gender === GENDERS.REGULAR_VERB.label ? `{{en-conj-rég|inf.pron=${pron}}}` : `{{en-conj-irrég|inf=${word}|inf.pron=${pron}|<!-- Compléter -->}}`),
+      "en",
+      "en",
+      "eng",
+      "anglais",
+      [
+        ["i", "iː", "ɪ", "ɛ", "æ", "ə", "ɚ", "ɜː", "ɝ", "uː", "u", "ʊ", "ʌ", "ɔː", "ɑː", "ɒ"],
+        ["aɪ", "aʊ", "eə", "eɪ", "əʊ", "oʊ", "ɔə", "ɔɪ", "ɪə", "ʊə", "uə"],
+        ["b", "d", "f", "ɡ", "h", "k", "l", "m", "n", "ŋ", "ɲ", "p", "ɹ", "ɻ", "s", "ʃ", "t", "θ", "ð", "v", "z", "ʒ"],
+        ["j", "w"],
+        [".", "ˈ", "ˌ", "ː"],
+      ],
+      [
+        new GrammaticalItem(GRAMMATICAL_CLASSES.ADJECTIVE, [GENDERS.NO_GENDER], [NUMBERS.INVARIABLE], (word, grammarClass, gender, number, pron) => getEnglishModel(grammarClass, number, pron)),
+        new GrammaticalItem(GRAMMATICAL_CLASSES.ADVERB, [GENDERS.NO_GENDER], [NUMBERS.INVARIABLE], (word, grammarClass, gender, number, pron) => getEnglishModel(grammarClass, number, pron)),
+        new GrammaticalItem(GRAMMATICAL_CLASSES.NOUN, [GENDERS.NO_GENDER], [NUMBERS.DIFF_SINGULAR_PLURAL, NUMBERS.SAME_SINGULAR_PLURAL, NUMBERS.SINGULAR_ONLY, NUMBERS.PLURAL_ONLY, NUMBERS.INVARIABLE], (word, grammarClass, gender, number, pron) => number !== NUMBERS.DIFF_SINGULAR_PLURAL.label ? getEnglishModel(grammarClass, number, pron) : `{{en-nom-rég|${pron}}}`),
+        new GrammaticalItem(GRAMMATICAL_CLASSES.PROPER_NOUN, [GENDERS.NO_GENDER], [NUMBERS.INVARIABLE], (word, grammarClass, gender, number, pron) => getEnglishModel(grammarClass, number, pron)),
+        new GrammaticalItem(GRAMMATICAL_CLASSES.VERB, [GENDERS.REGULAR_VERB, GENDERS.IRREGULAR_VERB], null, (word, grammarClass, gender, number, pron) => gender === GENDERS.REGULAR_VERB.label ? `{{en-conj-rég|inf.pron=${pron}}}` : `{{en-conj-irrég|inf=${word}|inf.pron=${pron}|<!-- Compléter -->}}`),
 
-          new GrammaticalItem(GRAMMATICAL_CLASSES.INTERROGATIVE_ADJECTIVE, [GENDERS.NO_GENDER], [NUMBERS.INVARIABLE], (word, grammarClass, gender, number, pron) => getEnglishModel(grammarClass, number, pron)),
-          new GrammaticalItem(GRAMMATICAL_CLASSES.NUMERAL_ADJECTIVE, [GENDERS.NO_GENDER], [NUMBERS.INVARIABLE], (word, grammarClass, gender, number, pron) => getEnglishModel(grammarClass, number, pron)),
-          new GrammaticalItem(GRAMMATICAL_CLASSES.POSSESSIVE_ADJECTIVE, [GENDERS.NO_GENDER], [NUMBERS.INVARIABLE], (word, grammarClass, gender, number, pron) => getEnglishModel(grammarClass, number, pron)),
-          new GrammaticalItem(GRAMMATICAL_CLASSES.INTERROGATIVE_ADVERB, [GENDERS.NO_GENDER], [NUMBERS.INVARIABLE], (word, grammarClass, gender, number, pron) => getEnglishModel(grammarClass, number, pron)),
-          new GrammaticalItem(GRAMMATICAL_CLASSES.DEFINITE_ARTICLE, [GENDERS.NO_GENDER], [NUMBERS.INVARIABLE], (word, grammarClass, gender, number, pron) => getEnglishModel(grammarClass, number, pron)),
-          new GrammaticalItem(GRAMMATICAL_CLASSES.INDEFINITE_ARTICLE, [GENDERS.NO_GENDER], [NUMBERS.INVARIABLE], (word, grammarClass, gender, number, pron) => getEnglishModel(grammarClass, number, pron)),
-          new GrammaticalItem(GRAMMATICAL_CLASSES.PARTITIVE_ARTICLE, [GENDERS.NO_GENDER], [NUMBERS.INVARIABLE], (word, grammarClass, gender, number, pron) => getEnglishModel(grammarClass, number, pron)),
-          new GrammaticalItem(GRAMMATICAL_CLASSES.CONJUNCTION, [GENDERS.NO_GENDER], [NUMBERS.INVARIABLE], (word, grammarClass, gender, number, pron) => getEnglishModel(grammarClass, number, pron)),
-          new GrammaticalItem(GRAMMATICAL_CLASSES.COORDINATION_CONJUNCTION, [GENDERS.NO_GENDER], [NUMBERS.INVARIABLE], (word, grammarClass, gender, number, pron) => getEnglishModel(grammarClass, number, pron)),
-          new GrammaticalItem(GRAMMATICAL_CLASSES.INTERJECTION, [GENDERS.NO_GENDER], [NUMBERS.INVARIABLE], (word, grammarClass, gender, number, pron) => getEnglishModel(grammarClass, number, pron)),
-          new GrammaticalItem(GRAMMATICAL_CLASSES.LAST_NAME, [GENDERS.NO_GENDER], [NUMBERS.DIFF_SINGULAR_PLURAL, NUMBERS.SAME_SINGULAR_PLURAL, NUMBERS.INVARIABLE], (word, grammarClass, gender, number, pron) => number !== NUMBERS.DIFF_SINGULAR_PLURAL.label ? getEnglishModel(grammarClass, number, pron) : `{{en-nom-rég|${pron}}}`),
-          new GrammaticalItem(GRAMMATICAL_CLASSES.PARTICLE, [GENDERS.NO_GENDER], [NUMBERS.INVARIABLE], (word, grammarClass, gender, number, pron) => getEnglishModel(grammarClass, number, pron)),
-          new GrammaticalItem(GRAMMATICAL_CLASSES.POSTPOSITION, [GENDERS.NO_GENDER], [NUMBERS.INVARIABLE], (word, grammarClass, gender, number, pron) => getEnglishModel(grammarClass, number, pron)),
-          new GrammaticalItem(GRAMMATICAL_CLASSES.PREFIX, [GENDERS.NO_GENDER]),
-          new GrammaticalItem(GRAMMATICAL_CLASSES.FIRST_NAME, [GENDERS.NO_GENDER], [NUMBERS.DIFF_SINGULAR_PLURAL, NUMBERS.SAME_SINGULAR_PLURAL, NUMBERS.INVARIABLE], (word, grammarClass, gender, number, pron) => number !== NUMBERS.DIFF_SINGULAR_PLURAL.label ? getEnglishModel(grammarClass, number, pron) : `{{en-nom-rég|${pron}}}`),
-          new GrammaticalItem(GRAMMATICAL_CLASSES.PREPOSITION, [GENDERS.NO_GENDER], [NUMBERS.INVARIABLE], (word, grammarClass, gender, number, pron) => getEnglishModel(grammarClass, number, pron)),
-          new GrammaticalItem(GRAMMATICAL_CLASSES.PRONOUN, [GENDERS.NO_GENDER], [NUMBERS.INVARIABLE], (word, grammarClass, gender, number, pron) => getEnglishModel(grammarClass, number, pron)),
-          new GrammaticalItem(GRAMMATICAL_CLASSES.DEMONSTRATIVE_PRONOUN, [GENDERS.NO_GENDER], [NUMBERS.INVARIABLE], (word, grammarClass, gender, number, pron) => getEnglishModel(grammarClass, number, pron)),
-          new GrammaticalItem(GRAMMATICAL_CLASSES.INDEFINITE_PRONOUN, [GENDERS.NO_GENDER], [NUMBERS.INVARIABLE], (word, grammarClass, gender, number, pron) => getEnglishModel(grammarClass, number, pron)),
-          new GrammaticalItem(GRAMMATICAL_CLASSES.INTERROGATIVE_PRONOUN, [GENDERS.NO_GENDER], [NUMBERS.INVARIABLE], (word, grammarClass, gender, number, pron) => getEnglishModel(grammarClass, number, pron)),
-          new GrammaticalItem(GRAMMATICAL_CLASSES.PERSONAL_PRONOUN, [GENDERS.NO_GENDER], [NUMBERS.INVARIABLE], (word, grammarClass, gender, number, pron) => getEnglishModel(grammarClass, number, pron)),
-          new GrammaticalItem(GRAMMATICAL_CLASSES.POSSESSIVE_PRONOUN, [GENDERS.NO_GENDER], [NUMBERS.INVARIABLE], (word, grammarClass, gender, number, pron) => getEnglishModel(grammarClass, number, pron)),
-          new GrammaticalItem(GRAMMATICAL_CLASSES.RELATIVE_PRONOUN, [GENDERS.NO_GENDER], [NUMBERS.INVARIABLE], (word, grammarClass, gender, number, pron) => getEnglishModel(grammarClass, number, pron)),
-          new GrammaticalItem(GRAMMATICAL_CLASSES.SUFFIX, [GENDERS.NO_GENDER]),
-        ]
+        new GrammaticalItem(GRAMMATICAL_CLASSES.INTERROGATIVE_ADJECTIVE, [GENDERS.NO_GENDER], [NUMBERS.INVARIABLE], (word, grammarClass, gender, number, pron) => getEnglishModel(grammarClass, number, pron)),
+        new GrammaticalItem(GRAMMATICAL_CLASSES.NUMERAL_ADJECTIVE, [GENDERS.NO_GENDER], [NUMBERS.INVARIABLE], (word, grammarClass, gender, number, pron) => getEnglishModel(grammarClass, number, pron)),
+        new GrammaticalItem(GRAMMATICAL_CLASSES.POSSESSIVE_ADJECTIVE, [GENDERS.NO_GENDER], [NUMBERS.INVARIABLE], (word, grammarClass, gender, number, pron) => getEnglishModel(grammarClass, number, pron)),
+        new GrammaticalItem(GRAMMATICAL_CLASSES.INTERROGATIVE_ADVERB, [GENDERS.NO_GENDER], [NUMBERS.INVARIABLE], (word, grammarClass, gender, number, pron) => getEnglishModel(grammarClass, number, pron)),
+        new GrammaticalItem(GRAMMATICAL_CLASSES.DEFINITE_ARTICLE, [GENDERS.NO_GENDER], [NUMBERS.INVARIABLE], (word, grammarClass, gender, number, pron) => getEnglishModel(grammarClass, number, pron)),
+        new GrammaticalItem(GRAMMATICAL_CLASSES.INDEFINITE_ARTICLE, [GENDERS.NO_GENDER], [NUMBERS.INVARIABLE], (word, grammarClass, gender, number, pron) => getEnglishModel(grammarClass, number, pron)),
+        new GrammaticalItem(GRAMMATICAL_CLASSES.PARTITIVE_ARTICLE, [GENDERS.NO_GENDER], [NUMBERS.INVARIABLE], (word, grammarClass, gender, number, pron) => getEnglishModel(grammarClass, number, pron)),
+        new GrammaticalItem(GRAMMATICAL_CLASSES.CONJUNCTION, [GENDERS.NO_GENDER], [NUMBERS.INVARIABLE], (word, grammarClass, gender, number, pron) => getEnglishModel(grammarClass, number, pron)),
+        new GrammaticalItem(GRAMMATICAL_CLASSES.COORDINATION_CONJUNCTION, [GENDERS.NO_GENDER], [NUMBERS.INVARIABLE], (word, grammarClass, gender, number, pron) => getEnglishModel(grammarClass, number, pron)),
+        new GrammaticalItem(GRAMMATICAL_CLASSES.INTERJECTION, [GENDERS.NO_GENDER], [NUMBERS.INVARIABLE], (word, grammarClass, gender, number, pron) => getEnglishModel(grammarClass, number, pron)),
+        new GrammaticalItem(GRAMMATICAL_CLASSES.LAST_NAME, [GENDERS.NO_GENDER], [NUMBERS.DIFF_SINGULAR_PLURAL, NUMBERS.SAME_SINGULAR_PLURAL, NUMBERS.INVARIABLE], (word, grammarClass, gender, number, pron) => number !== NUMBERS.DIFF_SINGULAR_PLURAL.label ? getEnglishModel(grammarClass, number, pron) : `{{en-nom-rég|${pron}}}`),
+        new GrammaticalItem(GRAMMATICAL_CLASSES.PARTICLE, [GENDERS.NO_GENDER], [NUMBERS.INVARIABLE], (word, grammarClass, gender, number, pron) => getEnglishModel(grammarClass, number, pron)),
+        new GrammaticalItem(GRAMMATICAL_CLASSES.POSTPOSITION, [GENDERS.NO_GENDER], [NUMBERS.INVARIABLE], (word, grammarClass, gender, number, pron) => getEnglishModel(grammarClass, number, pron)),
+        new GrammaticalItem(GRAMMATICAL_CLASSES.PREFIX, [GENDERS.NO_GENDER]),
+        new GrammaticalItem(GRAMMATICAL_CLASSES.FIRST_NAME, [GENDERS.NO_GENDER], [NUMBERS.DIFF_SINGULAR_PLURAL, NUMBERS.SAME_SINGULAR_PLURAL, NUMBERS.INVARIABLE], (word, grammarClass, gender, number, pron) => number !== NUMBERS.DIFF_SINGULAR_PLURAL.label ? getEnglishModel(grammarClass, number, pron) : `{{en-nom-rég|${pron}}}`),
+        new GrammaticalItem(GRAMMATICAL_CLASSES.PREPOSITION, [GENDERS.NO_GENDER], [NUMBERS.INVARIABLE], (word, grammarClass, gender, number, pron) => getEnglishModel(grammarClass, number, pron)),
+        new GrammaticalItem(GRAMMATICAL_CLASSES.PRONOUN, [GENDERS.NO_GENDER], [NUMBERS.INVARIABLE], (word, grammarClass, gender, number, pron) => getEnglishModel(grammarClass, number, pron)),
+        new GrammaticalItem(GRAMMATICAL_CLASSES.DEMONSTRATIVE_PRONOUN, [GENDERS.NO_GENDER], [NUMBERS.INVARIABLE], (word, grammarClass, gender, number, pron) => getEnglishModel(grammarClass, number, pron)),
+        new GrammaticalItem(GRAMMATICAL_CLASSES.INDEFINITE_PRONOUN, [GENDERS.NO_GENDER], [NUMBERS.INVARIABLE], (word, grammarClass, gender, number, pron) => getEnglishModel(grammarClass, number, pron)),
+        new GrammaticalItem(GRAMMATICAL_CLASSES.INTERROGATIVE_PRONOUN, [GENDERS.NO_GENDER], [NUMBERS.INVARIABLE], (word, grammarClass, gender, number, pron) => getEnglishModel(grammarClass, number, pron)),
+        new GrammaticalItem(GRAMMATICAL_CLASSES.PERSONAL_PRONOUN, [GENDERS.NO_GENDER], [NUMBERS.INVARIABLE], (word, grammarClass, gender, number, pron) => getEnglishModel(grammarClass, number, pron)),
+        new GrammaticalItem(GRAMMATICAL_CLASSES.POSSESSIVE_PRONOUN, [GENDERS.NO_GENDER], [NUMBERS.INVARIABLE], (word, grammarClass, gender, number, pron) => getEnglishModel(grammarClass, number, pron)),
+        new GrammaticalItem(GRAMMATICAL_CLASSES.RELATIVE_PRONOUN, [GENDERS.NO_GENDER], [NUMBERS.INVARIABLE], (word, grammarClass, gender, number, pron) => getEnglishModel(grammarClass, number, pron)),
+        new GrammaticalItem(GRAMMATICAL_CLASSES.SUFFIX, [GENDERS.NO_GENDER]),
+      ]
     )); // en
 
     /*
@@ -2599,48 +2651,48 @@ $(function () {
     }
 
     gadget.addLanguage(new Language(
-        "it",
-        "it",
-        "ita",
-        "italien",
-        [
-          ["a", "e", "ɛ", "i", "o", "ɔ", "u"],
-          ["b", "d", "d͡z", "d͡ʒ", "f", "ɡ", "k", "l", "ʎ", "m", "ɱ", "n", "ŋ", "ɲ", "p", "r", "s", "ʃ", "t", "t͡s", "t͡ʃ", "v", "z"],
-          ["j", "w"],
-          [".", "ˈ", "ː"],
-        ],
-        [
-          new GrammaticalItem(GRAMMATICAL_CLASSES.ADJECTIVE, [GENDERS.FEMININE_MASCULINE_DIFF, GENDERS.FEMININE_MASCULINE], [NUMBERS.DIFF_SINGULAR_PLURAL, NUMBERS.SAME_SINGULAR_PLURAL, NUMBERS.INVARIABLE], getItalianModel),
-          new GrammaticalItem(GRAMMATICAL_CLASSES.ADVERB, [GENDERS.NO_GENDER], [NUMBERS.INVARIABLE], getItalianModel),
-          new GrammaticalItem(GRAMMATICAL_CLASSES.NOUN, [GENDERS.MASCULINE, GENDERS.FEMININE, GENDERS.FEMININE_MASCULINE], [NUMBERS.DIFF_SINGULAR_PLURAL, NUMBERS.SAME_SINGULAR_PLURAL, NUMBERS.SINGULAR_ONLY, NUMBERS.PLURAL_ONLY, NUMBERS.INVARIABLE], (word, grammarClass, gender, number, pron) => getItalianModel(word, grammarClass, gender, number, pron)),
-          new GrammaticalItem(GRAMMATICAL_CLASSES.PROPER_NOUN, [GENDERS.NO_GENDER], [NUMBERS.INVARIABLE], getItalianModel),
-          new GrammaticalItem(GRAMMATICAL_CLASSES.VERB, [GENDERS.VERB_GROUP1, GENDERS.VERB_GROUP2, GENDERS.VERB_GROUP3]),
+      "it",
+      "it",
+      "ita",
+      "italien",
+      [
+        ["a", "e", "ɛ", "i", "o", "ɔ", "u"],
+        ["b", "d", "d͡z", "d͡ʒ", "f", "ɡ", "k", "l", "ʎ", "m", "ɱ", "n", "ŋ", "ɲ", "p", "r", "s", "ʃ", "t", "t͡s", "t͡ʃ", "v", "z"],
+        ["j", "w"],
+        [".", "ˈ", "ː"],
+      ],
+      [
+        new GrammaticalItem(GRAMMATICAL_CLASSES.ADJECTIVE, [GENDERS.FEMININE_MASCULINE_DIFF, GENDERS.FEMININE_MASCULINE], [NUMBERS.DIFF_SINGULAR_PLURAL, NUMBERS.SAME_SINGULAR_PLURAL, NUMBERS.INVARIABLE], getItalianModel),
+        new GrammaticalItem(GRAMMATICAL_CLASSES.ADVERB, [GENDERS.NO_GENDER], [NUMBERS.INVARIABLE], getItalianModel),
+        new GrammaticalItem(GRAMMATICAL_CLASSES.NOUN, [GENDERS.MASCULINE, GENDERS.FEMININE, GENDERS.FEMININE_MASCULINE], [NUMBERS.DIFF_SINGULAR_PLURAL, NUMBERS.SAME_SINGULAR_PLURAL, NUMBERS.SINGULAR_ONLY, NUMBERS.PLURAL_ONLY, NUMBERS.INVARIABLE], (word, grammarClass, gender, number, pron) => getItalianModel(word, grammarClass, gender, number, pron)),
+        new GrammaticalItem(GRAMMATICAL_CLASSES.PROPER_NOUN, [GENDERS.NO_GENDER], [NUMBERS.INVARIABLE], getItalianModel),
+        new GrammaticalItem(GRAMMATICAL_CLASSES.VERB, [GENDERS.VERB_GROUP1, GENDERS.VERB_GROUP2, GENDERS.VERB_GROUP3]),
 
-          new GrammaticalItem(GRAMMATICAL_CLASSES.INTERROGATIVE_ADJECTIVE, [GENDERS.MASCULINE, GENDERS.FEMININE, GENDERS.FEMININE_MASCULINE], [NUMBERS.DIFF_SINGULAR_PLURAL, NUMBERS.SAME_SINGULAR_PLURAL, NUMBERS.INVARIABLE], getItalianModel),
-          new GrammaticalItem(GRAMMATICAL_CLASSES.NUMERAL_ADJECTIVE, [GENDERS.MASCULINE, GENDERS.FEMININE, GENDERS.FEMININE_MASCULINE], [NUMBERS.DIFF_SINGULAR_PLURAL, NUMBERS.SAME_SINGULAR_PLURAL, NUMBERS.INVARIABLE], getItalianModel),
-          new GrammaticalItem(GRAMMATICAL_CLASSES.POSSESSIVE_ADJECTIVE, [GENDERS.MASCULINE, GENDERS.FEMININE, GENDERS.FEMININE_MASCULINE], [NUMBERS.DIFF_SINGULAR_PLURAL, NUMBERS.SAME_SINGULAR_PLURAL, NUMBERS.INVARIABLE], getItalianModel),
-          new GrammaticalItem(GRAMMATICAL_CLASSES.INTERROGATIVE_ADVERB, [GENDERS.NO_GENDER], [NUMBERS.INVARIABLE], getItalianModel),
-          new GrammaticalItem(GRAMMATICAL_CLASSES.DEFINITE_ARTICLE, [GENDERS.MASCULINE, GENDERS.FEMININE, GENDERS.FEMININE_MASCULINE], [NUMBERS.DIFF_SINGULAR_PLURAL, NUMBERS.SAME_SINGULAR_PLURAL, NUMBERS.SINGULAR_ONLY, NUMBERS.PLURAL_ONLY, NUMBERS.INVARIABLE], getItalianModel),
-          new GrammaticalItem(GRAMMATICAL_CLASSES.INDEFINITE_ARTICLE, [GENDERS.MASCULINE, GENDERS.FEMININE, GENDERS.FEMININE_MASCULINE], [NUMBERS.DIFF_SINGULAR_PLURAL, NUMBERS.SAME_SINGULAR_PLURAL, NUMBERS.SINGULAR_ONLY, NUMBERS.PLURAL_ONLY, NUMBERS.INVARIABLE], getItalianModel),
-          new GrammaticalItem(GRAMMATICAL_CLASSES.PARTITIVE_ARTICLE, [GENDERS.MASCULINE, GENDERS.FEMININE, GENDERS.FEMININE_MASCULINE], [NUMBERS.DIFF_SINGULAR_PLURAL, NUMBERS.SAME_SINGULAR_PLURAL, NUMBERS.SINGULAR_ONLY, NUMBERS.PLURAL_ONLY, NUMBERS.INVARIABLE], getItalianModel),
-          new GrammaticalItem(GRAMMATICAL_CLASSES.CONJUNCTION, [GENDERS.NO_GENDER], [NUMBERS.INVARIABLE], getItalianModel),
-          new GrammaticalItem(GRAMMATICAL_CLASSES.COORDINATION_CONJUNCTION, [GENDERS.NO_GENDER], [NUMBERS.INVARIABLE], getItalianModel),
-          new GrammaticalItem(GRAMMATICAL_CLASSES.INTERJECTION, [GENDERS.NO_GENDER], [NUMBERS.INVARIABLE], getItalianModel),
-          new GrammaticalItem(GRAMMATICAL_CLASSES.LAST_NAME, [GENDERS.NO_GENDER], [NUMBERS.INVARIABLE], getItalianModel),
-          new GrammaticalItem(GRAMMATICAL_CLASSES.PARTICLE, [GENDERS.NO_GENDER], [NUMBERS.INVARIABLE], getItalianModel),
-          new GrammaticalItem(GRAMMATICAL_CLASSES.POSTPOSITION, [GENDERS.NO_GENDER], [NUMBERS.INVARIABLE], getItalianModel),
-          new GrammaticalItem(GRAMMATICAL_CLASSES.PREFIX, [GENDERS.NO_GENDER]),
-          new GrammaticalItem(GRAMMATICAL_CLASSES.FIRST_NAME, [GENDERS.NO_GENDER], [NUMBERS.INVARIABLE], getItalianModel),
-          new GrammaticalItem(GRAMMATICAL_CLASSES.PREPOSITION, [GENDERS.NO_GENDER], [NUMBERS.INVARIABLE], getItalianModel),
-          new GrammaticalItem(GRAMMATICAL_CLASSES.PRONOUN, [GENDERS.MASCULINE, GENDERS.FEMININE, GENDERS.FEMININE_MASCULINE], [NUMBERS.DIFF_SINGULAR_PLURAL, NUMBERS.SAME_SINGULAR_PLURAL, NUMBERS.SINGULAR_ONLY, NUMBERS.PLURAL_ONLY, NUMBERS.INVARIABLE], getItalianModel),
-          new GrammaticalItem(GRAMMATICAL_CLASSES.DEMONSTRATIVE_PRONOUN, [GENDERS.MASCULINE, GENDERS.FEMININE, GENDERS.FEMININE_MASCULINE], [NUMBERS.DIFF_SINGULAR_PLURAL, NUMBERS.SAME_SINGULAR_PLURAL, NUMBERS.SINGULAR_ONLY, NUMBERS.PLURAL_ONLY, NUMBERS.INVARIABLE], (word, grammarClass, gender, number, pron) => getItalianModel(word, grammarClass, gender, number, pron)),
-          new GrammaticalItem(GRAMMATICAL_CLASSES.INDEFINITE_PRONOUN, [GENDERS.MASCULINE, GENDERS.FEMININE, GENDERS.FEMININE_MASCULINE], [NUMBERS.DIFF_SINGULAR_PLURAL, NUMBERS.SAME_SINGULAR_PLURAL, NUMBERS.SINGULAR_ONLY, NUMBERS.PLURAL_ONLY, NUMBERS.INVARIABLE], (word, grammarClass, gender, number, pron) => getItalianModel(word, grammarClass, gender, number, pron)),
-          new GrammaticalItem(GRAMMATICAL_CLASSES.INTERROGATIVE_PRONOUN, [GENDERS.MASCULINE, GENDERS.FEMININE, GENDERS.FEMININE_MASCULINE], [NUMBERS.DIFF_SINGULAR_PLURAL, NUMBERS.SAME_SINGULAR_PLURAL, NUMBERS.SINGULAR_ONLY, NUMBERS.PLURAL_ONLY, NUMBERS.INVARIABLE], (word, grammarClass, gender, number, pron) => getItalianModel(word, grammarClass, gender, number, pron)),
-          new GrammaticalItem(GRAMMATICAL_CLASSES.PERSONAL_PRONOUN, [GENDERS.MASCULINE, GENDERS.FEMININE, GENDERS.FEMININE_MASCULINE], [NUMBERS.DIFF_SINGULAR_PLURAL, NUMBERS.SAME_SINGULAR_PLURAL, NUMBERS.SINGULAR_ONLY, NUMBERS.PLURAL_ONLY, NUMBERS.INVARIABLE], (word, grammarClass, gender, number, pron) => getItalianModel(word, grammarClass, gender, number, pron)),
-          new GrammaticalItem(GRAMMATICAL_CLASSES.POSSESSIVE_PRONOUN, [GENDERS.MASCULINE, GENDERS.FEMININE, GENDERS.FEMININE_MASCULINE], [NUMBERS.DIFF_SINGULAR_PLURAL, NUMBERS.SAME_SINGULAR_PLURAL, NUMBERS.SINGULAR_ONLY, NUMBERS.PLURAL_ONLY, NUMBERS.INVARIABLE], (word, grammarClass, gender, number, pron) => getItalianModel(word, grammarClass, gender, number, pron)),
-          new GrammaticalItem(GRAMMATICAL_CLASSES.RELATIVE_PRONOUN, [GENDERS.MASCULINE, GENDERS.FEMININE, GENDERS.FEMININE_MASCULINE], [NUMBERS.DIFF_SINGULAR_PLURAL, NUMBERS.SAME_SINGULAR_PLURAL, NUMBERS.SINGULAR_ONLY, NUMBERS.PLURAL_ONLY, NUMBERS.INVARIABLE], (word, grammarClass, gender, number, pron) => getItalianModel(word, grammarClass, gender, number, pron)),
-          new GrammaticalItem(GRAMMATICAL_CLASSES.SUFFIX, [GENDERS.NO_GENDER]),
-        ]
+        new GrammaticalItem(GRAMMATICAL_CLASSES.INTERROGATIVE_ADJECTIVE, [GENDERS.MASCULINE, GENDERS.FEMININE, GENDERS.FEMININE_MASCULINE], [NUMBERS.DIFF_SINGULAR_PLURAL, NUMBERS.SAME_SINGULAR_PLURAL, NUMBERS.INVARIABLE], getItalianModel),
+        new GrammaticalItem(GRAMMATICAL_CLASSES.NUMERAL_ADJECTIVE, [GENDERS.MASCULINE, GENDERS.FEMININE, GENDERS.FEMININE_MASCULINE], [NUMBERS.DIFF_SINGULAR_PLURAL, NUMBERS.SAME_SINGULAR_PLURAL, NUMBERS.INVARIABLE], getItalianModel),
+        new GrammaticalItem(GRAMMATICAL_CLASSES.POSSESSIVE_ADJECTIVE, [GENDERS.MASCULINE, GENDERS.FEMININE, GENDERS.FEMININE_MASCULINE], [NUMBERS.DIFF_SINGULAR_PLURAL, NUMBERS.SAME_SINGULAR_PLURAL, NUMBERS.INVARIABLE], getItalianModel),
+        new GrammaticalItem(GRAMMATICAL_CLASSES.INTERROGATIVE_ADVERB, [GENDERS.NO_GENDER], [NUMBERS.INVARIABLE], getItalianModel),
+        new GrammaticalItem(GRAMMATICAL_CLASSES.DEFINITE_ARTICLE, [GENDERS.MASCULINE, GENDERS.FEMININE, GENDERS.FEMININE_MASCULINE], [NUMBERS.DIFF_SINGULAR_PLURAL, NUMBERS.SAME_SINGULAR_PLURAL, NUMBERS.SINGULAR_ONLY, NUMBERS.PLURAL_ONLY, NUMBERS.INVARIABLE], getItalianModel),
+        new GrammaticalItem(GRAMMATICAL_CLASSES.INDEFINITE_ARTICLE, [GENDERS.MASCULINE, GENDERS.FEMININE, GENDERS.FEMININE_MASCULINE], [NUMBERS.DIFF_SINGULAR_PLURAL, NUMBERS.SAME_SINGULAR_PLURAL, NUMBERS.SINGULAR_ONLY, NUMBERS.PLURAL_ONLY, NUMBERS.INVARIABLE], getItalianModel),
+        new GrammaticalItem(GRAMMATICAL_CLASSES.PARTITIVE_ARTICLE, [GENDERS.MASCULINE, GENDERS.FEMININE, GENDERS.FEMININE_MASCULINE], [NUMBERS.DIFF_SINGULAR_PLURAL, NUMBERS.SAME_SINGULAR_PLURAL, NUMBERS.SINGULAR_ONLY, NUMBERS.PLURAL_ONLY, NUMBERS.INVARIABLE], getItalianModel),
+        new GrammaticalItem(GRAMMATICAL_CLASSES.CONJUNCTION, [GENDERS.NO_GENDER], [NUMBERS.INVARIABLE], getItalianModel),
+        new GrammaticalItem(GRAMMATICAL_CLASSES.COORDINATION_CONJUNCTION, [GENDERS.NO_GENDER], [NUMBERS.INVARIABLE], getItalianModel),
+        new GrammaticalItem(GRAMMATICAL_CLASSES.INTERJECTION, [GENDERS.NO_GENDER], [NUMBERS.INVARIABLE], getItalianModel),
+        new GrammaticalItem(GRAMMATICAL_CLASSES.LAST_NAME, [GENDERS.NO_GENDER], [NUMBERS.INVARIABLE], getItalianModel),
+        new GrammaticalItem(GRAMMATICAL_CLASSES.PARTICLE, [GENDERS.NO_GENDER], [NUMBERS.INVARIABLE], getItalianModel),
+        new GrammaticalItem(GRAMMATICAL_CLASSES.POSTPOSITION, [GENDERS.NO_GENDER], [NUMBERS.INVARIABLE], getItalianModel),
+        new GrammaticalItem(GRAMMATICAL_CLASSES.PREFIX, [GENDERS.NO_GENDER]),
+        new GrammaticalItem(GRAMMATICAL_CLASSES.FIRST_NAME, [GENDERS.NO_GENDER], [NUMBERS.INVARIABLE], getItalianModel),
+        new GrammaticalItem(GRAMMATICAL_CLASSES.PREPOSITION, [GENDERS.NO_GENDER], [NUMBERS.INVARIABLE], getItalianModel),
+        new GrammaticalItem(GRAMMATICAL_CLASSES.PRONOUN, [GENDERS.MASCULINE, GENDERS.FEMININE, GENDERS.FEMININE_MASCULINE], [NUMBERS.DIFF_SINGULAR_PLURAL, NUMBERS.SAME_SINGULAR_PLURAL, NUMBERS.SINGULAR_ONLY, NUMBERS.PLURAL_ONLY, NUMBERS.INVARIABLE], getItalianModel),
+        new GrammaticalItem(GRAMMATICAL_CLASSES.DEMONSTRATIVE_PRONOUN, [GENDERS.MASCULINE, GENDERS.FEMININE, GENDERS.FEMININE_MASCULINE], [NUMBERS.DIFF_SINGULAR_PLURAL, NUMBERS.SAME_SINGULAR_PLURAL, NUMBERS.SINGULAR_ONLY, NUMBERS.PLURAL_ONLY, NUMBERS.INVARIABLE], (word, grammarClass, gender, number, pron) => getItalianModel(word, grammarClass, gender, number, pron)),
+        new GrammaticalItem(GRAMMATICAL_CLASSES.INDEFINITE_PRONOUN, [GENDERS.MASCULINE, GENDERS.FEMININE, GENDERS.FEMININE_MASCULINE], [NUMBERS.DIFF_SINGULAR_PLURAL, NUMBERS.SAME_SINGULAR_PLURAL, NUMBERS.SINGULAR_ONLY, NUMBERS.PLURAL_ONLY, NUMBERS.INVARIABLE], (word, grammarClass, gender, number, pron) => getItalianModel(word, grammarClass, gender, number, pron)),
+        new GrammaticalItem(GRAMMATICAL_CLASSES.INTERROGATIVE_PRONOUN, [GENDERS.MASCULINE, GENDERS.FEMININE, GENDERS.FEMININE_MASCULINE], [NUMBERS.DIFF_SINGULAR_PLURAL, NUMBERS.SAME_SINGULAR_PLURAL, NUMBERS.SINGULAR_ONLY, NUMBERS.PLURAL_ONLY, NUMBERS.INVARIABLE], (word, grammarClass, gender, number, pron) => getItalianModel(word, grammarClass, gender, number, pron)),
+        new GrammaticalItem(GRAMMATICAL_CLASSES.PERSONAL_PRONOUN, [GENDERS.MASCULINE, GENDERS.FEMININE, GENDERS.FEMININE_MASCULINE], [NUMBERS.DIFF_SINGULAR_PLURAL, NUMBERS.SAME_SINGULAR_PLURAL, NUMBERS.SINGULAR_ONLY, NUMBERS.PLURAL_ONLY, NUMBERS.INVARIABLE], (word, grammarClass, gender, number, pron) => getItalianModel(word, grammarClass, gender, number, pron)),
+        new GrammaticalItem(GRAMMATICAL_CLASSES.POSSESSIVE_PRONOUN, [GENDERS.MASCULINE, GENDERS.FEMININE, GENDERS.FEMININE_MASCULINE], [NUMBERS.DIFF_SINGULAR_PLURAL, NUMBERS.SAME_SINGULAR_PLURAL, NUMBERS.SINGULAR_ONLY, NUMBERS.PLURAL_ONLY, NUMBERS.INVARIABLE], (word, grammarClass, gender, number, pron) => getItalianModel(word, grammarClass, gender, number, pron)),
+        new GrammaticalItem(GRAMMATICAL_CLASSES.RELATIVE_PRONOUN, [GENDERS.MASCULINE, GENDERS.FEMININE, GENDERS.FEMININE_MASCULINE], [NUMBERS.DIFF_SINGULAR_PLURAL, NUMBERS.SAME_SINGULAR_PLURAL, NUMBERS.SINGULAR_ONLY, NUMBERS.PLURAL_ONLY, NUMBERS.INVARIABLE], (word, grammarClass, gender, number, pron) => getItalianModel(word, grammarClass, gender, number, pron)),
+        new GrammaticalItem(GRAMMATICAL_CLASSES.SUFFIX, [GENDERS.NO_GENDER]),
+      ]
     )); // it
 
     /*
@@ -2658,37 +2710,37 @@ $(function () {
     }
 
     gadget.addLanguage(new Language(
-        "eo",
-        "eo",
-        "epo",
-        "espéranto",
-        [
-          ["a", "e", "i", "o", "u"],
-          ["b", "d", "d͡ʒ", "f", "ɡ", "h", "k", "l", "m", "n", "p", "r", "s", "t", "t͡s", "t͡ʃ", "v", "x", "z", "ʃ", "ʒ"],
-          ["j", "w"],
-          [".", "ˈ"],
-        ],
-        [
-          new GrammaticalItem(GRAMMATICAL_CLASSES.ADJECTIVE, [GENDERS.NO_GENDER], [NUMBERS.DIFF_SINGULAR_PLURAL], getEsperantoModel),
-          new GrammaticalItem(GRAMMATICAL_CLASSES.ADVERB, [GENDERS.NO_GENDER], [NUMBERS.INVARIABLE], getEsperantoModel),
-          new GrammaticalItem(GRAMMATICAL_CLASSES.CONJUNCTION, [GENDERS.NO_GENDER], [NUMBERS.DIFF_SINGULAR_PLURAL], getEsperantoModel),
-          new GrammaticalItem(GRAMMATICAL_CLASSES.INTERJECTION, [GENDERS.NO_GENDER], [NUMBERS.INVARIABLE], getEsperantoModel),
-          new GrammaticalItem(GRAMMATICAL_CLASSES.NOUN, [GENDERS.NO_GENDER], [NUMBERS.DIFF_SINGULAR_PLURAL], getEsperantoModel),
-          new GrammaticalItem(GRAMMATICAL_CLASSES.PROPER_NOUN, [GENDERS.NO_GENDER], [NUMBERS.DIFF_SINGULAR_PLURAL], getEsperantoModel),
-          new GrammaticalItem(GRAMMATICAL_CLASSES.FIRST_NAME, [GENDERS.NO_GENDER], [NUMBERS.DIFF_SINGULAR_PLURAL], getEsperantoModel),
-          new GrammaticalItem(GRAMMATICAL_CLASSES.PREPOSITION, [GENDERS.NO_GENDER], [NUMBERS.INVARIABLE], getEsperantoModel),
-          new GrammaticalItem(GRAMMATICAL_CLASSES.PRONOUN, [GENDERS.NO_GENDER], [NUMBERS.INVARIABLE], getEsperantoModel),
-          new GrammaticalItem(GRAMMATICAL_CLASSES.VERB, [GENDERS.VERB_NO_TEMPLATE], null, getEsperantoModel),
-        ],
-        word => word.toLowerCase()
-            .replace(/c/g, "t͡s")
-            .replace(/ĉ/g, "t͡ʃ")
-            .replace(/g/g, "ɡ")
-            .replace(/ĝ/g, "d͡ʒ")
-            .replace(/ĥ/g, "x")
-            .replace(/ĵ/g, "ʒ")
-            .replace(/ŝ/g, "ʃ")
-            .replace(/ŭ/g, "w")
+      "eo",
+      "eo",
+      "epo",
+      "espéranto",
+      [
+        ["a", "e", "i", "o", "u"],
+        ["b", "d", "d͡ʒ", "f", "ɡ", "h", "k", "l", "m", "n", "p", "r", "s", "t", "t͡s", "t͡ʃ", "v", "x", "z", "ʃ", "ʒ"],
+        ["j", "w"],
+        [".", "ˈ"],
+      ],
+      [
+        new GrammaticalItem(GRAMMATICAL_CLASSES.ADJECTIVE, [GENDERS.NO_GENDER], [NUMBERS.DIFF_SINGULAR_PLURAL], getEsperantoModel),
+        new GrammaticalItem(GRAMMATICAL_CLASSES.ADVERB, [GENDERS.NO_GENDER], [NUMBERS.INVARIABLE], getEsperantoModel),
+        new GrammaticalItem(GRAMMATICAL_CLASSES.CONJUNCTION, [GENDERS.NO_GENDER], [NUMBERS.DIFF_SINGULAR_PLURAL], getEsperantoModel),
+        new GrammaticalItem(GRAMMATICAL_CLASSES.INTERJECTION, [GENDERS.NO_GENDER], [NUMBERS.INVARIABLE], getEsperantoModel),
+        new GrammaticalItem(GRAMMATICAL_CLASSES.NOUN, [GENDERS.NO_GENDER], [NUMBERS.DIFF_SINGULAR_PLURAL], getEsperantoModel),
+        new GrammaticalItem(GRAMMATICAL_CLASSES.PROPER_NOUN, [GENDERS.NO_GENDER], [NUMBERS.DIFF_SINGULAR_PLURAL], getEsperantoModel),
+        new GrammaticalItem(GRAMMATICAL_CLASSES.FIRST_NAME, [GENDERS.NO_GENDER], [NUMBERS.DIFF_SINGULAR_PLURAL], getEsperantoModel),
+        new GrammaticalItem(GRAMMATICAL_CLASSES.PREPOSITION, [GENDERS.NO_GENDER], [NUMBERS.INVARIABLE], getEsperantoModel),
+        new GrammaticalItem(GRAMMATICAL_CLASSES.PRONOUN, [GENDERS.NO_GENDER], [NUMBERS.INVARIABLE], getEsperantoModel),
+        new GrammaticalItem(GRAMMATICAL_CLASSES.VERB, [GENDERS.VERB_NO_TEMPLATE], null, getEsperantoModel),
+      ],
+      word => word.toLowerCase()
+        .replace(/c/g, "t͡s")
+        .replace(/ĉ/g, "t͡ʃ")
+        .replace(/g/g, "ɡ")
+        .replace(/ĝ/g, "d͡ʒ")
+        .replace(/ĥ/g, "x")
+        .replace(/ĵ/g, "ʒ")
+        .replace(/ŝ/g, "ʃ")
+        .replace(/ŭ/g, "w")
     )); // eo
 
     /*
@@ -2696,17 +2748,17 @@ $(function () {
      */
 
     gadget.addLanguage(new Language(
-        "conv",
-        null,
-        null,
-        "conventions internationales",
-        [],
-        [
-          new GrammaticalItem(GRAMMATICAL_CLASSES.SCIENTIFIC_NAME, [GENDERS.NO_GENDER], [NUMBERS.INVARIABLE]),
-          new GrammaticalItem(GRAMMATICAL_CLASSES.PROPER_NOUN, [GENDERS.NO_GENDER], [NUMBERS.INVARIABLE]),
-          new GrammaticalItem(GRAMMATICAL_CLASSES.SYMBOL, [GENDERS.NO_GENDER], [NUMBERS.INVARIABLE]),
-          new GrammaticalItem(GRAMMATICAL_CLASSES.ADVERB, [GENDERS.NO_GENDER], [NUMBERS.INVARIABLE]),
-        ]
+      "conv",
+      null,
+      null,
+      "conventions internationales",
+      [],
+      [
+        new GrammaticalItem(GRAMMATICAL_CLASSES.SCIENTIFIC_NAME, [GENDERS.NO_GENDER], [NUMBERS.INVARIABLE]),
+        new GrammaticalItem(GRAMMATICAL_CLASSES.PROPER_NOUN, [GENDERS.NO_GENDER], [NUMBERS.INVARIABLE]),
+        new GrammaticalItem(GRAMMATICAL_CLASSES.SYMBOL, [GENDERS.NO_GENDER], [NUMBERS.INVARIABLE]),
+        new GrammaticalItem(GRAMMATICAL_CLASSES.ADVERB, [GENDERS.NO_GENDER], [NUMBERS.INVARIABLE]),
+      ]
     )); // conv
   }
 });

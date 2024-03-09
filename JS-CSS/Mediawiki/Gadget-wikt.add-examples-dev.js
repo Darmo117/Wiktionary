@@ -15,6 +15,7 @@
  * v1.1.2 2021-09-20 Restricted to main and “Reconstruction” namespaces.
  * v1.2 2022-11-29 Better handling of multiline examples. Added checkbox to disable
  *                 the translation. Link instead of button to show the form.
+ * v1.3 2024-03-?? Add buttons to format text (bold and italic). TODO update date
  * ------------------------------------------------------------------------------------
  * [[Catégorie:JavaScript du Wiktionnaire|add-examples-dev.js]]
  * <nowiki>
@@ -29,7 +30,7 @@ $(function () {
   console.log("Chargement de Gadget-wikt.add-examples-dev.js…");
 
   var NAME = "Ajouter des exemples";
-  var VERSION = "1.2";
+  var VERSION = "1.3";
 
   var COOKIE_KEY_TEXT = "add_examples_text";
   var COOKIE_KEY_SOURCE = "add_examples_source";
@@ -147,7 +148,7 @@ $(function () {
       definitionLevel.splice(0, 0, $section.attr("id"));
 
       // Remove default edit link if present
-      var $defaultEditLink = $item.find("span.stubedit");
+      var $defaultEditLink = $item.find("span.example > span.stubedit");
       if ($defaultEditLink.length) {
         $defaultEditLink.remove();
       }
@@ -181,6 +182,57 @@ $(function () {
     this._$lastExample = $lastExample;
     this._$button = $button;
     this._$button.form = this;
+
+    var toolFactory = new OO.ui.ToolFactory();
+    var toolGroupFactory = new OO.ui.ToolGroupFactory();
+    var toolbar = new OO.ui.Toolbar(toolFactory, toolGroupFactory, {actions: true});
+
+    /**
+     * Adds a custom button to the tool factory.
+     * @param name {string} Button’s name.
+     * @param icon {string|null} Buttons’s icon name.
+     * @param progressive {boolean} Wether the icon should be marked as progressive.
+     * @param title {string} Button’s tooltip text.
+     * @param onSelect {function} Callback for when the button is clicked.
+     * @param onUpdateState {function?} Callback for when the button changes state (optional).
+     * @param displayBothIconAndLabel {boolean?} Whether both the icon and label should be displayed.
+     */
+    function generateButton(name, icon, progressive, title, onSelect, onUpdateState, displayBothIconAndLabel) {
+      /** @constructor */
+      function CustomTool() {
+        CustomTool.super.apply(this, arguments);
+      }
+
+      OO.inheritClass(CustomTool, OO.ui.Tool);
+      CustomTool.static.name = name;
+      CustomTool.static.icon = icon;
+      CustomTool.static.title = title;
+      if (progressive) {
+        CustomTool.static.flags = ["primary", "progressive"];
+      }
+      CustomTool.static.displayBothIconAndLabel = !!displayBothIconAndLabel;
+      CustomTool.prototype.onSelect = onSelect;
+      // noinspection JSUnusedGlobalSymbols
+      CustomTool.prototype.onUpdateState = onUpdateState || function () {
+        this.setActive(false);
+      };
+
+      toolFactory.register(CustomTool);
+    }
+
+    generateButton("bold", "bold", false, "Gras", function () {
+      self.formatText("bold");
+    });
+    generateButton("italic", "italic", false, "Italique", function () {
+      self.formatText("italic");
+    });
+
+    toolbar.setup([
+      {
+        type: "bar",
+        include: ["bold", "italic"],
+      },
+    ]);
 
     this._textInput = new OO.ui.MultilineTextInputWidget();
     var textInputLayout = new OO.ui.FieldLayout(this._textInput, {
@@ -251,7 +303,7 @@ $(function () {
     });
     this._loadingImage.toggle(false);
 
-    var content = [textInputLayout, sourceInputLayout, sourceURLInputLayout];
+    var content = [toolbar, textInputLayout, sourceInputLayout, sourceURLInputLayout];
     if (language !== "fr") {
       content.push(translationInputLayout, transcriptionInputLayout, disableTranslationChkLayout);
     }
@@ -278,6 +330,9 @@ $(function () {
         buttonsLayout,
       ],
     });
+
+    toolbar.initialize();
+    toolbar.emit("updateState");
   }
 
   Form.prototype = {
@@ -313,6 +368,27 @@ $(function () {
           this._transcriptionInput.setValue($.cookie(COOKIE_KEY_TRANSCRIPTION));
         }
       }
+    },
+
+    /**
+     * Format the selected text using the given effect.
+     * @param effect The effect to apply (one of "bold" or "italic").
+     */
+    formatText: function (effect) {
+      var $textInput = this._textInput.$element.find("textarea");
+      var selectedText = wikt.edit.getSelectedText($textInput);
+      var replText;
+      switch (effect) {
+        case "bold":
+          replText = "'''" + selectedText + "'''";
+          break;
+        case "italic":
+          replText = "''" + selectedText + "''";
+          break;
+        default:
+          throw new Error("Invalid effect: " + effect);
+      }
+      wikt.edit.replaceSelectedText(replText, $textInput);
     },
 
     /**
@@ -384,7 +460,8 @@ $(function () {
 
       code += "\n|lang={0}}}".format(this._language);
 
-      var sectionIDPattern = new RegExp("^" + this._language + "-(?:(flex)-)?([\\w-]+)-(\\d+)$");
+      var escapedLangCode = this._language.replace(" ", "_"); // Language codes may contain spaces
+      var sectionIDPattern = new RegExp("^" + escapedLangCode + "-(?:(flex)-)?([\\w-]+)-(\\d+)$");
       var match = sectionIDPattern.exec(this._definitionLevel[0]);
       var isInflection = match[1] === "flex";
       var sectionType = match[2];
@@ -425,10 +502,10 @@ $(function () {
           var line = lines[targetLineIndex];
           var match = sectionRegex.exec(line);
           if (match && sectionNames[sectionType].includes(match[1])
-              // Parameter "num" is absent if there is only one section for this type
-              && (line.includes("|num=" + sectionNum) || sectionNum === 1)
-              // Check whether the section is an inflection if required
-              && (isInflection === line.includes("|flexion"))) {
+            // Parameter "num" is absent if there is only one section for this type
+            && (line.includes("|num=" + sectionNum) || sectionNum === 1)
+            // Check whether the section is an inflection if required
+            && (isInflection === line.includes("|flexion"))) {
             break;
           }
         }
@@ -482,15 +559,16 @@ $(function () {
               inExample = false;
             }
           }
-          // There should be no empty line between examples,
-          if (!inExample && line_ === "") {
+          // There should be no empty line between examples
+          if (!inExample && (!lines[targetLineIndex + 1] || !lines[targetLineIndex + 1].startsWith(listMarker))) {
+            targetLineIndex++;
             break;
           }
         }
 
         // Insert new example into page content
-        var replace = /#+\*\s*{{exemple\|lang=[^|}]+}}/.test(lines[targetLineIndex - 1]);
-        if (replace) {
+        var emptyTemplate = /#+\*\s*{{exemple\s*\|\s*\|?\s*lang\s*=[^|}]+}}/.test(lines[targetLineIndex - 1]);
+        if (emptyTemplate) {
           // Replace empty template with new example
           lines.splice(targetLineIndex - 1, 1, code);
         } else {
@@ -509,7 +587,7 @@ $(function () {
             var $renderedExample = $(data).find("ul > li").html();
             var $item;
             // Insert rendered example into page
-            if (replace) {
+            if (emptyTemplate) {
               self._$lastExample.html($renderedExample);
               $item = self._$lastExample;
             } else {
@@ -534,7 +612,7 @@ $(function () {
 
       function error() {
         alert("L’exemple n’a pas pu être publié car la page a probablement été modifiée entre temps. " +
-            "Veuillez recharger la page et réessayer.");
+          "Veuillez recharger la page et réessayer.");
         $.cookie(COOKIE_KEY_TEXT, self._textInput.getValue());
         $.cookie(COOKIE_KEY_SOURCE, self._sourceInput.getValue());
         $.cookie(COOKIE_KEY_SOURCE_URL, self._sourceURLInput.getValue());

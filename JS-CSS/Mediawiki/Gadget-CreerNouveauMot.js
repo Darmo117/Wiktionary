@@ -835,22 +835,14 @@ $(function () {
          * @return {string}
          */
         function formatExample(example) {
+          if (!example.text)
+            return `#* {{exemple|lang=${langCode}}}`;
           let template = `#* {{exemple|lang=${langCode}\n | ${example.text}`;
-          if (example.translation) {
-            template += "\n | " + example.translation;
-          }
-          if (example.transcription) {
-            template += "\n | tr=" + example.transcription;
-          }
-          if (example.source) {
-            template += "\n | source=" + example.source;
-          }
-          if (example.link) {
-            template += "\n | lien=" + example.link;
-          }
-          if (example.disableTranslation) {
-            template += "\n | pas-trad=1";
-          }
+          if (example.translation) template += "\n | " + example.translation;
+          if (example.transcription) template += "\n | tr=" + example.transcription;
+          if (example.source) template += "\n | source=" + example.source;
+          if (example.link) template += "\n | lien=" + example.link;
+          if (example.disableTranslation) template += "\n | pas-trad=1";
           return template + "\n}}";
         }
 

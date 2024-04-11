@@ -883,9 +883,9 @@ $(function () {
           const lines = content.split("\n");
 
           for (const [i, line] of lines.entries()) {
-            if (/^[^=#:;\[{\s][^\s]*/.test(line)) {
+            if (/^[^=#:;\[{\s]\S*/.test(line)) {
               lines[i] = `* {{lien|${line.trim()}|${langCode}}}`;
-            } else if (/^\*\s*[^\s]+/.test(line)) {
+            } else if (/^\*\s*\S+/.test(line)) {
               lines[i] = `* {{lien|${line.substring(1).trim()}|${langCode}}}`;
             }
           }
@@ -946,7 +946,7 @@ $(function () {
               seeAlsoSection = "=== {{S|voir aussi}} ===\n";
             }
             if (projectCode === "multi-project") {
-              seeAlsoSection += `{{${templateName}|${langCode}${projectModelParams}}}`;
+              seeAlsoSection += `{{${templateName}|${langCode}${projectModelParams}}}\n`;
             } else {
               const langParam = projectData.urlDomain.includes("{0}") ? "|lang=" + langCode : "";
               seeAlsoSection += `* {{${templateName}${projectModelParams}${langParam}}}\n`;

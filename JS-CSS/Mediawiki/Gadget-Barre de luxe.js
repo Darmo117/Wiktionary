@@ -20,7 +20,7 @@ $(function () {
 
     class GadgetBarreDeLuxe {
       static NAME = "Barre de luxe";
-      static VERSION = "2.2.1";
+      static VERSION = "2.3";
 
       /**
        * Additional 2010 toolbar groups.
@@ -182,7 +182,7 @@ $(function () {
         },
         {
           tagOpen: "== {{langue|fr}} ==\n=== {{S|étymologie}} ===\n{{ébauche-étym|fr}}\n:",
-          tagClose: " {{date|?|lang=fr}}/{{siècle|?|lang=fr}}\n=== {{S|nom|fr}} ===\n{{fr-rég|}}\n'''{{subst:" + "PAGENAME}}''' {{pron||fr}} {{genre ?}}\n#\n#* ''''\n==== {{S|variantes orthographiques}} ====\n==== {{S|synonymes}} ====\n==== {{S|antonymes}} ====\n==== {{S|dérivés}} ====\n==== {{S|apparentés}} ====\n==== {{S|vocabulaire}} ====\n==== {{S|hyperonymes}} ====\n==== {{S|hyponymes}} ====\n==== {{S|méronymes}} ====\n==== {{S|holonymes}} ====\n==== {{S|traductions}} ====\n{{trad-début}}\n{{ébauche-trad}}\n{{trad-fin}}\n=== {{S|prononciation}} ===\n* {{pron||fr}}\n* {{écouter|<!--  précisez svp la ville ou la région -->||audio=|lang=}}\n==== {{S|homophones|fr}} ====\n==== {{S|paronymes}} ====\n=== {{S|anagrammes}} ===\n=== {{S|voir aussi}} ===\n* {{WP}}\n=== {{S|références}} ===\n{{clé de tri}}",
+          tagClose: " {{date|?|lang=fr}}/{{siècle|?|lang=fr}}\n=== {{S|nom|fr}} ===\n{{fr-rég|}}\n'''{{subst:" + "PAGENAME}}''' {{pron||fr}} {{genre ?}}\n#\n#* ''''\n==== {{S|variantes orthographiques}} ====\n==== {{S|synonymes}} ====\n==== {{S|antonymes}} ====\n==== {{S|dérivés}} ====\n==== {{S|apparentés}} ====\n==== {{S|vocabulaire}} ====\n==== {{S|hyperonymes}} ====\n==== {{S|hyponymes}} ====\n==== {{S|méronymes}} ====\n==== {{S|holonymes}} ====\n==== {{S|traductions}} ====\n{{trad-début}}\n{{trad-fin}}\n=== {{S|prononciation}} ===\n* {{pron||fr}}\n* {{écouter|<!--  précisez svp la ville ou la région -->||audio=|lang=}}\n==== {{S|homophones|fr}} ====\n==== {{S|paronymes}} ====\n=== {{S|anagrammes}} ===\n=== {{S|voir aussi}} ===\n* {{WP}}\n=== {{S|références}} ===\n{{clé de tri}}",
           imageFileName: "3/32/Button_anular_voto.png",
           imageFileNameOOUI: "thumb/8/81/OOjs_UI_icon_stripeFlow-ltr.svg/24px-OOjs_UI_icon_stripeFlow-ltr.svg.png",
           tooltip: "Patron long",
@@ -191,7 +191,7 @@ $(function () {
         },
         {
           tagOpen: "== {{langue|fr}} ==\n=== {{S|étymologie}} ===\n{{ébauche-étym" + "\|fr}}\n\n=== {{S|nom|fr}} ===\n{{fr-rég\|}}\n\'\'\'{{subst:" + "PAGENAME}}\'\'\' {{m}}\n# ",
-          tagClose: "\n\n==== {{S|traductions}} ====\n{{trad-début}}\n{{ébauche-trad}}\n* {{T|en}}\u00a0: {{trad|en|}}\n{{trad-fin}}\n\n=== {{S|voir aussi}} ===\n* {{WP}}",
+          tagClose: "\n\n==== {{S|traductions}} ====\n{{trad-début}}\n* {{T|en}}\u00a0: {{trad|en|}}\n{{trad-fin}}\n\n=== {{S|voir aussi}} ===\n* {{WP}}",
           imageFileName: "a/a7/Francefilm.png",
           imageFileNameOOUI: "thumb/7/71/OOjs_UI_icon_stripeSummary-ltr.svg/24px-OOjs_UI_icon_stripeSummary-ltr.svg.png",
           tooltip: "Patron court",
@@ -297,9 +297,23 @@ $(function () {
           buttonId: "desc-sort",
           group: "format",
         },
+        {
+          action: function (selectedText) {
+            const regex = /\[\[([^\[\]|#]+)(?:#([^\[\]|]*))?(?:\|([^\[\]]*))?]]/g;
+            const langCode = prompt("Code de langue");
+            return selectedText.replaceAll(regex, (match, title, anchor, text) => {
+              if (!anchor) anchor = langCode;
+              if (text && text !== title) return `{{lien|${title}|${anchor}|dif=${text}}}`;
+              return `{{lien|${title}|${anchor}}}`;
+            });
+          },
+          imageFileName: "8/8d/Btn_toolbar_link_simplify.png",
+          imageFileNameOOUI: "thumb/9/90/VisualEditor_icon_page-redirect-ltr.svg/24px-VisualEditor_icon_page-redirect-ltr.svg.png",
+          tooltip: "Remplacer les liens",
+          buttonId: "replace-links",
+          group: "links",
+        },
       ];
-
-      #goToLineTextWidget;
 
       /**
        * Creates the Deluxe bar with the default buttons if the edit toolbar is disabled,
@@ -309,7 +323,7 @@ $(function () {
         // 2010 edit toolbar
         if (mw.user.options.get("usebetatoolbar")) {
           $.when(
-              mw.loader.using("ext.wikiEditor")
+            mw.loader.using("ext.wikiEditor")
           ).then(() => {
             const groups = {};
             for (const group of this.groups) {
@@ -326,46 +340,6 @@ $(function () {
         console.log("Found {0} default buttons.".format(this.defaultButtons.length));
         // noinspection JSCheckFunctionSignatures
         this.addButtons(this.defaultButtons);
-
-        // Load "go to line" widgets
-        const $div = $(`<div id="wikiEditor-section-search" class="booklet section" rel="search"></div>`);
-        if (mw.user.options.get("usebetatoolbar")) {
-          $.when(
-              mw.loader.using("ext.wikiEditor")
-          ).then(() => $("#wikiEditor-ui-toolbar .sections").append($div));
-        } else {
-          $("#toolbar").after($div);
-        }
-
-        const section = new OO.ui.PanelLayout({
-          expanded: false,
-          framed: true,
-        });
-
-        const goToLineButton = new OO.ui.ButtonWidget({
-          label: 'Aller à la ligne',
-        });
-        goToLineButton.on("click", () => this.#goToLine());
-
-        this.#goToLineTextWidget = new OO.ui.TextInputWidget();
-        this.#goToLineTextWidget.$element.on("keypress", e => {
-          // Prevent enter key from submitting the page edit form; go to line instead
-          if (e.key === "Enter") {
-            e.preventDefault();
-            this.#goToLine();
-            return false;
-          }
-          return true;
-        });
-
-        const fieldsetLayout = new OO.ui.FieldsetLayout({
-          items: [
-            new OO.ui.ActionFieldLayout(this.#goToLineTextWidget, goToLineButton),
-          ],
-        });
-        fieldsetLayout.$element.attr("style", "margin-top: 0");
-        section.$element.append(fieldsetLayout.$element);
-        $div.html(section.$element);
       }
 
       /**
@@ -391,7 +365,7 @@ $(function () {
         // 2010 edit toolbar
         if (mw.user.options.get("usebetatoolbar")) {
           $.when(
-              mw.loader.using("ext.wikiEditor")
+            mw.loader.using("ext.wikiEditor")
           ).then(() => {
             buttons.forEach(button => {
               const buttonObject = {};
@@ -434,7 +408,7 @@ $(function () {
         } else { // MW toolbar
           // noinspection JSUnresolvedFunction
           buttons.forEach(button =>
-              mw.toolbar.addButton(GadgetBarreDeLuxe.#getButtonObject(button instanceof Array ? toObject(button) : button)));
+            mw.toolbar.addButton(GadgetBarreDeLuxe.#getButtonObject(button instanceof Array ? toObject(button) : button)));
         }
       }
 
@@ -480,17 +454,6 @@ $(function () {
         }
 
         return b;
-      }
-
-      #goToLine() {
-        const lineNb = parseInt(this.#goToLineTextWidget.getValue());
-        if (!isNaN(lineNb)) {
-          // FIXME cursor/selection does not appear if CodeMirror is not in focus
-          wikt.edit.selectLines(lineNb);
-          if (!wikt.edit.isCodeMirrorEnabled()) {
-            wikt.edit.getEditBox().focus();
-          }
-        }
       }
 
       /**

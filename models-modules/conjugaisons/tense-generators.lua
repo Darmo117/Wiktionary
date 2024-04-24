@@ -67,6 +67,8 @@ p.mutationTypes = {
   MUTATION_AYER_YE,
   MUTATION_I,
 }
+--- All available template group-3 verb endings, indexed by the template verb.
+p.group3Templates = mw.loadData("Module:group3-templates")
 
 --- Generate a list of group-1 verb endings of the form `<firstLetter><consonants>er`.
 --- @param firstLetter string The first letter.
@@ -465,9 +467,10 @@ end
 
 --- Generate the simple tense forms of the given group-3 verb.
 --- @param infinitive string The infinitive form of the verb.
+--- @param template string The verb the given one should be conjugated like.
 --- @return table A table containing all simple tense forms of the verb.
 --- @see [[Conjugaison:français/Troisième groupe]] for sub-types.
-function p.generateGroup3Forms(infinitive)
+function p.generateGroup3Forms(infinitive, template)
   if infinitive == "être" then
     return p.etreConj
   elseif infinitive == "avoir" then
@@ -483,8 +486,12 @@ end
 --- @param infinitive string The infinitive form of the verb.
 --- @param group3 boolean If true, the verb will be classified as belonging to group 3.
 --- @param mutationType string The type of mutation to apply to the verb’s root instead of the default one.
+--- @param template string For group-3 verbs, the verb the given one should be conjugated like.
 --- @return (table, number) A tuple with a table containing all simple tense forms of the verb, and the verb’s group.
-function p.generateFlexions(infinitive, group3, mutationType)
+function p.generateFlexions(infinitive, group3, mutationType, template)
+  if mutationType and template then
+    error("Les paramètres « mutation » et « modèle » ne peuvent pas être spécifiés en même temps.")
+  end
   if infinitive == "être" then
     if mutationType then
       invalidMutationType(mutationType)
@@ -518,7 +525,7 @@ function p.generateFlexions(infinitive, group3, mutationType)
     invalidMutationType(mutationType)
   end
 
-  return p.generateGroup3Forms(infinitive), 3
+  return p.generateGroup3Forms(infinitive, template), 3
 end
 
 return p

@@ -129,7 +129,7 @@
      *
      * @param {Object} parameters
      * @param {Object} [ajaxOptions]
-     * @return {jQuery.Promise}
+     * @return {Promise}
      */
     get: function ( parameters, ajaxOptions ) {
       ajaxOptions = ajaxOptions || {};
@@ -142,7 +142,7 @@
      *
      * @param {Object} parameters
      * @param {Object} [ajaxOptions]
-     * @return {jQuery.Promise}
+     * @return {Promise}
      */
     post: function ( parameters, ajaxOptions ) {
       ajaxOptions = ajaxOptions || {};
@@ -183,7 +183,7 @@
      *
      * @param {Object} parameters
      * @param {Object} [ajaxOptions]
-     * @return {jQuery.Promise} Done: API response data and the jqXHR object.
+     * @return {Promise} Done: API response data and the jqXHR object.
      *  Fail: Error code
      */
     ajax: function ( parameters, ajaxOptions ) {
@@ -301,7 +301,7 @@
      * @param {string} tokenType The name of the token, like options or edit.
      * @param {Object} params API parameters
      * @param {Object} [ajaxOptions]
-     * @return {jQuery.Promise} See #post
+     * @return {Promise} See #post
      * @since 1.22
      */
     postWithToken: function ( tokenType, params, ajaxOptions ) {
@@ -362,7 +362,7 @@
      * @param {string} type Token type
      * @param {Object|string} [additionalParams] Additional parameters for the API (since 1.35).
      *   When given a string, it's treated as the 'assert' parameter (since 1.25).
-     * @return {jQuery.Promise} Received token.
+     * @return {Promise} Received token.
      */
     getToken: function ( type, additionalParams ) {
       var apiPromise, promiseGroup, d, reject;

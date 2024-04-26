@@ -308,7 +308,7 @@ $(function () {
             });
           },
           promptText: "Langue",
-          promptDefault: "fr",
+          promptDefault: "",
           imageFileName: "8/8d/Btn_toolbar_link_simplify.png",
           imageFileNameOOUI: "thumb/9/90/VisualEditor_icon_page-redirect-ltr.svg/24px-VisualEditor_icon_page-redirect-ltr.svg.png",
           tooltip: "Remplacer les liens",

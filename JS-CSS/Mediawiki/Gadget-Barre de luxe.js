@@ -298,15 +298,16 @@ $(function () {
           group: "format",
         },
         {
-          action: function (selectedText) {
+          action: function (selectedText, language) {
             const regex = /\[\[([^\[\]|#]+)(?:#([^\[\]|]*))?(?:\|([^\[\]]*))?]]/g;
-            const langCode = prompt("Code de langue");
             return selectedText.replaceAll(regex, (match, title, anchor, text) => {
-              if (!anchor) anchor = langCode;
+              if (!anchor) anchor = language;
               if (text && text !== title) return `{{lien|${title}|${anchor}|dif=${text}}}`;
               return `{{lien|${title}|${anchor}}}`;
             });
           },
+          promptText: "Langue",
+          promptDefault: "fr",
           imageFileName: "8/8d/Btn_toolbar_link_simplify.png",
           imageFileNameOOUI: "thumb/9/90/VisualEditor_icon_page-redirect-ltr.svg/24px-VisualEditor_icon_page-redirect-ltr.svg.png",
           tooltip: "Remplacer les liens",
@@ -323,7 +324,7 @@ $(function () {
         // 2010 edit toolbar
         if (mw.user.options.get("usebetatoolbar")) {
           $.when(
-            mw.loader.using("ext.wikiEditor")
+              mw.loader.using("ext.wikiEditor")
           ).then(() => {
             const groups = {};
             for (const group of this.groups) {
@@ -365,7 +366,7 @@ $(function () {
         // 2010 edit toolbar
         if (mw.user.options.get("usebetatoolbar")) {
           $.when(
-            mw.loader.using("ext.wikiEditor")
+              mw.loader.using("ext.wikiEditor")
           ).then(() => {
             buttons.forEach(button => {
               const buttonObject = {};
@@ -408,7 +409,7 @@ $(function () {
         } else { // MW toolbar
           // noinspection JSUnresolvedFunction
           buttons.forEach(button =>
-            mw.toolbar.addButton(GadgetBarreDeLuxe.#getButtonObject(button instanceof Array ? toObject(button) : button)));
+              mw.toolbar.addButton(GadgetBarreDeLuxe.#getButtonObject(button instanceof Array ? toObject(button) : button)));
         }
       }
 

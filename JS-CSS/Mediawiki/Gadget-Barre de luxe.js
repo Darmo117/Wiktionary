@@ -300,9 +300,11 @@ $(function () {
         {
           action: function (selectedText, language) {
             const regex = /\[\[([^\[\]|#]+)(?:#([^\[\]|]*))?(?:\|([^\[\]]*))?]]/g;
+            language = language.trim();
             return selectedText.replaceAll(regex, (match, title, anchor, text) => {
-              if (text && text !== title) return `{{lien|${title}|${language}|dif=${text}}}`;
-              return `{{lien|${title}|${language}}}`;
+              if (!anchor) anchor = language;
+              if (text && text !== title) return `{{lien|${title}|${anchor}|dif=${text}}}`;
+              return `{{lien|${title}|${anchor}}}`;
             });
           },
           promptText: "Langue",
@@ -440,7 +442,7 @@ $(function () {
             const selectedText = wikt.edit.getSelectedText();
             if (button.promptText) {
               const inputText = prompt(button.promptText, button.promptDefault).trim();
-              if (inputText) {
+              if (inputText !== null) { // prompt returns null only if the user cancels the dialog
                 const result = button.action(selectedText, inputText);
                 wikt.edit.replaceSelectedText(result);
               }

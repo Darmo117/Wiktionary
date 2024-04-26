@@ -301,9 +301,8 @@ $(function () {
           action: function (selectedText, language) {
             const regex = /\[\[([^\[\]|#]+)(?:#([^\[\]|]*))?(?:\|([^\[\]]*))?]]/g;
             return selectedText.replaceAll(regex, (match, title, anchor, text) => {
-              if (!anchor) anchor = language;
-              if (text && text !== title) return `{{lien|${title}|${anchor}|dif=${text}}}`;
-              return `{{lien|${title}|${anchor}}}`;
+              if (text && text !== title) return `{{lien|${title}|${language}|dif=${text}}}`;
+              return `{{lien|${title}|${language}}}`;
             });
           },
           promptText: "Langue",

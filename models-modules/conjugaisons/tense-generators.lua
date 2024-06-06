@@ -70,6 +70,39 @@ p.mutationTypes = {
 --- All available template group-3 verb endings, indexed by the template verb.
 p.group3Templates = mw.loadData("Module:conjugaisons/group3-templates")
 
+--- Sentinel object representing an empty value
+p.EMPTY_OBJECT = {}
+
+--- Instanciate a new verb table containing empty values for all simple tenses.
+--- @return table A new table.
+function p.createEmptyTemplate()
+  return {
+    infinitif = {
+      present = p.EMPTY_OBJECT,
+    },
+    participe = {
+      present = p.EMPTY_OBJECT,
+      passe = p.EMPTY_OBJECT,
+    },
+    indicatif = {
+      present = { p.EMPTY_OBJECT, p.EMPTY_OBJECT, p.EMPTY_OBJECT, p.EMPTY_OBJECT, p.EMPTY_OBJECT, p.EMPTY_OBJECT },
+      imparfait = { p.EMPTY_OBJECT, p.EMPTY_OBJECT, p.EMPTY_OBJECT, p.EMPTY_OBJECT, p.EMPTY_OBJECT, p.EMPTY_OBJECT },
+      passeSimple = { p.EMPTY_OBJECT, p.EMPTY_OBJECT, p.EMPTY_OBJECT, p.EMPTY_OBJECT, p.EMPTY_OBJECT, p.EMPTY_OBJECT },
+      futur = { p.EMPTY_OBJECT, p.EMPTY_OBJECT, p.EMPTY_OBJECT, p.EMPTY_OBJECT, p.EMPTY_OBJECT, p.EMPTY_OBJECT },
+    },
+    subjonctif = {
+      present = { p.EMPTY_OBJECT, p.EMPTY_OBJECT, p.EMPTY_OBJECT, p.EMPTY_OBJECT, p.EMPTY_OBJECT, p.EMPTY_OBJECT },
+      imparfait = { p.EMPTY_OBJECT, p.EMPTY_OBJECT, p.EMPTY_OBJECT, p.EMPTY_OBJECT, p.EMPTY_OBJECT, p.EMPTY_OBJECT },
+    },
+    conditionnel = {
+      present = { p.EMPTY_OBJECT, p.EMPTY_OBJECT, p.EMPTY_OBJECT, p.EMPTY_OBJECT, p.EMPTY_OBJECT, p.EMPTY_OBJECT },
+    },
+    imperatif = {
+      present = { p.EMPTY_OBJECT, p.EMPTY_OBJECT, p.EMPTY_OBJECT },
+    },
+  }
+end
+
 --- Generate a list of group-1 verb endings of the form `<firstLetter><consonants>er`.
 --- @param firstLetter string The first letter.
 --- @param consonants string[] The list of consonnants to generate endings with.
@@ -486,44 +519,72 @@ end
 --- Generate the simple tense forms of the given group-3 verb.
 --- @param infinitive string The infinitive form of the verb.
 --- @param templateVerb string|nil The verb the given one should be conjugated like.
+--- @param specifiedForms table A table with the same structure as the returned table,
+---   that may contain forms to use instead of the generated ones.
 --- @return table A table containing all simple tense forms of the verb.
 --- @see [[Conjugaison:français/Troisième groupe]] for sub-types.
-function p.generateGroup3Forms(infinitive, templateVerb)
+function p.generateGroup3Forms(infinitive, templateVerb, specifiedForms)
   if infinitive == "être" then
     return p.etreConj
-  elseif infinitive == "avoir" then
+  end
+  if infinitive == "avoir" then
     return p.avoirConj
-  else
-    local template
-    if templateVerb then
-      if not p.group3Templates[templateVerb] then
-        error(mw.ustring.format('Modèle de verbe inconnu&nbsp;: "%s"', templateVerb))
-      end
-      template = p.group3Templates[templateVerb]
-      if mw.ustring.sub(infinitive, -mw.ustring.len(template.ending)) ~= template.ending then
-        error(mw.ustring.format('Le verbe "%s" ne se termine pas par "%s"', infinitive, template.ending))
-      end
-    elseif p.group3Templates[infinitive] then
-      template = p.group3Templates[infinitive]
-    else
-      template = longestMatchingGroup3Template(infinitive)
+  end
+
+  local template
+  if templateVerb then
+    if not p.group3Templates[templateVerb] then
+      error(mw.ustring.format('Modèle de verbe inconnu&nbsp;: "%s"', templateVerb))
     end
-    local root = mw.ustring.sub(infinitive, 1, -mw.ustring.len(template.ending) - 1)
-    local forms = {}
-    for mode, tenses in pairs(template.endings) do
-      forms[mode] = {}
-      for tense, tenseEndings in pairs(tenses) do
-        if type(tenseEndings) == "string" then
-          forms[mode][tense] = root .. tenseEndings
-        else
-          forms[mode][tense] = {}
-          for _, ending in ipairs(tenseEndings) do
-            table.insert(forms[mode][tense], root .. ending)
+    template = p.group3Templates[templateVerb]
+    if mw.ustring.sub(infinitive, -mw.ustring.len(template.ending)) ~= template.ending then
+      error(mw.ustring.format('Le verbe "%s" ne se termine pas par "%s"', infinitive, template.ending))
+    end
+  elseif p.group3Templates[infinitive] then
+    template = p.group3Templates[infinitive]
+  else
+    template = longestMatchingGroup3Template(infinitive)
+  end
+  if not template then
+    error(mw.ustring.format('Aucun modèle de conjugaison trouvé pour le verbe "%s"', infinitive))
+  end
+
+  local root = mw.ustring.sub(infinitive, 1, -mw.ustring.len(template.ending) - 1)
+  local forms = {}
+  for mode, tenses in pairs(template.endings) do
+    forms[mode] = {}
+    for tense, tenseEndings in pairs(tenses) do
+      if type(tenseEndings) == "string" then
+        forms[mode][tense] = specifiedForms[mode][tense] ~= p.EMPTY_OBJECT and specifiedForms[mode][tense] or (root .. tenseEndings)
+      else
+        forms[mode][tense] = {}
+        for i, ending in ipairs(tenseEndings) do
+          table.insert(forms[mode][tense], specifiedForms[mode][tense][i] ~= p.EMPTY_OBJECT and specifiedForms[mode][tense][i] or (root .. ending))
+        end
+      end
+    end
+  end
+  return forms
+end
+
+--- Substitute all flexions from the left table with the ones from the right one.
+--- @param flexions table The table to modify.
+--- @param specifiedForms table The table to pull substitute flexions from.
+local function substituteFlexions(flexions, specifiedForms)
+  for mode, tenses in pairs(flexions) do
+    for tense, tenseEndings in pairs(tenses) do
+      if type(tenseEndings) == "string" then
+        if specifiedForms[mode][tense] ~= p.EMPTY_OBJECT then
+          flexions[mode][tense] = specifiedForms[mode][tense]
+        end
+      else
+        for i, _ in ipairs(tenseEndings) do
+          if specifiedForms[mode][tense][i] ~= p.EMPTY_OBJECT then
+            flexions[mode][tense][i] = specifiedForms[mode][tense][i]
           end
         end
       end
     end
-    return forms
   end
 end
 
@@ -532,8 +593,10 @@ end
 --- @param group3 boolean If true, the verb will be classified as belonging to group 3.
 --- @param mutationType string The type of mutation to apply to the verb’s root instead of the default one.
 --- @param template string|nil For group-3 verbs, the verb the given one should be conjugated like.
+--- @param specifiedForms table A table with the same structure as the returned table,
+---   that may contain forms to use instead of the generated ones.
 --- @return (table, number) A tuple with a table containing all simple tense forms of the verb, and the verb’s group.
-function p.generateFlexions(infinitive, group3, mutationType, template)
+function p.generateFlexions(infinitive, group3, mutationType, template, specifiedForms)
   if mutationType and template then
     error("Les paramètres « mutation » et « modèle » ne peuvent pas être spécifiés en même temps.")
   end
@@ -557,20 +620,28 @@ function p.generateFlexions(infinitive, group3, mutationType, template)
     if mutationType and mutationType ~= MUTATION_I then
       invalidMutationType(mutationType)
     end
-    return p.generateGroup2Forms(infinitive, mutationType == MUTATION_I), 2
+    local flexions = p.generateGroup2Forms(infinitive, mutationType == MUTATION_I)
+    substituteFlexions(flexions, specifiedForms)
+    return flexions, 2
   end
   if mutationType and mutationType == MUTATION_I then
     invalidMutationType(mutationType)
   end
 
   if not group3 and ending == "er" then
-    return p.generateGroup1Forms(infinitive, mutationType), 1
+    local flexions = p.generateGroup1Forms(infinitive, mutationType)
+    substituteFlexions(flexions, specifiedForms)
+    return flexions, 1
   end
   if mutationType and mutationType == MUTATION_DOUBLE_CONS or mutationType == MUTATION_AYER_YE then
     invalidMutationType(mutationType)
   end
 
-  return p.generateGroup3Forms(infinitive, template), 3
+  if template == "-" then
+    specifiedForms.infinitif.present = infinitive
+    return specifiedForms, 3
+  end
+  return p.generateGroup3Forms(infinitive, template, specifiedForms), 3
 end
 
 return p

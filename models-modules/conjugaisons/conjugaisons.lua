@@ -139,13 +139,13 @@ local function generateImpersonalTable(verbTable, reflexive, aspiratedH)
                :wikitext("[[infinitif#fr|Infinitif]]")
   infinitiveRow:tag("td")
                :attr("style", "width: 23%; text-align: right")
-               :wikitext(reflexive and getReflexivePronoun(3, not aspiratedH and requiresLiaison(verbTable.infinitif.present)) or "")
+               :wikitext(reflexive and getReflexivePronoun(3, requiresLiaison(verbTable.infinitif.present, aspiratedH)) or "")
   infinitiveRow:tag("td")
                :attr("style", "width: 23%; text-align: left")
                :wikitext(link(verbTable.infinitif.present))
   infinitiveRow:tag("td")
                :attr("style", "width: 23%; text-align: right")
-               :wikitext(reflexive and getReflexivePronoun(3, requiresLiaison(verbTable.infinitif.passe)) or "")
+               :wikitext(reflexive and getReflexivePronoun(3, requiresLiaison(verbTable.infinitif.passe, aspiratedH)) or "")
   infinitiveRow:tag("td")
                :attr("style", "width: 23%; text-align: left")
                :wikitext(verbTable.infinitif.passe)
@@ -156,13 +156,13 @@ local function generateImpersonalTable(verbTable, reflexive, aspiratedH)
            :wikitext("[[gérondif#fr|Gérondif]]")
   gerundRow:tag("td")
            :attr("style", "text-align: right")
-           :wikitext("en&nbsp;" .. (reflexive and getReflexivePronoun(3, not aspiratedH and requiresLiaison(verbTable.gerondif.present)) or ""))
+           :wikitext("en&nbsp;" .. (reflexive and getReflexivePronoun(3, requiresLiaison(verbTable.gerondif.present, aspiratedH)) or ""))
   gerundRow:tag("td")
            :attr("style", "text-align: left")
            :wikitext(link(verbTable.gerondif.present))
   gerundRow:tag("td")
            :attr("style", "text-align: right")
-           :wikitext("en&nbsp;" .. (reflexive and getReflexivePronoun(3, requiresLiaison(verbTable.gerondif.passe)) or ""))
+           :wikitext("en&nbsp;" .. (reflexive and getReflexivePronoun(3, requiresLiaison(verbTable.gerondif.passe, aspiratedH)) or ""))
   gerundRow:tag("td")
            :attr("style", "text-align: left")
            :wikitext(verbTable.gerondif.passe)
@@ -350,10 +350,13 @@ end
 local function renderPage(verbTable, group, reflexive, aspiratedH)
   local page = mw.html.create()
 
-  -- TODO ajouter pronom réflexif si "reflexive == true"
+  local infinitive = verbTable.infinitif.present
+  if reflexive then
+    infinitive = getReflexivePronoun(3, requiresLiaison(infinitive, aspiratedH)) .. infinitive
+  end
   page:wikitext(mw.ustring.format(
       "Conjugaison de '''%s''', ''verbe %s du %s, conjugé avec l’auxiliaire %s''.",
-      link(verbTable.infinitif.present), reflexive and "pronominal" or "", formatGroup(group), link(verbTable.auxiliaire)
+      link(infinitive), reflexive and "pronominal" or "", formatGroup(group), link(verbTable.auxiliaire)
   ))
 
   -- FIXME espace après apostrophe des pronoms contractés et avant tiret de l’impératif pronominal
@@ -423,10 +426,10 @@ function p.conj(frame)
     error(mw.ustring.format('Le verbe "%s" ne commence pas par un "h"', infinitive))
   end
   -- TODO autres fonctionnalités :
-  -- * flexions entières (kécécé ?)
-  -- * radicaux de flexions (kécécé ?)
+  -- * spécifier flexions entières
+  -- * spécifier radicaux de flexions (kécécé ?)
   -- * modes/temps/personnes défectives/rares
-  -- * verbes doubles/triples (ex : [[moissonner-battre]], [[copier-coller-voler]]), pas de groupe
+  -- * verbes doubles/triples (ex : [[moissonner-battre]], [[copier-coller-voler]]), pas de groupe pour ceux comportant plusieurs groupes différents
   local simpleTenses, actualGroup = m_gen.generateFlexions(infinitive, group3, mutationType, template)
   return renderPage(completeTable(auxiliary, simpleTenses), actualGroup, reflexive, aspiratedH)
 end

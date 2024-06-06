@@ -743,9 +743,7 @@ $(function () {
           wikt.cookie.create(GadgetCreerNouveauMot.#COOKIE_NAME, language.code, GadgetCreerNouveauMot.#COOKIE_DURATION);
           this.#mainGUI.selectLanguage(this.#selectedLanguage);
 
-          if (!this.#mainGUI.pronunciation) {
-            this.#mainGUI.pronunciation = language.generatePronunciation(this.#word);
-          }
+          this.#mainGUI.pronunciation = language.generatePronunciation(this.#word);
         }
       }
 
@@ -2721,14 +2719,15 @@ $(function () {
         [
           new GrammaticalItem(GRAMMATICAL_CLASSES.ADJECTIVE, [GENDERS.NO_GENDER], [NUMBERS.DIFF_SINGULAR_PLURAL], getEsperantoModel),
           new GrammaticalItem(GRAMMATICAL_CLASSES.ADVERB, [GENDERS.NO_GENDER], [NUMBERS.INVARIABLE], getEsperantoModel),
-          new GrammaticalItem(GRAMMATICAL_CLASSES.CONJUNCTION, [GENDERS.NO_GENDER], [NUMBERS.DIFF_SINGULAR_PLURAL], getEsperantoModel),
-          new GrammaticalItem(GRAMMATICAL_CLASSES.INTERJECTION, [GENDERS.NO_GENDER], [NUMBERS.INVARIABLE], getEsperantoModel),
           new GrammaticalItem(GRAMMATICAL_CLASSES.NOUN, [GENDERS.NO_GENDER], [NUMBERS.DIFF_SINGULAR_PLURAL], getEsperantoModel),
           new GrammaticalItem(GRAMMATICAL_CLASSES.PROPER_NOUN, [GENDERS.NO_GENDER], [NUMBERS.DIFF_SINGULAR_PLURAL], getEsperantoModel),
+          new GrammaticalItem(GRAMMATICAL_CLASSES.VERB, [GENDERS.VERB_NO_TEMPLATE], null, getEsperantoModel),
+
+          new GrammaticalItem(GRAMMATICAL_CLASSES.CONJUNCTION, [GENDERS.NO_GENDER], [NUMBERS.DIFF_SINGULAR_PLURAL], getEsperantoModel),
+          new GrammaticalItem(GRAMMATICAL_CLASSES.INTERJECTION, [GENDERS.NO_GENDER], [NUMBERS.INVARIABLE], getEsperantoModel),
           new GrammaticalItem(GRAMMATICAL_CLASSES.FIRST_NAME, [GENDERS.NO_GENDER], [NUMBERS.DIFF_SINGULAR_PLURAL], getEsperantoModel),
           new GrammaticalItem(GRAMMATICAL_CLASSES.PREPOSITION, [GENDERS.NO_GENDER], [NUMBERS.INVARIABLE], getEsperantoModel),
           new GrammaticalItem(GRAMMATICAL_CLASSES.PRONOUN, [GENDERS.NO_GENDER], [NUMBERS.INVARIABLE], getEsperantoModel),
-          new GrammaticalItem(GRAMMATICAL_CLASSES.VERB, [GENDERS.VERB_NO_TEMPLATE], null, getEsperantoModel),
         ],
         word => word.toLowerCase()
             .replace(/c/g, "t͡s")

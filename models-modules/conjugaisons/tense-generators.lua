@@ -1,6 +1,8 @@
+local m_group3Templates = require("Module:conjugaisons/group3-templates")
+
 local p = {}
 
---- Conjugation of the `avoir` auxiliary verb.
+--- Conjugation of the "avoir" auxiliary verb.
 p.avoirConj = {
   infinitif = {
     present = "avoir",
@@ -26,7 +28,7 @@ p.avoirConj = {
     present = { "aie", "ayons", "ayez" }
   },
 }
---- Conjugation of the `être` auxiliary verb.
+--- Conjugation of the "être" auxiliary verb.
 p.etreConj = {
   infinitif = {
     present = "être",
@@ -53,11 +55,11 @@ p.etreConj = {
   },
 }
 
---- For group-1 verbs ending in `-eler/-eter`, mutate the root in `-ell-/-ett-` instead of `-èl-/-èt-`.
+--- For group-1 verbs ending in "-eler/-eter", mutate the root in "-ell-/-ett-" instead of "-èl-/-èt-".
 local MUTATION_DOUBLE_CONS = "double consonne"
---- For group-1 verbs ending in `-ayer`, keep the `y` instead of mutating it to `i` before silent endings.
+--- For group-1 verbs ending in "-ayer", keep the "y" instead of mutating it to "i" before silent endings.
 local MUTATION_AYER_YE = "ayer-ye"
---- For group-2 verbs ending in `-ïr`, replace the `ï` by a `i` for the 3 singular persons of indicative
+--- For group-2 verbs ending in "-ïr", replace the "ï" by a "i" for the 3 singular persons of indicative
 --- and the singular imperative present.
 local MUTATION_I = "ï-i"
 
@@ -68,7 +70,7 @@ p.mutationTypes = {
   MUTATION_I,
 }
 --- All available template group-3 verb endings, indexed by the template verb.
-p.group3Templates = mw.loadData("Module:group3-templates")
+p.group3Templates = mw.loadData("Module:conjugaisons/group3-templates")
 
 --- Generate a list of group-1 verb endings of the form `<firstLetter><consonants>er`.
 --- @param firstLetter string The first letter.
@@ -130,9 +132,9 @@ local function invalidMutationType(mutationType)
   error(mw.ustring.format('Valeur invalide pour le paramètre « mutation » ("%s").', mutationType))
 end
 
---- Check whether the given string starts with an `a`, `â` or `o`.
+--- Check whether the given string starts with an "a", "â" or "o".
 --- @param s string The string to check.
---- @return boolean True if the string starts with `a`, `â` or `o`, false otherwise.
+--- @return boolean True if the string starts with "a", "â" or "o", false otherwise.
 local function startsWithAO(s)
   local firstLetter = mw.ustring.sub(s, 1, 1)
   return firstLetter == "a" or firstLetter == "â" or firstLetter == "o"
@@ -243,7 +245,7 @@ end
 --- Mutate the given group-1 verb root according to the given ending.
 --- @param root string The verb’s root.
 --- @param ending string A verb ending.
---- @return string The mutated root if it ends in `g` or `c`, the argument root otherwise.
+--- @return string The mutated root if it ends in "g" or "c", the argument root otherwise.
 local function mutateRoot_cer_ger(root, ending)
   local lastLetter = mw.ustring.sub(root, -1)
   if lastLetter ~= "g" and lastLetter ~= "c" then
@@ -264,8 +266,8 @@ end
 
 --- Generate the simple tense forms of the given group-1 verb ending in `[eè]<consonant(s)>er`.
 --- @param infinitive string The infinitive form of the verb.
---- @param consonants string The consonant(s) that precede the mutating `e`.
---- @param doubleConsonant boolean True to double the consonant instead of mutating the `e/é` into an `è`.
+--- @param consonants string The consonant(s) that precede the mutating "e".
+--- @param doubleConsonant boolean True to double the consonant instead of mutating the "e/é" into an "è".
 --- @return table A table containing all simple tense forms of the verb.
 local function generateGroup1Forms_eCONSer(infinitive, consonants, doubleConsonant)
   if doubleConsonant and consonants ~= "l" and consonants ~= "t" then
@@ -282,8 +284,8 @@ end
 
 --- Generate the simple tense forms of the given group-1 verb ending in `[aeou]yer`.
 --- @param infinitive string The infinitive form of the verb.
---- @param mutateYe boolean If the verb ends in `ayer` and this argument is true the `y`
----        in the root is mutated as `i` before neutral endings.
+--- @param mutateYe boolean If the verb ends in "-ayer" and this argument is true the "y"
+---        in the root is mutated as "i" before neutral endings.
 --- @return table A table containing all simple tense forms of the verb.
 local function generateGroup1Forms_yer(infinitive, mutateYe)
   local base = mw.ustring.sub(infinitive, 1, -4)
@@ -304,7 +306,7 @@ local function generateGroup1Forms_yer(infinitive, mutateYe)
   end)
 end
 
---- Generate the simple tense forms of the given group-1 verb ending in `envoyer`.
+--- Generate the simple tense forms of the given group-1 verb ending in "envoyer".
 --- @param infinitive string The infinitive form of the verb.
 --- @return table A table containing all simple tense forms of the verb.
 local function generateGroup1Forms_envoyer(infinitive)
@@ -373,7 +375,7 @@ end
 
 --- Generate the simple tense forms of the given group-2 verb.
 --- @param infinitive string The infinitive form of the verb.
---- @param dropDiaeresis boolean Whether to drop the `ï`
+--- @param dropDiaeresis boolean Whether to drop the "ï"
 ---        for the 3 singular persons of indicative and imperative present.
 --- @return table A table containing all simple tense forms of the verb.
 --- @see [[Conjugaison:français/Deuxième groupe]] for exceptions.
@@ -465,20 +467,54 @@ function p.generateGroup2Forms(infinitive, dropDiaeresis)
   }
 end
 
+--- Looks for the group-3 template whose ending has the longest match with the given infinitive.
+--- @param infinitive string The infinitive form of the verb.
+--- @return table The group-3 template that matched the best.
+local function longestMatchingGroup3Template(infinitive)
+  local longestMatch
+  local longestMatchLength = 0
+  for _, template in pairs(m_group3Templates) do
+    local len = mw.ustring.len(template.ending)
+    if mw.ustring.gmatch(infinitive, template.ending .. "$") and (not longestMatch or longestMatchLength < len) then
+      longestMatch = template
+      longestMatchLength = len
+    end
+  end
+end
+
 --- Generate the simple tense forms of the given group-3 verb.
 --- @param infinitive string The infinitive form of the verb.
---- @param template string The verb the given one should be conjugated like.
+--- @param templateVerb string|nil The verb the given one should be conjugated like.
 --- @return table A table containing all simple tense forms of the verb.
 --- @see [[Conjugaison:français/Troisième groupe]] for sub-types.
-function p.generateGroup3Forms(infinitive, template)
+function p.generateGroup3Forms(infinitive, templateVerb)
   if infinitive == "être" then
     return p.etreConj
   elseif infinitive == "avoir" then
     return p.avoirConj
   else
-    -- TODO détecter type de verbe et génerer en fonction
-    -- cf. https://fr.wiktionary.org/wiki/Conjugaison:fran%C3%A7ais/Troisi%C3%A8me_groupe
-    return {}
+    local template
+    if templateVerb and m_group3Templates[templateVerb] then
+      template = m_group3Templates[templateVerb]
+    else
+      template = longestMatchingGroup3Template(infinitive)
+    end
+    local root = mw.ustring.sub(infinitive, 1, -mw.ustring.len(template.ending) - 1)
+    local forms = {}
+    for mode, tenses in pairs(template.endings) do
+      forms[mode] = {}
+      for tense, tenseEndings in pairs(tenses) do
+        if type(tenseEndings) == "string" then
+          forms[mode][tense] = root .. tenseEndings
+        else
+          forms[mode][tense] = {}
+          for _, ending in ipairs(tenseEndings) do
+            table.insert(forms[mode][tense], root .. ending)
+          end
+        end
+      end
+    end
+    return forms
   end
 end
 
@@ -486,7 +522,7 @@ end
 --- @param infinitive string The infinitive form of the verb.
 --- @param group3 boolean If true, the verb will be classified as belonging to group 3.
 --- @param mutationType string The type of mutation to apply to the verb’s root instead of the default one.
---- @param template string For group-3 verbs, the verb the given one should be conjugated like.
+--- @param template string|nil For group-3 verbs, the verb the given one should be conjugated like.
 --- @return (table, number) A tuple with a table containing all simple tense forms of the verb, and the verb’s group.
 function p.generateFlexions(infinitive, group3, mutationType, template)
   if mutationType and template then

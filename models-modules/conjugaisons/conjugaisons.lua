@@ -145,7 +145,7 @@ local function generateImpersonalTable(verbTable, reflexive)
                :wikitext(reflexive and getReflexivePronoun(3, requiresLiaison(verbTable.infinitif.passe)) or "")
   infinitiveRow:tag("td")
                :attr("style", "width: 23%; text-align: left")
-               :wikitext(link(verbTable.infinitif.passe))
+               :wikitext(verbTable.infinitif.passe)
 
   local gerundRow = tableElement:tag("tr")
   gerundRow:tag("th")
@@ -162,7 +162,7 @@ local function generateImpersonalTable(verbTable, reflexive)
            :wikitext("en&nbsp;" .. (reflexive and getReflexivePronoun(3, requiresLiaison(verbTable.gerondif.passe)) or ""))
   gerundRow:tag("td")
            :attr("style", "text-align: left")
-           :wikitext(link(verbTable.gerondif.passe))
+           :wikitext(verbTable.gerondif.passe)
 
   local participleRow = tableElement:tag("tr")
   participleRow:tag("th")
@@ -206,7 +206,7 @@ local function generateTensesRows(simpleTense, title1, color1, composedTense, ti
   --- @param person number The index of the pronoun.
   --- @param verb string The verb form.
   --- @return string The pronoun sequence
-  function pronounSequence(person, verb)
+  local function pronounSequence(person, verb)
     local liaison = requiresLiaison(verb)
     local ps
     if reflexive then
@@ -236,7 +236,7 @@ local function generateTensesRows(simpleTense, title1, color1, composedTense, ti
        :wikitext(pronounSequence(i, composed))
     row:tag("td")
        :attr("style", "width: 25%; text-align: left")
-       :wikitext(link(composed))
+       :wikitext(composed)
   end
 end
 
@@ -310,7 +310,7 @@ local function generateImperativeTable(verbTable, reflexive)
          :wikitext(reflexive and ("-" .. imperativePronouns[i]) or "")
     end
     row:tag("td")
-       :wikitext(reflexive and undefined or link(verbTable.imperatif.passe[i]))
+       :wikitext(reflexive and undefined or verbTable.imperatif.passe[i])
   end
 
   return tostring(tableElement)
@@ -342,10 +342,13 @@ end
 local function renderPage(verbTable, group, reflexive)
   local page = mw.html.create()
 
+  -- TODO ajouter pronom réflexif si "reflexive == true"
   page:wikitext(mw.ustring.format(
       "Conjugaison de '''%s''', ''verbe %s du %s, conjugé avec l’auxiliaire %s''.",
       link(verbTable.infinitif.present), reflexive and "pronominal" or "", formatGroup(group), link(verbTable.auxiliaire)
   ))
+
+  -- FIXME espace après apostrophe des pronoms contractés
 
   page:tag("h3")
       :wikitext("Modes impersonnels")
@@ -405,11 +408,12 @@ function p.conj(frame)
   local group3 = args["groupe3"]
   local mutationType = args["mutation"]
   local template = args["modèle"]
-  -- TODO autres paramètres :
+  -- TODO autres fonctionnalités :
   -- * flexions entières
-  -- * radicaux de flexions
+  -- * radicaux de flexions (kécécé ?)
   -- * h aspirés pour formes contractées des pronoms
-  -- * modes/temps/personnes défectives
+  -- * modes/temps/personnes défectives/rares
+  -- * verbes doubles/triples (ex : [[moissonner-battre]], [[copier-coller-voler]]), pas de groupe
   local simpleTenses, actualGroup = m_gen.generateFlexions(infinitive, group3, mutationType, template)
   return renderPage(completeTable(auxiliary, simpleTenses), actualGroup, reflexive)
 end

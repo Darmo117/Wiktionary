@@ -60,7 +60,7 @@ local data = {
       },
       indicatif = {
         present = { "vais", "vas", "va", "allons", "allez", "vont" },
-        imparfait = { "allais", "allais", "allait", "quérions", "quériez", "quéraient" },
+        imparfait = { "allais", "allais", "allait", "allions", "alliez", "allaient" },
         passeSimple = { "allai", "allas", "alla", "allâmes", "allâtes", "allèrent" },
         futur = { "irai", "iras", "ira", "irons", "irez", "iront" },
       },

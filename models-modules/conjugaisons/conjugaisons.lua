@@ -12,7 +12,7 @@ local reflexivePronouns = {
   { "me", "m’" }, { "te", "t’" }, { "se", "s’" }, { "nous", nil }, { "vous", nil }, { "se", "s’" }
 }
 local imperativePronouns = { "toi", "nous", "vous" }
-local liaisonLetters = { "a", "â", "e", "ê", "é", "è", "ë", "i", "î", "ï", "o", "ô", "u", "û", "y", "h" }
+local liaisonLetters = { "a", "â", "e", "ê", "é", "è", "ë", "i", "î", "ï", "o", "ô", "u", "û", "y" }
 local que = { "que", "qu’" }
 local undefined = tostring(
     mw.html.create("span")
@@ -22,9 +22,11 @@ local undefined = tostring(
 
 --- Check whether a liaison is required for the given word.
 --- @param s string The word to check.
+--- @param aspiratedH boolean Whether a "h" should be ignored for liaison.
 --- @return boolean True if a liaison is needed, false otherwise.
-local function requiresLiaison(s)
-  return m_table.contains(liaisonLetters, mw.ustring.sub(mw.ustring.lower(s), 1, 1))
+local function requiresLiaison(s, aspiratedH)
+  local char = mw.ustring.sub(mw.ustring.lower(s), 1, 1)
+  return char == "h" and not aspiratedH or m_table.contains(liaisonLetters, char)
 end
 
 --- Generate a composed tense using the given auxiliary verb table and past participle.
@@ -110,8 +112,9 @@ end
 --- @param verbTable string[] An array containing the flexions of the verb.
 ---        for all impersonal tenses in present and past forms: infinitive, gerund, participle.
 --- @param reflexive boolean True if the verb is reflexive, false otherwise.
+--- @param aspiratedH boolean True if the contracted pronoun forms should be used where relevant.
 --- @return string The generated table.
-local function generateImpersonalTable(verbTable, reflexive)
+local function generateImpersonalTable(verbTable, reflexive, aspiratedH)
   local tableElement = createTable()
 
   local headerRow = tableElement:tag("tr")
@@ -136,7 +139,7 @@ local function generateImpersonalTable(verbTable, reflexive)
                :wikitext("[[infinitif#fr|Infinitif]]")
   infinitiveRow:tag("td")
                :attr("style", "width: 23%; text-align: right")
-               :wikitext(reflexive and getReflexivePronoun(3, requiresLiaison(verbTable.infinitif.present)) or "")
+               :wikitext(reflexive and getReflexivePronoun(3, not aspiratedH and requiresLiaison(verbTable.infinitif.present)) or "")
   infinitiveRow:tag("td")
                :attr("style", "width: 23%; text-align: left")
                :wikitext(link(verbTable.infinitif.present))
@@ -153,7 +156,7 @@ local function generateImpersonalTable(verbTable, reflexive)
            :wikitext("[[gérondif#fr|Gérondif]]")
   gerundRow:tag("td")
            :attr("style", "text-align: right")
-           :wikitext("en&nbsp;" .. (reflexive and getReflexivePronoun(3, requiresLiaison(verbTable.gerondif.present)) or ""))
+           :wikitext("en&nbsp;" .. (reflexive and getReflexivePronoun(3, not aspiratedH and requiresLiaison(verbTable.gerondif.present)) or ""))
   gerundRow:tag("td")
            :attr("style", "text-align: left")
            :wikitext(link(verbTable.gerondif.present))
@@ -186,9 +189,10 @@ end
 --- @param composedTense string[] An array table containing the flexions of the composed tense.
 --- @param title2 string Title for the composed tense.
 --- @param reflexive boolean True if the verb is reflexive, false otherwise.
+--- @param aspiratedH boolean True if the contracted pronoun forms should be used where relevant.
 --- @param tableElement html The table element to add the generated rows to.
 --- @param useQue boolean Optional. If true, “que” will be appended before each pronoun.
-local function generateTensesRows(simpleTense, title1, color1, composedTense, title2, color2, reflexive, tableElement, useQue)
+local function generateTensesRows(simpleTense, title1, color1, composedTense, title2, color2, reflexive, aspiratedH, tableElement, useQue)
   local headerRow = tableElement:tag("tr")
 
   headerRow:tag("th")
@@ -207,7 +211,7 @@ local function generateTensesRows(simpleTense, title1, color1, composedTense, ti
   --- @param verb string The verb form.
   --- @return string The pronoun sequence
   local function pronounSequence(person, verb)
-    local liaison = requiresLiaison(verb)
+    local liaison = requiresLiaison(verb, aspiratedH)
     local ps
     if reflexive then
       ps = getPronoun(person, false) .. getReflexivePronoun(person, liaison)
@@ -215,7 +219,7 @@ local function generateTensesRows(simpleTense, title1, color1, composedTense, ti
       ps = getPronoun(person, liaison)
     end
     if useQue then
-      ps = getPronounFrom({ que }, 1, requiresLiaison(ps)) .. ps
+      ps = getPronounFrom({ que }, 1, requiresLiaison(ps, aspiratedH)) .. ps
     end
     return ps
   end
@@ -245,13 +249,14 @@ end
 ---        for all indicative tenses: present/passé composé, imparfait/plus-que-parfait,
 ---        passé simple/passé antérieur, and futur simple/futur antérieur.
 --- @param reflexive boolean True if the verb is reflexive, false otherwise.
+--- @param aspiratedH boolean True if the contracted pronoun forms should be used where relevant.
 --- @return string The generated table.
-local function generateIndicativeTable(verbTable, reflexive)
+local function generateIndicativeTable(verbTable, reflexive, aspiratedH)
   local tableElement = createTable()
-  generateTensesRows(verbTable.indicatif.present, "Présent", "#ddd", verbTable.indicatif.passeCompose, "Passé composé", "#ececff", reflexive, tableElement)
-  generateTensesRows(verbTable.indicatif.imparfait, "Imparfait", "#ddd", verbTable.indicatif.plusQueParfait, "Plus-que-parfait", "#ececff", reflexive, tableElement)
-  generateTensesRows(verbTable.indicatif.passeSimple, "Passé simple", "#ddd", verbTable.indicatif.passeAnterieur, "Passé antérieur", "#ececff", reflexive, tableElement)
-  generateTensesRows(verbTable.indicatif.futur, "Futur simple", "#ddd", verbTable.indicatif.futurAnterieur, "Futur antérieur", "#ececff", reflexive, tableElement)
+  generateTensesRows(verbTable.indicatif.present, "Présent", "#ddd", verbTable.indicatif.passeCompose, "Passé composé", "#ececff", reflexive, aspiratedH, tableElement)
+  generateTensesRows(verbTable.indicatif.imparfait, "Imparfait", "#ddd", verbTable.indicatif.plusQueParfait, "Plus-que-parfait", "#ececff", reflexive, aspiratedH, tableElement)
+  generateTensesRows(verbTable.indicatif.passeSimple, "Passé simple", "#ddd", verbTable.indicatif.passeAnterieur, "Passé antérieur", "#ececff", reflexive, aspiratedH, tableElement)
+  generateTensesRows(verbTable.indicatif.futur, "Futur simple", "#ddd", verbTable.indicatif.futurAnterieur, "Futur antérieur", "#ececff", reflexive, aspiratedH, tableElement)
   return tostring(tableElement)
 end
 
@@ -259,11 +264,12 @@ end
 --- @param verbTable table A table containing the flexions of the verb.
 ---        for all subjunctive tenses: present/passé and imparfait/plus-que-parfait.
 --- @param reflexive boolean True if the verb is reflexive, false otherwise.
+--- @param aspiratedH boolean True if the contracted pronoun forms should be used where relevant.
 --- @return string The generated table.
-local function generateSubjunctiveTable(verbTable, reflexive)
+local function generateSubjunctiveTable(verbTable, reflexive, aspiratedH)
   local tableElement = createTable()
-  generateTensesRows(verbTable.subjonctif.present, "Présent", "#ddd", verbTable.subjonctif.passe, "Passé", "#fec", reflexive, tableElement, "que")
-  generateTensesRows(verbTable.subjonctif.imparfait, "Imparfait", "#ddd", verbTable.subjonctif.plusQueParfait, "Plus-que-parfait", "#fec", reflexive, tableElement, "que")
+  generateTensesRows(verbTable.subjonctif.present, "Présent", "#ddd", verbTable.subjonctif.passe, "Passé", "#fec", reflexive, aspiratedH, tableElement, "que")
+  generateTensesRows(verbTable.subjonctif.imparfait, "Imparfait", "#ddd", verbTable.subjonctif.plusQueParfait, "Plus-que-parfait", "#fec", reflexive, aspiratedH, tableElement, "que")
   return tostring(tableElement)
 end
 
@@ -271,10 +277,11 @@ end
 --- @param verbTable table A table containing the flexions of the verb.
 ---        for all conditional tenses: present/passé.
 --- @param reflexive boolean True if the verb is reflexive, false otherwise.
+--- @param aspiratedH boolean True if the contracted pronoun forms should be used where relevant.
 --- @return string The generated table.
-local function generateConditionalTable(verbTable, reflexive)
+local function generateConditionalTable(verbTable, reflexive, aspiratedH)
   local tableElement = createTable()
-  generateTensesRows(verbTable.conditionnel.present, "Présent", "#ddd", verbTable.conditionnel.passe, "Passé", "#cfc", reflexive, tableElement)
+  generateTensesRows(verbTable.conditionnel.present, "Présent", "#ddd", verbTable.conditionnel.passe, "Passé", "#cfc", reflexive, aspiratedH, tableElement)
   return tostring(tableElement)
 end
 
@@ -338,8 +345,9 @@ end
 --- @param verbTable table A table containing all the flexions of the verb.
 --- @param group number The verb’s group, either 1, 2 or 3.
 --- @param reflexive boolean True if the verb is reflexive, false otherwise.
+--- @param aspiratedH boolean True if the contracted pronoun forms should be used where relevant.
 --- @return string The generated wikicode.
-local function renderPage(verbTable, group, reflexive)
+local function renderPage(verbTable, group, reflexive, aspiratedH)
   local page = mw.html.create()
 
   -- TODO ajouter pronom réflexif si "reflexive == true"
@@ -348,37 +356,37 @@ local function renderPage(verbTable, group, reflexive)
       link(verbTable.infinitif.present), reflexive and "pronominal" or "", formatGroup(group), link(verbTable.auxiliaire)
   ))
 
-  -- FIXME espace après apostrophe des pronoms contractés
+  -- FIXME espace après apostrophe des pronoms contractés et avant tiret de l’impératif pronominal
 
   page:tag("h3")
       :wikitext("Modes impersonnels")
   page:tag("div")
       :attr("style", "margin: 0.5em 2em")
-      :wikitext(generateImpersonalTable(verbTable, reflexive))
+      :wikitext(generateImpersonalTable(verbTable, reflexive, aspiratedH))
 
   page:tag("h3")
       :wikitext("Indicatif")
   page:tag("div")
       :attr("style", "margin: 0.5em 2em")
-      :wikitext(generateIndicativeTable(verbTable, reflexive))
+      :wikitext(generateIndicativeTable(verbTable, reflexive, aspiratedH))
 
   page:tag("h3")
       :wikitext("Subjonctif")
   page:tag("div")
       :attr("style", "margin: 0.5em 2em")
-      :wikitext(generateSubjunctiveTable(verbTable, reflexive))
+      :wikitext(generateSubjunctiveTable(verbTable, reflexive, aspiratedH))
 
   page:tag("h3")
       :wikitext("Conditionnel")
   page:tag("div")
       :attr("style", "margin: 0.5em 2em")
-      :wikitext(generateConditionalTable(verbTable, reflexive))
+      :wikitext(generateConditionalTable(verbTable, reflexive, aspiratedH))
 
   page:tag("h3")
       :wikitext("Impératif")
   page:tag("div")
       :attr("style", "margin: 0.5em 2em")
-      :wikitext(generateImperativeTable(verbTable, reflexive))
+      :wikitext(generateImperativeTable(verbTable, reflexive, aspiratedH))
 
   return tostring(page)
 end
@@ -391,16 +399,18 @@ end
 ---  frame.args["pronominal"] (boolean): Optional. Whether the verb is reflexive.
 ---  frame.args["mutation"] (string): Optional. The type of mutation to apply to the verb’s root instead of the default one.
 ---  frame.args["modèle"] (string): Optional. For group-3 verbs, the verb to use as a template instead of the detected one.
+---  frame.args["h asipré"] (boolean): Optional. If true, contracted pronoun forms will be used where relevant.
 --- @return string The generated wikicode.
 function p.conj(frame)
   -- TODO utiliser frame:getParent().args
   local args = m_params.process(frame.args, {
-    [1] = { required = true },
+    [1] = { default = frame:getParent():getTitle() }, -- FIXME extraire verbe du titre "Conjugaison:<langue>/<verbe>"
     ["aux-être"] = { type = m_params.BOOLEAN, default = false },
     ["groupe3"] = { type = m_params.BOOLEAN, default = false },
     ["pronominal"] = { type = m_params.BOOLEAN, default = false },
     ["mutation"] = { enum = m_gen.mutationTypes },
     ["modèle"] = { enum = m_table.keysToList(m_gen.group3Templates) },
+    ["h-aspiré"] = { type = m_params.BOOLEAN, default = false },
   })
   local infinitive = args[1]
   local reflexive = args["pronominal"]
@@ -408,14 +418,17 @@ function p.conj(frame)
   local group3 = args["groupe3"]
   local mutationType = args["mutation"]
   local template = args["modèle"]
+  local aspiratedH = args["h-aspiré"]
+  if aspiratedH and mw.ustring.sub(infinitive, 1, 1) ~= "h" then
+    error(mw.ustring.format('Le verbe "%s" ne commence pas par un "h"', infinitive))
+  end
   -- TODO autres fonctionnalités :
-  -- * flexions entières
+  -- * flexions entières (kécécé ?)
   -- * radicaux de flexions (kécécé ?)
-  -- * h aspirés pour formes contractées des pronoms
   -- * modes/temps/personnes défectives/rares
   -- * verbes doubles/triples (ex : [[moissonner-battre]], [[copier-coller-voler]]), pas de groupe
   local simpleTenses, actualGroup = m_gen.generateFlexions(infinitive, group3, mutationType, template)
-  return renderPage(completeTable(auxiliary, simpleTenses), actualGroup, reflexive)
+  return renderPage(completeTable(auxiliary, simpleTenses), actualGroup, reflexive, aspiratedH)
 end
 
 return p

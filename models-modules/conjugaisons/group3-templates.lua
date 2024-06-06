@@ -775,6 +775,8 @@ local data = {
     },
   },
   ["ouïr-oirai"] = {
+    ending = "ouïr",
+    ignore_auto = true,
     endings = {
       infinitif = {
         present = "ouïr"
@@ -956,7 +958,7 @@ local data = {
         passe = "dit",
       },
       indicatif = {
-        present = { "dis", "dis", "dit", "disont", "disez", "disent" },
+        present = { "dis", "dis", "dit", "disons", "disez", "disent" },
         imparfait = { "disais", "disais", "disait", "disions", "disiez", "disaient" },
         passeSimple = { "dis", "dis", "dit", "dîmes", "dîtes", "dirent" },
         futur = { "dirai", "diras", "dira", "dirons", "direz", "diront" },
@@ -1458,9 +1460,7 @@ data["vêtir"].ending = "ir"
 
 -- Infinitive is always the same as the "ending" property, generate it
 for _, template in pairs(data) do
-  if template.ending then
-    template.endings.infinitif = { present = template.ending }
-  end
+  template.endings.infinitif = { present = template.ending }
 end
 
 local function stripICirc(template)
@@ -1469,9 +1469,7 @@ local function stripICirc(template)
   end
 
   local newTemplate = m_table.deepcopy(template)
-  if newTemplate.ending then
-    newTemplate.ending = subst(newTemplate.ending)
-  end
+  newTemplate.ending = subst(newTemplate.ending)
   -- FIXME ne pas enlever le î des terminaison de l’imparfait du subjonctif et du passé simple
   for mode, tenses in pairs(newTemplate.endings) do
     for tense, tenseEndings in pairs(tenses) do
@@ -1489,62 +1487,67 @@ local function stripICirc(template)
 end
 
 data["absoudre-absout"] = m_table.deepcopy(data["absoudre"])
-data["absoudre-absout"].ending = nil
+data["absoudre-absout"].ignore_auto = true
 data["absoudre-absout"].endings.participe.passe = "sout"
 
 data["assoir-assois"] = m_table.deepcopy(data["surseoir"])
+data["assoir-assois"].ignore_auto = true
 data["assoir-assois"].endings.infinitif.present = "soir"
 
 data["croître-cru"] = m_table.deepcopy(data["croître"])
-data["croître-cru"].ending = nil
+data["croître-cru"].ignore_auto = true
 data["croître-cru"].endings.participe.passe = "cru"
 
 data["croitre"] = stripICirc(data["croître"])
 
 data["croitre-cru"] = m_table.deepcopy(data["croitre"])
-data["croitre-cru"].ending = nil
+data["croitre-cru"].ignore_auto = true
 data["croitre-cru"].endings.participe.passe = "cru"
 
 data["cuire-uîmes"] = m_table.deepcopy(data["cuire"])
-data["cuire-uîmes"].ending = nil
+data["cuire-uîmes"].ignore_auto = true
 data["cuire-uîmes"].endings.indicatif.passeSimple = { "uis", "uis", "uit", "uîmes", "uîtes", "uirent" }
 data["cuire-uîmes"].endings.subjonctif.imparfait = { "uisse", "uisses", "uît", "uissions", "uissiez", "uissent" }
 
 data["devoir-du"] = m_table.deepcopy(data["devoir"])
-data["devoir-du"].ending = nil
+data["devoir-du"].ignore_auto = true
 data["devoir-du"].endings.participe.passe = "du"
 
 data["dire"] = m_table.deepcopy(data["prédire"])
-data["dire"].ending = nil
+data["dire"].ignore_auto = true
 data["dire"].endings.indicatif.present[5] = "dites"
 data["dire"].endings.imperatif.present[3] = "dites"
 
 data["mouvoir-mu"] = m_table.deepcopy(data["mouvoir"])
+data["mouvoir-mu"].ignore_auto = true
 data["mouvoir-mu"].endings.participe.passe = "mu"
 
 data["naitre"] = stripICirc(data["naître"])
 
 data["ouïr-orrai"] = m_table.deepcopy(data["ouïr-oirai"])
+data["ouïr-orrai"].ignore_auto = true
 data["ouïr-orrai"].endings.indicatif.futur = { "orrai", "orras", "orra", "orrons", "orrez", "orront" }
 data["ouïr-orrai"].endings.conditionnel.present = { "orrais", "orrais", "orrait", "orrions", "orriez", "orraient" }
 
 data["paitre"] = stripICirc(data["paître"])
 
 data["plaire-plait"] = stripICirc(data["plaire"])
+data["plaire-plait"].ignore_auto = true
 
 data["résoudre-résous"] = m_table.deepcopy(data["résoudre"])
-data["résoudre-résous"].ending = nil
+data["résoudre-résous"].ignore_auto = true
 data["résoudre-résous"].endings.participe.passe = "résous"
 
 data["résoudre-résout"] = m_table.deepcopy(data["résoudre-résous"])
+data["résoudre-résout"].ignore_auto = true
 data["résoudre-résout"].endings.participe.passe = "résout"
 
 data["taire"] = m_table.deepcopy(data["plaire"])
-data["taire"].ending = nil
+data["taire"].ignore_auto = true
 data["taire"].endings.indicatif.present[3] = "ait"
 
 data["vouloir-veuille"] = m_table.deepcopy(data["vouloir"])
-data["vouloir-veuille"].ending = nil
+data["vouloir-veuille"].ignore_auto = true
 data["vouloir-veuille"].endings.imperatif.present = { "veuille", "veuillons", "veuillez" }
 
 return data

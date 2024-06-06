@@ -1,5 +1,3 @@
-local m_group3Templates = require("Module:conjugaisons/group3-templates")
-
 local p = {}
 
 --- Conjugation of the "avoir" auxiliary verb.
@@ -469,17 +467,20 @@ end
 
 --- Looks for the group-3 template whose ending has the longest match with the given infinitive.
 --- @param infinitive string The infinitive form of the verb.
---- @return table The group-3 template that matched the best.
+--- @return table|nil The group-3 template that matched the best, or nil if none matched.
 local function longestMatchingGroup3Template(infinitive)
   local longestMatch
   local longestMatchLength = 0
-  for _, template in pairs(m_group3Templates) do
-    local len = mw.ustring.len(template.ending)
-    if mw.ustring.gmatch(infinitive, template.ending .. "$") and (not longestMatch or longestMatchLength < len) then
-      longestMatch = template
-      longestMatchLength = len
+  for _, template in pairs(p.group3Templates) do
+    if not template.ignore_auto then
+      local len = mw.ustring.len(template.ending)
+      if mw.ustring.find(infinitive, template.ending .. "$") and (not longestMatch or longestMatchLength < len) then
+        longestMatch = template
+        longestMatchLength = len
+      end
     end
   end
+  return longestMatch
 end
 
 --- Generate the simple tense forms of the given group-3 verb.
@@ -494,8 +495,16 @@ function p.generateGroup3Forms(infinitive, templateVerb)
     return p.avoirConj
   else
     local template
-    if templateVerb and m_group3Templates[templateVerb] then
-      template = m_group3Templates[templateVerb]
+    if templateVerb then
+      if not p.group3Templates[templateVerb] then
+        error(mw.ustring.format('Modèle de verbe inconnu&nbsp;: "%s"', templateVerb))
+      end
+      template = p.group3Templates[templateVerb]
+      if mw.ustring.sub(infinitive, -mw.ustring.len(template.ending)) ~= template.ending then
+        error(mw.ustring.format('Le verbe "%s" ne se termine pas par "%s"', infinitive, template.ending))
+      end
+    elseif p.group3Templates[infinitive] then
+      template = p.group3Templates[infinitive]
     else
       template = longestMatchingGroup3Template(infinitive)
     end

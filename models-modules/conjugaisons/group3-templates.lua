@@ -1463,6 +1463,12 @@ for _, template in pairs(data) do
   template.endings.infinitif = { present = template.ending }
 end
 
+--- Replace all "î" with "i" in the given template table.
+--- Will erroneously modify the following endings if they feature an "î":
+--- * first and second plural persons of the "indicatif passé simple"
+--- * third singular person of the "subjonctif imparfait"
+--- @param template table The template table to update.
+--- @return table A new table.
 local function stripICirc(template)
   local function subst(s)
     return mw.ustring.gsub(s, "î", "i")
@@ -1470,7 +1476,6 @@ local function stripICirc(template)
 
   local newTemplate = m_table.deepcopy(template)
   newTemplate.ending = subst(newTemplate.ending)
-  -- FIXME ne pas enlever le î des terminaison de l’imparfait du subjonctif et du passé simple
   for mode, tenses in pairs(newTemplate.endings) do
     for tense, tenseEndings in pairs(tenses) do
       if type(tenseEndings) == "string" then
@@ -1523,6 +1528,10 @@ data["mouvoir-mu"].ignore_auto = true
 data["mouvoir-mu"].endings.participe.passe = "mu"
 
 data["naitre"] = stripICirc(data["naître"])
+-- Correct forms that were incorrectly modified
+data["naitre"].endings.indicatif.passeSimple[4] = "naquîmes"
+data["naitre"].endings.indicatif.passeSimple[5] = "naquîtes"
+data["naitre"].endings.subjonctif.imparfait[3] = "naquît"
 
 data["ouïr-orrai"] = m_table.deepcopy(data["ouïr-oirai"])
 data["ouïr-orrai"].ignore_auto = true

@@ -359,8 +359,6 @@ local function renderPage(verbTable, group, reflexive, aspiratedH)
       link(infinitive), reflexive and "pronominal" or "", formatGroup(group), link(verbTable.auxiliaire)
   ))
 
-  -- FIXME espace après apostrophe des pronoms contractés et avant tiret de l’impératif pronominal
-
   page:tag("h3")
       :wikitext("Modes impersonnels")
   page:tag("div")

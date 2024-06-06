@@ -888,7 +888,7 @@ local data = {
       indicatif = {
         present = { "ais", "ais", "aît", "aisons", "aisez", "aisent" },
         imparfait = { "aisais", "aisais", "aisait", "aisions", "aisiez", "aisaient" },
-        passeSime = { "us", "us", "ut", "ûmes", "ûtes", "urent" },
+        passeSimple = { "us", "us", "ut", "ûmes", "ûtes", "urent" },
         futur = { "airai", "airas", "aira", "airons", "airez", "airont" },
       },
       subjonctif = {

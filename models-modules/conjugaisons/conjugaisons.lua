@@ -15,10 +15,10 @@ local imperativePronouns = { "toi", "nous", "vous" }
 local liaisonLetters = { "a", "â", "e", "ê", "é", "è", "ë", "i", "î", "ï", "o", "ô", "u", "û", "y" }
 local que = { "que", "qu’" }
 local undefined = "—"
-local GRAYED_OUT = "rare"
+local RARE = "rare"
 local NON_EXISTENT = "-"
 local FLEXION_STATES = {
-  GRAYED_OUT, NON_EXISTENT,
+  RARE, NON_EXISTENT,
 }
 
 --- Check whether a liaison is required for the given word.
@@ -116,35 +116,66 @@ local function getReflexivePronoun(person, useContraction)
   return getPronounFrom(reflexivePronouns, person, useContraction)
 end
 
---- Get the flexion at the given path in the table.
---- @param verbTable table|string The table where to find the flexion.
---- @param path table A list containing the path to the flexion.
---- @return string The flexion or "—" if it does not exist.
-local function getFlexion(verbTable, path)
+local function getFlexionStyle(verbTable, defectiveForms, path)
   local node = verbTable
+  local form = defectiveForms
   for _, k in ipairs(path) do
     node = node[k]
-    if not node then
-      return undefined
+    form = form[k]
+    if not node or node == m_gen.EMPTY_OBJECT or form and (form.state or form == m_gen.EMPTY_OBJECT) then
+      return "color: gray; font-style: italic"
     end
   end
-  if type(node) ~= "string" then
-    return undefined
-  end
-  return node
+  return ""
 end
 
---- Format the flexion at the given path in the table.
---- @param verbTable table|string The table where to find the flexion.
---- @param path table A list containing the path to the flexion.
---- @param asLink boolean Whether to put the flexion in a link.
---- @return string The formatted flexion.
-local function formatFlexion(verbTable, path, asLink)
-  local flexion = getFlexion(verbTable, path)
-  if flexion == "—" then
-    return undefined
+local function getTitle(base, verbTable, defectiveForms, path)
+  local node = verbTable
+  local form = defectiveForms
+  -- TODO défectif si au moins une forme n’existe pas
+  for _, k in ipairs(path) do
+    node = node[k]
+    form = form[k]
+    if not node or node == m_gen.EMPTY_OBJECT or form and (form.state or form ~= m_gen.EMPTY_OBJECT) then
+      local state
+      if node == m_gen.EMPTY_OBJECT then
+        state = "défectif"
+      elseif form and form.state then
+        state = form.state
+      end
+      return base .. mw.ustring.format(" (%s)", state)
+    end
   end
-  return asLink and link(flexion) or flexion
+  return base
+end
+
+local function getFlexion(verbTable, defectiveForms, path, asLink)
+  local node = verbTable
+  local form = defectiveForms
+  for _, k in ipairs(path) do
+    node = node[k]
+    form = form[k]
+    if not node or node == m_gen.EMPTY_OBJECT or form and (form.state or form ~= m_gen.EMPTY_OBJECT) then
+      return "—"
+    end
+  end
+  return asLink and link(node) or "—"
+end
+
+--- Add an HTML TR tag to the given header.
+--- @param headerRow html The parent tag.
+--- @param title string The header’s text.
+--- @param state string|nil The header’s state.
+--- @param color string The header’s color.
+--- @param width number The header’s width.
+--- @param colspan number Optional. The header’s "colspan", defaults to 2.
+local function createTenseTableHeader(headerRow, title, verbTable, defectiveForms, path, color, width, colspan)
+  local style = mw.ustring.format("width: %d%%; background-color: %s", width, color)
+  return headerRow:tag("th")
+                  :attr("scope", "colgroup")
+                  :attr("colspan", tostring(colspan or 2))
+                  :attr("style", style)
+                  :wikitext(getTitle(title, verbTable, defectiveForms, path))
 end
 
 --- Generate the table for all impersonal tenses for the given verb.
@@ -152,25 +183,22 @@ end
 ---        for all impersonal tenses in present and past forms: infinitive, gerund, participle.
 --- @param reflexive boolean True if the verb is reflexive, false otherwise.
 --- @param aspiratedH boolean True if the contracted pronoun forms should be used where relevant.
+--- @param defectiveForms table A table indicating for each mode/tense/person whether it is defective, grayed out or normal
 --- @return string The generated table.
-local function generateImpersonalTable(verbTable, reflexive, aspiratedH)
+local function generateImpersonalTable(verbTable, reflexive, aspiratedH, defectiveForms)
   local tableElement = createTable()
+
+  local grayStyle = "color: gray; font-style: italic"
+  local participePresentState = defectiveForms.participe.state or defectiveForms.participe.present.state
+  local participePasseState = defectiveForms.participe.state or defectiveForms.participe.passe.state
 
   local headerRow = tableElement:tag("tr")
   headerRow:tag("th")
            :attr("scope", "col")
            :attr("style", "width: 8%; background-color: #ffddaa")
            :wikitext("[[mode#fr|Mode]]")
-  headerRow:tag("th")
-           :attr("scope", "colgroup")
-           :attr("style", "width: 46%; background-color: #ffeebb")
-           :attr("colspan", "2")
-           :wikitext("[[présent#fr|Présent]]")
-  headerRow:tag("th")
-           :attr("scope", "colgroup")
-           :attr("style", "width: 46%; background-color: #ffeebb")
-           :attr("colspan", "2")
-           :wikitext("[[passé#fr|Passé]]")
+  createTenseTableHeader(headerRow, "[[présent#fr|Présent]]", nil, "#ffeebb", 46)
+  createTenseTableHeader(headerRow, "[[passé#fr|Passé]]", participePasseState, "#ffeebb", 46)
 
   local infinitiveRow = tableElement:tag("tr")
   infinitiveRow:tag("th")
@@ -183,10 +211,10 @@ local function generateImpersonalTable(verbTable, reflexive, aspiratedH)
                :attr("style", "width: 23%; text-align: left; padding-left: 0")
                :wikitext(formatFlexion(verbTable, { "infinitif", "present" }, true))
   infinitiveRow:tag("td")
-               :attr("style", "width: 23%; text-align: right; padding-right: 0")
-               :wikitext(reflexive and getReflexivePronoun(3, requiresLiaison(getFlexion(verbTable, { "infinitif", "passe" }), aspiratedH)) or "")
+               :attr("style", "width: 23%; text-align: right; padding-right: 0;" .. (participePasseState ~= m_gen.EMPTY_OBJECT and grayStyle or ""))
+               :wikitext(reflexive and verbTable.participe.passe ~= m_gen.EMPTY_OBJECT and getReflexivePronoun(3, requiresLiaison(getFlexion(verbTable, { "infinitif", "passe" }), aspiratedH)) or "")
   infinitiveRow:tag("td")
-               :attr("style", "width: 23%; text-align: left; padding-left: 0")
+               :attr("style", "width: 23%; text-align: left; padding-left: 0;" .. (participePasseState ~= m_gen.EMPTY_OBJECT and grayStyle or ""))
                :wikitext(formatFlexion(verbTable, { "infinitif", "passe" }))
 
   local gerundRow = tableElement:tag("tr")
@@ -194,16 +222,16 @@ local function generateImpersonalTable(verbTable, reflexive, aspiratedH)
            :attr("scope", "row")
            :wikitext("[[gérondif#fr|Gérondif]]")
   gerundRow:tag("td")
-           :attr("style", "text-align: right; padding-right: 0")
-           :wikitext("en&nbsp;" .. (reflexive and getReflexivePronoun(3, requiresLiaison(getFlexion(verbTable, { "gerondif", "passe" }), aspiratedH)) or ""))
+           :attr("style", "text-align: right; padding-right: 0;" .. (participePresentState ~= m_gen.EMPTY_OBJECT and grayStyle or ""))
+           :wikitext(verbTable.participe.present ~= m_gen.EMPTY_OBJECT and ("en&nbsp;" .. (reflexive and getReflexivePronoun(3, requiresLiaison(getFlexion(verbTable, { "gerondif", "present" }), aspiratedH)) or "")) or "")
   gerundRow:tag("td")
-           :attr("style", "text-align: left; padding-left: 0")
+           :attr("style", "text-align: left; padding-left: 0;" .. (participePresentState ~= m_gen.EMPTY_OBJECT and grayStyle or ""))
            :wikitext(formatFlexion(verbTable, { "gerondif", "present" }, true))
   gerundRow:tag("td")
-           :attr("style", "text-align: right; padding-right: 0")
-           :wikitext("en&nbsp;" .. (reflexive and getReflexivePronoun(3, requiresLiaison(getFlexion(verbTable, { "gerondif", "passe" }), aspiratedH)) or ""))
+           :attr("style", "text-align: right; padding-right: 0;" .. (participePasseState ~= m_gen.EMPTY_OBJECT and grayStyle or ""))
+           :wikitext(verbTable.participe.passe ~= m_gen.EMPTY_OBJECT and ("en&nbsp;" .. (reflexive and getReflexivePronoun(3, requiresLiaison(getFlexion(verbTable, { "gerondif", "passe" }), aspiratedH)) or "")) or "")
   gerundRow:tag("td")
-           :attr("style", "text-align: left; padding-left: 0")
+           :attr("style", "text-align: left; padding-left: 0;" .. (participePasseState ~= m_gen.EMPTY_OBJECT and grayStyle or ""))
            :wikitext(formatFlexion(verbTable, { "gerondif", "passe" }))
 
   local participleRow = tableElement:tag("tr")
@@ -212,38 +240,33 @@ local function generateImpersonalTable(verbTable, reflexive, aspiratedH)
                :wikitext("[[participe#fr|Participe]]")
   participleRow:tag("td")
   participleRow:tag("td")
-               :attr("style", "text-align: left")
+               :attr("style", "text-align: left;" .. (participePresentState ~= m_gen.EMPTY_OBJECT and grayStyle or ""))
                :wikitext(formatFlexion(verbTable, { "participe", "present" }, true))
   participleRow:tag("td")
   participleRow:tag("td")
-               :attr("style", "text-align: left")
+               :attr("style", "text-align: left;" .. (participePasseState ~= m_gen.EMPTY_OBJECT and grayStyle or ""))
                :wikitext(formatFlexion(verbTable, { "participe", "passe" }))
 
   return tostring(tableElement)
 end
 
 --- Generate the rows for the given simple tense and its corresponding composed tense.
---- @param simpleTense string[] An array containing the flexions of the simple tense.
+--- @param verbTable table An array containing the flexions of the verb.
+--- @param defectiveForms table An array containing the state of each flexion.
+--- @param mode string The key of the mode.
+--- @param simpleTense string The key of the simple tense.
 --- @param title1 string Title for the simple tense.
---- @param composedTense string[] An array table containing the flexions of the composed tense.
+--- @param composedTense string The key of the composed tense.
 --- @param title2 string Title for the composed tense.
 --- @param reflexive boolean True if the verb is reflexive, false otherwise.
 --- @param aspiratedH boolean True if the contracted pronoun forms should be used where relevant.
 --- @param tableElement html The table element to add the generated rows to.
 --- @param useQue boolean Optional. If true, “que” will be appended before each pronoun.
-local function generateTensesRows(simpleTense, title1, color1, composedTense, title2, color2, reflexive, aspiratedH, tableElement, useQue)
+local function generateTensesRows(verbTable, defectiveForms, mode, simpleTense, title1, color1, composedTense, title2, color2, reflexive, aspiratedH, tableElement, useQue)
   local headerRow = tableElement:tag("tr")
 
-  headerRow:tag("th")
-           :attr("scope", "colgroup")
-           :attr("colspan", "2")
-           :attr("style", "width: 50%; background-color: " .. color1)
-           :wikitext(title1)
-  headerRow:tag("th")
-           :attr("scope", "colgroup")
-           :attr("colspan", "2")
-           :attr("style", "width: 50%; background-color: " .. color2)
-           :wikitext(title2)
+  createTenseTableHeader(headerRow, title1, verbTable, defectiveForms, { mode, simpleTense }, color1, 50)
+  createTenseTableHeader(headerRow, title2, verbTable, defectiveForms, { mode, composedTense }, color2, 50)
 
   --- Returns the pronoun sequence for the given person and verb form.
   --- @param person number The index of the pronoun.
@@ -263,23 +286,26 @@ local function generateTensesRows(simpleTense, title1, color1, composedTense, ti
     return ps
   end
 
-  for i, simple in ipairs(simpleTense) do
+  for i = 1, 6 do
     local row = tableElement:tag("tr")
 
+    local simpleStyle = getFlexionStyle(verbTable, defectiveForms, { mode, simpleTense, i })
+    local simple = getFlexion(verbTable, defectiveForms, { mode, simpleTense, i }, true)
     row:tag("td")
-       :attr("style", "width: 25%; text-align: right; padding-right: 0")
-       :wikitext(pronounSequence(i, simple))
+       :attr("style", "width: 25%; text-align: right; padding-right: 0;" .. simpleStyle)
+       :wikitext(simpleTenseState ~= NON_EXISTENT and pronounSequence(i, simple) or "")
     row:tag("td")
-       :attr("style", "width: 25%; text-align: left; padding-left: 0")
-       :wikitext(formatFlexion(simple, {}, true))
+       :attr("style", "width: 25%; text-align: left; padding-left: 0;" .. simpleStyle)
+       :wikitext(simple)
 
-    local composed = composedTense and composedTense[i] or m_gen.EMPTY_OBJECT
+    local composedStyle = getFlexionStyle(verbTable, defectiveForms, { mode, composedTense, i })
+    local composed = getFlexion(verbTable, defectiveForms, { mode, composedTense, i }, true)
     row:tag("td")
-       :attr("style", "width: 25%; text-align: right; padding-right: 0")
-       :wikitext(pronounSequence(i, composed))
+       :attr("style", "width: 25%; text-align: right; padding-right: 0;" .. composedStyle)
+       :wikitext(composedTenseState ~= NON_EXISTENT and pronounSequence(i, composed) or "")
     row:tag("td")
-       :attr("style", "width: 25%; text-align: left; padding-left: 0")
-       :wikitext(formatFlexion(composed, {}))
+       :attr("style", "width: 25%; text-align: left; padding-left: 0;" .. composedStyle)
+       :wikitext(composed)
   end
 end
 
@@ -289,13 +315,14 @@ end
 ---        passé simple/passé antérieur, and futur simple/futur antérieur.
 --- @param reflexive boolean True if the verb is reflexive, false otherwise.
 --- @param aspiratedH boolean True if the contracted pronoun forms should be used where relevant.
+--- @param defectiveForms table A table indicating for each mode/tense/person whether it is defective, grayed out or normal.
 --- @return string The generated table.
-local function generateIndicativeTable(verbTable, reflexive, aspiratedH)
+local function generateIndicativeTable(verbTable, reflexive, aspiratedH, defectiveForms)
   local tableElement = createTable()
-  generateTensesRows(verbTable.indicatif.present, "Présent", "#ddd", verbTable.indicatif.passeCompose, "Passé composé", "#ececff", reflexive, aspiratedH, tableElement)
-  generateTensesRows(verbTable.indicatif.imparfait, "Imparfait", "#ddd", verbTable.indicatif.plusQueParfait, "Plus-que-parfait", "#ececff", reflexive, aspiratedH, tableElement)
-  generateTensesRows(verbTable.indicatif.passeSimple, "Passé simple", "#ddd", verbTable.indicatif.passeAnterieur, "Passé antérieur", "#ececff", reflexive, aspiratedH, tableElement)
-  generateTensesRows(verbTable.indicatif.futur, "Futur simple", "#ddd", verbTable.indicatif.futurAnterieur, "Futur antérieur", "#ececff", reflexive, aspiratedH, tableElement)
+  generateTensesRows(verbTable, defectiveForms, "indicatif", "present", "Présent", "#ddd", "passeCompose", "Passé composé", "#ececff", reflexive, aspiratedH, tableElement)
+  generateTensesRows(verbTable, defectiveForms, "indicatif", "imparfait", "Imparfait", "#ddd", "plusQueParfait", "Plus-que-parfait", "#ececff", reflexive, aspiratedH, tableElement)
+  generateTensesRows(verbTable, defectiveForms, "indicatif", "passeSimple", "Passé simple", "#ddd", "passeAnterieur", "Passé antérieur", "#ececff", reflexive, aspiratedH, tableElement)
+  generateTensesRows(verbTable, defectiveForms, "indicatif", "futur", "Futur simple", "#ddd", "futurAnterieur", "Futur antérieur", "#ececff", reflexive, aspiratedH, tableElement)
   return tostring(tableElement)
 end
 
@@ -304,11 +331,12 @@ end
 ---        for all subjunctive tenses: present/passé and imparfait/plus-que-parfait.
 --- @param reflexive boolean True if the verb is reflexive, false otherwise.
 --- @param aspiratedH boolean True if the contracted pronoun forms should be used where relevant.
+--- @param defectiveForms table A table indicating for each mode/tense/person whether it is defective, grayed out or normal.
 --- @return string The generated table.
-local function generateSubjunctiveTable(verbTable, reflexive, aspiratedH)
+local function generateSubjunctiveTable(verbTable, reflexive, aspiratedH, defectiveForms)
   local tableElement = createTable()
-  generateTensesRows(verbTable.subjonctif.present, "Présent", "#ddd", verbTable.subjonctif.passe, "Passé", "#fec", reflexive, aspiratedH, tableElement, "que")
-  generateTensesRows(verbTable.subjonctif.imparfait, "Imparfait", "#ddd", verbTable.subjonctif.plusQueParfait, "Plus-que-parfait", "#fec", reflexive, aspiratedH, tableElement, "que")
+  generateTensesRows(verbTable, defectiveForms, "subjonctif", "present", "Présent", "#ddd", "passe", "Passé", "#fec", reflexive, aspiratedH, tableElement, "que")
+  generateTensesRows(verbTable, defectiveForms, "subjonctif", "imparfait", "Imparfait", "#ddd", "plusQueParfait", "Plus-que-parfait", "#fec", reflexive, aspiratedH, tableElement, "que")
   return tostring(tableElement)
 end
 
@@ -317,10 +345,11 @@ end
 ---        for all conditional tenses: present/passé.
 --- @param reflexive boolean True if the verb is reflexive, false otherwise.
 --- @param aspiratedH boolean True if the contracted pronoun forms should be used where relevant.
+--- @param defectiveForms table A table indicating for each mode/tense/person whether it is defective, grayed out or normal.
 --- @return string The generated table.
-local function generateConditionalTable(verbTable, reflexive, aspiratedH)
+local function generateConditionalTable(verbTable, reflexive, aspiratedH, defectiveForms)
   local tableElement = createTable()
-  generateTensesRows(verbTable.conditionnel.present, "Présent", "#ddd", verbTable.conditionnel.passe, "Passé", "#cfc", reflexive, aspiratedH, tableElement)
+  generateTensesRows(verbTable, defectiveForms, "conditionnel", "present", "Présent", "#ddd", "passe", "Passé", "#cfc", reflexive, aspiratedH, tableElement)
   return tostring(tableElement)
 end
 
@@ -328,34 +357,33 @@ end
 --- @param verbTable table A table containing the flexions of the verb.
 ---        for all imperative tenses: present/passé.
 --- @param reflexive boolean True if the verb is reflexive, false otherwise.
+--- @param defectiveForms table A table indicating for each mode/tense/person whether it is defective, grayed out or normal.
 --- @return string The generated table.
-local function generateImperativeTable(verbTable, reflexive)
+local function generateImperativeTable(verbTable, reflexive, defectiveForms)
   local tableElement = createTable()
 
   local headerRow = tableElement:tag("tr")
-  local presentHeader = headerRow:tag("th")
-                                 :attr("scope", "colgroup")
-                                 :attr("style", "width: 50%; background-color: #ffe5e5")
-                                 :wikitext("Présent")
-  if reflexive then
-    presentHeader:attr("colspan", "2")
-  end
-  headerRow:tag("th")
-           :attr("scope", "col")
-           :attr("style", "width: 50%; background-color: #ffe5e5")
-           :wikitext("Passé")
 
+  local simpleTenseState = defectiveForms.imperatif.state or defectiveForms.imperatif.present.state
+  local composedTenseState = verbTable.participe.passe == m_gen.EMPTY_OBJECT and NON_EXISTENT or (defectiveForms.imperatif.state or defectiveForms.imperatif.passe.state)
+  createTenseTableHeader(headerRow, "Présent", simpleTenseState, "#ffe5e5", 50, reflexive and 2 or 1)
+  createTenseTableHeader(headerRow, "Passé", composedTenseState, "#ffe5e5", 50, 1)
+
+  local grayStyle = "color: gray; font-style: italic"
   for i, present in ipairs(verbTable.imperatif.present) do
     local row = tableElement:tag("tr")
     local presentCell = row:tag("td")
                            :wikitext(formatFlexion(present, {}, true))
     if reflexive then
-      presentCell:attr("style", "width: 25%; text-align: right; padding-right: 0")
+      presentCell:attr("style", "width: 25%; text-align: right; padding-right: 0;" .. (simpleTenseState and grayStyle or ""))
       row:tag("td")
-         :attr("style", "width: 25%; text-align: left; padding-left: 0")
-         :wikitext(reflexive and ("-" .. imperativePronouns[i]) or "")
+         :attr("style", "width: 25%; text-align: left; padding-left: 0;" .. (simpleTenseState and grayStyle or ""))
+         :wikitext(reflexive and simpleTenseState ~= NON_EXISTENT and ("-" .. imperativePronouns[i]) or "")
+    else
+      presentCell:attr("style", simpleTenseState and grayStyle or "")
     end
     row:tag("td")
+       :attr("style", composedTenseState and grayStyle or "")
        :wikitext(reflexive and undefined or formatFlexion(verbTable, { "imperatif", "passe", i }))
   end
 
@@ -388,7 +416,6 @@ end
 --- @param defectiveForms table A table indicating for each mode/tense/person whether it is defective, grayed out or normal.
 --- @return string The generated wikicode.
 local function renderPage(verbTable, group, reflexive, aspiratedH, defectiveForms)
-  -- TODO defective/grayed out forms
   local page = mw.html.create()
 
   local infinitive = verbTable.infinitif.present
@@ -404,31 +431,31 @@ local function renderPage(verbTable, group, reflexive, aspiratedH, defectiveForm
       :wikitext("Modes impersonnels")
   page:tag("div")
       :attr("style", "margin: 0.5em 2em")
-      :wikitext(generateImpersonalTable(verbTable, reflexive, aspiratedH))
+      :wikitext(generateImpersonalTable(verbTable, reflexive, aspiratedH, defectiveForms))
 
   page:tag("h3")
       :wikitext("Indicatif")
   page:tag("div")
       :attr("style", "margin: 0.5em 2em")
-      :wikitext(generateIndicativeTable(verbTable, reflexive, aspiratedH))
+      :wikitext(generateIndicativeTable(verbTable, reflexive, aspiratedH, defectiveForms))
 
   page:tag("h3")
       :wikitext("Subjonctif")
   page:tag("div")
       :attr("style", "margin: 0.5em 2em")
-      :wikitext(generateSubjunctiveTable(verbTable, reflexive, aspiratedH))
+      :wikitext(generateSubjunctiveTable(verbTable, reflexive, aspiratedH, defectiveForms))
 
   page:tag("h3")
       :wikitext("Conditionnel")
   page:tag("div")
       :attr("style", "margin: 0.5em 2em")
-      :wikitext(generateConditionalTable(verbTable, reflexive, aspiratedH))
+      :wikitext(generateConditionalTable(verbTable, reflexive, aspiratedH, defectiveForms))
 
   page:tag("h3")
       :wikitext("Impératif")
   page:tag("div")
       :attr("style", "margin: 0.5em 2em")
-      :wikitext(generateImperativeTable(verbTable, reflexive, aspiratedH))
+      :wikitext(generateImperativeTable(verbTable, reflexive, defectiveForms))
 
   return tostring(page)
 end

@@ -1,7 +1,9 @@
+local m_model = require("Module:conjugaisons/data-model")
+
 local p = {}
 
 --- Conjugation of the "avoir" auxiliary verb.
-p.avoirConj = {
+local avoirConj = {
   infinitif = {
     present = "avoir",
   },
@@ -27,7 +29,7 @@ p.avoirConj = {
   },
 }
 --- Conjugation of the "être" auxiliary verb.
-p.etreConj = {
+local etreConj = {
   infinitif = {
     present = "être",
   },
@@ -67,38 +69,39 @@ p.mutationTypes = {
   MUTATION_AYER_YE,
   MUTATION_I,
 }
+
 --- All available template group-3 verb endings, indexed by the template verb.
 p.group3Templates = mw.loadData("Module:conjugaisons/group3-templates")
 
---- Sentinel object representing an empty value
-p.EMPTY_OBJECT = {}
+--- Sentinel object representing an empty value in tables
+local NULL = {}
 
 --- Instanciate a new verb table containing empty values for all simple tenses.
---- @return table A new table.
-function p.createEmptyTemplate()
+--- @return table A new empty template.
+local function createEmptyTemplate()
   return {
     infinitif = {
-      present = p.EMPTY_OBJECT,
+      present = NULL,
     },
     participe = {
-      present = p.EMPTY_OBJECT,
-      passe = p.EMPTY_OBJECT,
+      present = NULL,
+      passe = NULL,
     },
     indicatif = {
-      present = { p.EMPTY_OBJECT, p.EMPTY_OBJECT, p.EMPTY_OBJECT, p.EMPTY_OBJECT, p.EMPTY_OBJECT, p.EMPTY_OBJECT },
-      imparfait = { p.EMPTY_OBJECT, p.EMPTY_OBJECT, p.EMPTY_OBJECT, p.EMPTY_OBJECT, p.EMPTY_OBJECT, p.EMPTY_OBJECT },
-      passeSimple = { p.EMPTY_OBJECT, p.EMPTY_OBJECT, p.EMPTY_OBJECT, p.EMPTY_OBJECT, p.EMPTY_OBJECT, p.EMPTY_OBJECT },
-      futur = { p.EMPTY_OBJECT, p.EMPTY_OBJECT, p.EMPTY_OBJECT, p.EMPTY_OBJECT, p.EMPTY_OBJECT, p.EMPTY_OBJECT },
+      present = { NULL, NULL, NULL, NULL, NULL, NULL },
+      imparfait = { NULL, NULL, NULL, NULL, NULL, NULL },
+      passeSimple = { NULL, NULL, NULL, NULL, NULL, NULL },
+      futur = { NULL, NULL, NULL, NULL, NULL, NULL },
     },
     subjonctif = {
-      present = { p.EMPTY_OBJECT, p.EMPTY_OBJECT, p.EMPTY_OBJECT, p.EMPTY_OBJECT, p.EMPTY_OBJECT, p.EMPTY_OBJECT },
-      imparfait = { p.EMPTY_OBJECT, p.EMPTY_OBJECT, p.EMPTY_OBJECT, p.EMPTY_OBJECT, p.EMPTY_OBJECT, p.EMPTY_OBJECT },
+      present = { NULL, NULL, NULL, NULL, NULL, NULL },
+      imparfait = { NULL, NULL, NULL, NULL, NULL, NULL },
     },
     conditionnel = {
-      present = { p.EMPTY_OBJECT, p.EMPTY_OBJECT, p.EMPTY_OBJECT, p.EMPTY_OBJECT, p.EMPTY_OBJECT, p.EMPTY_OBJECT },
+      present = { NULL, NULL, NULL, NULL, NULL, NULL },
     },
     imperatif = {
-      present = { p.EMPTY_OBJECT, p.EMPTY_OBJECT, p.EMPTY_OBJECT },
+      present = { NULL, NULL, NULL },
     },
   }
 end
@@ -519,22 +522,14 @@ end
 --- Generate the simple tense forms of the given group-3 verb.
 --- @param infinitive string The infinitive form of the verb.
 --- @param templateVerb string|nil The verb the given one should be conjugated like.
---- @param specifiedForms table A table with the same structure as the returned table,
----   that may contain forms to use instead of the generated ones.
+--- @param spec VerbSpec A VerbSpec object.
 --- @return table A table containing all simple tense forms of the verb.
 --- @see [[Conjugaison:français/Troisième groupe]] for sub-types.
-function p.generateGroup3Forms(infinitive, templateVerb, specifiedForms)
-  if infinitive == "être" then
-    return p.etreConj
-  end
-  if infinitive == "avoir" then
-    return p.avoirConj
-  end
-
+function p.generateGroup3Forms(infinitive, templateVerb, spec)
   local template
   if templateVerb then
     if not p.group3Templates[templateVerb] then
-      error(mw.ustring.format('Modèle de verbe inconnu&nbsp;: "%s"', templateVerb))
+      error(mw.ustring.format('Modèle de verbe inconnu : "%s"', templateVerb))
     end
     template = p.group3Templates[templateVerb]
     if mw.ustring.sub(infinitive, -mw.ustring.len(template.ending)) ~= template.ending then
@@ -553,13 +548,22 @@ function p.generateGroup3Forms(infinitive, templateVerb, specifiedForms)
   local forms = {}
   for mode, tenses in pairs(template.endings) do
     forms[mode] = {}
+    -- TODO remove disabled forms
     for tense, tenseEndings in pairs(tenses) do
       if type(tenseEndings) == "string" then
-        forms[mode][tense] = specifiedForms[mode][tense] ~= p.EMPTY_OBJECT and specifiedForms[mode][tense] or (root .. tenseEndings)
+        local formSpec = spec.modeSpecs[mode].tenseSpecs[tense].formSpecs[1]
+        if formSpec.status == m_model.DISABLED then
+          forms[mode][tense] = NULL
+        end
+        forms[mode][tense] = formSpec.form or (root .. tenseEndings)
       else
         forms[mode][tense] = {}
         for i, ending in ipairs(tenseEndings) do
-          table.insert(forms[mode][tense], specifiedForms[mode][tense][i] ~= p.EMPTY_OBJECT and specifiedForms[mode][tense][i] or (root .. ending))
+          local formSpec = spec.modeSpecs[mode].tenseSpecs[tense].formSpecs[i]
+          if formSpec.status == m_model.DISABLED then
+            table.insert(forms[mode][tense], NULL)
+          end
+          table.insert(forms[mode][tense], formSpec.form or (root .. ending))
         end
       end
     end
@@ -567,25 +571,74 @@ function p.generateGroup3Forms(infinitive, templateVerb, specifiedForms)
   return forms
 end
 
---- Substitute all flexions from the left table with the ones from the right one.
---- @param flexions table The table to modify.
---- @param specifiedForms table The table to pull substitute flexions from.
-local function substituteFlexions(flexions, specifiedForms)
-  for mode, tenses in pairs(flexions) do
-    for tense, tenseEndings in pairs(tenses) do
-      if type(tenseEndings) == "string" then
-        if specifiedForms[mode][tense] ~= p.EMPTY_OBJECT then
-          flexions[mode][tense] = specifiedForms[mode][tense]
-        end
-      else
-        for i, _ in ipairs(tenseEndings) do
-          if specifiedForms[mode][tense][i] ~= p.EMPTY_OBJECT then
-            flexions[mode][tense][i] = specifiedForms[mode][tense][i]
-          end
-        end
-      end
+--- Generate a compound tense using the given auxiliary verb table and past participle.
+--- @param auxTable table A table containing flexions of the auxiliary verb.
+--- @param pastParticiple string The past participle.
+--- @param spec TenseSpec A VerbSpec object.
+--- @return table A table containing the generated compound tense.
+local function generateCompoundTense(auxTable, pastParticiple, spec, mode, tense)
+  local res = {}
+  for i, t in ipairs(auxTable) do
+    if spec[mode].status == m_model.DISABLED
+        or spec[mode].tenses[tense].status == m_model.DISABLED
+        or spec.formSpecs[i].status == m_model.DISABLED then
+      table.insert(res, NULL)
+    else
+      table.insert(res, t .. " " .. pastParticiple)
     end
   end
+  return res
+end
+
+--- Complete the given verb table by generating compound tenses with the given auxiliary verb table.
+--- @param verbTable table A table containing flexions of the verb for all simple tenses.
+--- @param spec VerbSpec A VerbSpec object.
+local function completeTable(verbTable, spec)
+  local auxTable = spec.auxEtre and etreConj or avoirConj
+  verbTable.auxiliaire = auxTable.infinitif.present
+
+  if verbTable.participe.present ~= NULL then
+    verbTable.gerondif = {
+      present = verbTable.participe.present,
+    }
+    if verbTable.participe.passe ~= NULL then
+      verbTable.gerondif.passe = auxTable.participe.present .. " " .. verbTable.participe.passe
+    end
+  end
+
+  if verbTable.participe.passe ~= NULL then
+    verbTable.infinitif.passe = auxTable.infinitif.present .. " " .. verbTable.participe.passe
+
+    verbTable.indicatif.passeCompose = generateCompoundTense(auxTable.indicatif.present, verbTable.participe.passe, spec, "indicatif", "passeCompose")
+    verbTable.indicatif.plusQueParfait = generateCompoundTense(auxTable.indicatif.imparfait, verbTable.participe.passe, spec, "indicatif", "plusQueParfait")
+    verbTable.indicatif.passeAnterieur = generateCompoundTense(auxTable.indicatif.passeSimple, verbTable.participe.passe, spec, "indicatif", "passeAnterieur")
+    verbTable.indicatif.futurAnterieur = generateCompoundTense(auxTable.indicatif.futur, verbTable.participe.passe, spec, "indicatif", "futurAnterieur")
+
+    verbTable.subjonctif.passe = generateCompoundTense(auxTable.subjonctif.present, verbTable.participe.passe, spec, "subjonctif", "passe")
+    verbTable.subjonctif.plusQueParfait = generateCompoundTense(auxTable.subjonctif.imparfait, verbTable.participe.passe, spec, "subjonctif", "plusQueParfait")
+
+    verbTable.conditionnel.passe = generateCompoundTense(auxTable.conditionnel.present, verbTable.participe.passe, spec, "conditionnel", "passe")
+
+    verbTable.imperatif.passe = generateCompoundTense(auxTable.imperatif.present, verbTable.participe.passe, spec, "imperatif", "passe")
+  end
+end
+
+--- Generate all compound tenses and create a new Verb object from the given template.
+--- @param template table A table containing the forms for simple tenses.
+--- @param spec VerbSpec A VerbSpec object.
+--- @return Verb The generated Verb object.
+local function populateVerb(template, spec)
+  completeTable(template, spec)
+  local verb = m_model.newVerb(spec)
+  -- TODO populate
+  return verb
+end
+
+--- Retroactively apply the given spec to a template, removing all forms that are disabled in that spec.
+--- @param template table A table containing the forms for simple tenses.
+--- @param spec VerbSpec A VerbSpec object.
+local function applySpec(template, spec)
+  -- TODO
 end
 
 --- Generate the simple tense forms of the given verb.
@@ -593,10 +646,9 @@ end
 --- @param group3 boolean If true, the verb will be classified as belonging to group 3.
 --- @param mutationType string The type of mutation to apply to the verb’s root instead of the default one.
 --- @param template string|nil For group-3 verbs, the verb the given one should be conjugated like.
---- @param specifiedForms table A table with the same structure as the returned table,
----   that may contain forms to use instead of the generated ones.
---- @return (table, number) A tuple with a table containing all simple tense forms of the verb, and the verb’s group.
-function p.generateFlexions(infinitive, group3, mutationType, template, specifiedForms)
+--- @param spec VerbSpec A VerbSpec object.
+--- @return (Verb, number|nil) A populated Verb object, and the verb’s group or nil if it could not be determined.
+function p.generateFlexions(infinitive, group3, mutationType, template, spec)
   if mutationType and template then
     error("Les paramètres « mutation » et « modèle » ne peuvent pas être spécifiés en même temps.")
   end
@@ -605,14 +657,14 @@ function p.generateFlexions(infinitive, group3, mutationType, template, specifie
       invalidMutationType(mutationType)
     end
     -- Special case to avoid unnecessary checks
-    return p.etreConj, 3
+    return populateVerb(etreConj, spec), 3
   end
   if infinitive == "avoir" then
     if mutationType then
       invalidMutationType(mutationType)
     end
     -- Special case to avoid unnecessary checks
-    return p.avoirConj, 3
+    return populateVerb(avoirConj, spec), 3
   end
 
   local ending = mw.ustring.sub(infinitive, -2)
@@ -620,28 +672,30 @@ function p.generateFlexions(infinitive, group3, mutationType, template, specifie
     if mutationType and mutationType ~= MUTATION_I then
       invalidMutationType(mutationType)
     end
-    local flexions = p.generateGroup2Forms(infinitive, mutationType == MUTATION_I)
-    substituteFlexions(flexions, specifiedForms)
-    return flexions, 2
+    local forms = p.generateGroup2Forms(infinitive, mutationType == MUTATION_I)
+    applySpec(forms, spec)
+    return populateVerb(forms, spec), 2
   end
   if mutationType and mutationType == MUTATION_I then
     invalidMutationType(mutationType)
   end
 
   if not group3 and ending == "er" then
-    local flexions = p.generateGroup1Forms(infinitive, mutationType)
-    substituteFlexions(flexions, specifiedForms)
-    return flexions, 1
+    local forms = p.generateGroup1Forms(infinitive, mutationType)
+    applySpec(forms, spec)
+    return populateVerb(forms, spec), 1
   end
   if mutationType and mutationType == MUTATION_DOUBLE_CONS or mutationType == MUTATION_AYER_YE then
     invalidMutationType(mutationType)
   end
 
   if template == "-" then
-    specifiedForms.infinitif.present = infinitive
-    return specifiedForms, 3
+    local template_ = createEmptyTemplate()
+    template_.infinitif.present = infinitive
+    -- TODO populate template
+    return populateVerb(template_, spec), 3
   end
-  return p.generateGroup3Forms(infinitive, template, specifiedForms), 3
+  return populateVerb(p.generateGroup3Forms(infinitive, template, spec), spec), 3
 end
 
 return p

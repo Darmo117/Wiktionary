@@ -1,80 +1,11 @@
 local m_params = require("Module:paramètres")
 local m_table = require("Module:table")
+local m_model = require("Module:conjugaisons/data-model")
 local m_gen = require("Module:conjugaisons/tense-generators")
 
 local p = {}
 
--- TODO distinguer les pronoms des 3èmes personnes
-local pronouns = {
-  { "je", "j’" }, { "tu", nil }, { "il/elle/on", nil }, { "nous", nil }, { "vous", nil }, { "ils/elles", nil }
-}
-local reflexivePronouns = {
-  { "me", "m’" }, { "te", "t’" }, { "se", "s’" }, { "nous", nil }, { "vous", nil }, { "se", "s’" }
-}
-local imperativePronouns = { "toi", "nous", "vous" }
-local liaisonLetters = { "a", "â", "e", "ê", "é", "è", "ë", "i", "î", "ï", "o", "ô", "u", "û", "y" }
-local que = { "que", "qu’" }
-local undefined = "—"
-local RARE = "rare"
-local NON_EXISTENT = "-"
-local FLEXION_STATES = {
-  RARE, NON_EXISTENT,
-}
-
---- Check whether a liaison is required for the given word.
---- @param s string The word to check.
---- @param aspiratedH boolean Whether a "h" should be ignored for liaison.
---- @return boolean True if a liaison is needed, false otherwise.
-local function requiresLiaison(s, aspiratedH)
-  local char = mw.ustring.sub(mw.ustring.lower(s), 1, 1)
-  return char == "h" and not aspiratedH or m_table.contains(liaisonLetters, char)
-end
-
---- Generate a composed tense using the given auxiliary verb table and past participle.
---- @param auxTable table A table containing flexions of the auxiliary verb.
---- @param pastParticiple string The past participle.
---- @return table A table containing the generated composed tense.
-local function generateComposedTense(auxTable, pastParticiple)
-  local res = {}
-  for _, t in ipairs(auxTable) do
-    table.insert(res, t .. " " .. pastParticiple)
-  end
-  return res
-end
-
---- Complete the given verb table by generating composed tenses with the given auxiliary verb table.
---- @param auxTable table A table containing flexions of the auxiliary verb for all simple tenses.
---- @param verbTable table A table containing flexions of the verb for all simple tenses.
-local function completeTable(auxTable, verbTable)
-  verbTable.auxiliaire = auxTable.infinitif.present
-
-  if verbTable.participe.present ~= m_gen.EMPTY_OBJECT then
-    verbTable.gerondif = {
-      present = verbTable.participe.present,
-    }
-    if verbTable.participe.passe ~= m_gen.EMPTY_OBJECT then
-      verbTable.gerondif.passe = auxTable.participe.present .. " " .. verbTable.participe.passe
-    end
-  end
-
-  if verbTable.participe.passe ~= m_gen.EMPTY_OBJECT then
-    verbTable.infinitif.passe = auxTable.infinitif.present .. " " .. verbTable.participe.passe
-
-    verbTable.indicatif.passeCompose = generateComposedTense(auxTable.indicatif.present, verbTable.participe.passe)
-    verbTable.indicatif.plusQueParfait = generateComposedTense(auxTable.indicatif.imparfait, verbTable.participe.passe)
-    verbTable.indicatif.passeAnterieur = generateComposedTense(auxTable.indicatif.passeSimple, verbTable.participe.passe)
-    verbTable.indicatif.futurAnterieur = generateComposedTense(auxTable.indicatif.futur, verbTable.participe.passe)
-
-    verbTable.subjonctif.passe = generateComposedTense(auxTable.subjonctif.present, verbTable.participe.passe)
-    verbTable.subjonctif.plusQueParfait = generateComposedTense(auxTable.subjonctif.imparfait, verbTable.participe.passe)
-
-    verbTable.conditionnel.passe = generateComposedTense(auxTable.conditionnel.present, verbTable.participe.passe)
-
-    verbTable.imperatif.passe = generateComposedTense(auxTable.imperatif.present, verbTable.participe.passe)
-  end
-
-  return verbTable
-end
+local GRAY_STYLE = "color: gray; font-style: italic"
 
 --- Generate a wikicode link with a #fr anchor for the given page title.
 --- @param title string The title of the page to link to.
@@ -90,115 +21,87 @@ local function createTable()
            :attr("style", "width: 100%; text-align: center; border-collapse: collapse")
 end
 
---- Return the pronoun for the given person from the given table.
---- @param pronounsTable string[] The table to get pronouns from.
---- @param person number The index of the grammatical person (1 to 6).
---- @param useContraction boolean True if the contracted form should be returned.
---- @return string The pronoun.
-local function getPronounFrom(pronounsTable, person, useContraction)
-  local normal, abbr = unpack(pronounsTable[person])
-  return useContraction and abbr or (normal .. "&nbsp;")
-end
-
---- Return the pronoun for the given person.
---- @param person number The index of the grammatical person (1 to 6).
---- @param useContraction boolean True if the contracted form should be returned.
---- @return string The pronoun.
-local function getPronoun(person, useContraction)
-  return getPronounFrom(pronouns, person, useContraction)
-end
-
---- Return the reflexive pronoun for the given person.
---- @param person number The index of the grammatical person (1 to 6).
---- @param useContraction boolean True if the contracted form should be returned.
---- @return string The reflexive pronoun.
-local function getReflexivePronoun(person, useContraction)
-  return getPronounFrom(reflexivePronouns, person, useContraction)
-end
-
-local function getFlexionStyle(verbTable, defectiveForms, path)
-  local node = verbTable
-  local form = defectiveForms
-  for _, k in ipairs(path) do
-    node = node[k]
-    form = form[k]
-    if not node or node == m_gen.EMPTY_OBJECT or form and (form.state or form == m_gen.EMPTY_OBJECT) then
-      return "color: gray; font-style: italic"
+--- Format a title.
+--- @param base string The base title.
+--- @param tense VerbTense|VerbMode The verb tense/mode this title represents.
+--- @return string The formatted header.
+local function formatTitle(base, tense)
+  local state = tense:getStatus()
+  if state then
+    local text
+    if state == m_model.DISABLED then
+      text = "défectif"
+    elseif state == m_model.RARE then
+      text = "rare"
+    else
+      error("État invalide : " .. state)
     end
-  end
-  return ""
-end
-
-local function getTitle(base, verbTable, defectiveForms, path)
-  local node = verbTable
-  local form = defectiveForms
-  -- TODO défectif si au moins une forme n’existe pas
-  for _, k in ipairs(path) do
-    node = node[k]
-    form = form[k]
-    if not node or node == m_gen.EMPTY_OBJECT or form and (form.state or form ~= m_gen.EMPTY_OBJECT) then
-      local state
-      if node == m_gen.EMPTY_OBJECT then
-        state = "défectif"
-      elseif form and form.state then
-        state = form.state
-      end
-      return base .. mw.ustring.format(" (%s)", state)
-    end
+    return base .. mw.ustring.format(" (%s)", state)
   end
   return base
 end
 
-local function getFlexion(verbTable, defectiveForms, path, asLink)
-  local node = verbTable
-  local form = defectiveForms
-  for _, k in ipairs(path) do
-    node = node[k]
-    form = form[k]
-    if not node or node == m_gen.EMPTY_OBJECT or form and (form.state or form ~= m_gen.EMPTY_OBJECT) then
-      return "—"
-    end
-  end
-  return asLink and link(node) or "—"
-end
-
 --- Add an HTML TR tag to the given header.
 --- @param headerRow html The parent tag.
---- @param title string The header’s text.
---- @param state string|nil The header’s state.
---- @param color string The header’s color.
---- @param width number The header’s width.
+--- @param tense VerbTense The tense this header represents.
+--- @param title string The header’s title.
+--- @param color string The header’s background color.
+--- @param width number The header’s width in %.
 --- @param colspan number Optional. The header’s "colspan", defaults to 2.
-local function createTenseTableHeader(headerRow, title, verbTable, defectiveForms, path, color, width, colspan)
-  local style = mw.ustring.format("width: %d%%; background-color: %s", width, color)
-  return headerRow:tag("th")
-                  :attr("scope", "colgroup")
-                  :attr("colspan", tostring(colspan or 2))
-                  :attr("style", style)
-                  :wikitext(getTitle(title, verbTable, defectiveForms, path))
+local function createTenseTableHeader(headerRow, tense, title, color, width, colspan)
+  local style = mw.ustring.format("width: %d%%; background-color: %s;", width, color)
+  if tense:isGray() then
+    style = style .. GRAY_STYLE
+  end
+  local element = headerRow
+      :tag("th")
+      :attr("scope", colspan > 2 and "colgroup" or "col")
+      :attr("style", style)
+      :wikitext(formatTitle(title, tense))
+  if colspan > 1 then
+    element = element:attr("colspan", tostring(colspan))
+  end
+  return element
+end
+
+--- Format the given verb form.
+--- @param verbForm VerbForm The verb form to format.
+--- @param asLink boolean Whether to wrap the verb form inside a link.
+--- @return string The formatted verb form.
+local function formatVerbForm(verbForm, asLink)
+  local form = verbForm:getForm()
+  if not form then
+    return "—"
+  end
+  return asLink and link(form) or form
 end
 
 --- Generate the table for all impersonal tenses for the given verb.
---- @param verbTable string[] An array containing the flexions of the verb.
----        for all impersonal tenses in present and past forms: infinitive, gerund, participle.
---- @param reflexive boolean True if the verb is reflexive, false otherwise.
---- @param aspiratedH boolean True if the contracted pronoun forms should be used where relevant.
---- @param defectiveForms table A table indicating for each mode/tense/person whether it is defective, grayed out or normal
+--- @param verb Verb A Verb object.
 --- @return string The generated table.
-local function generateImpersonalTable(verbTable, reflexive, aspiratedH, defectiveForms)
+local function generateImpersonalTable(verb)
   local tableElement = createTable()
-
-  local grayStyle = "color: gray; font-style: italic"
-  local participePresentState = defectiveForms.participe.state or defectiveForms.participe.present.state
-  local participePasseState = defectiveForms.participe.state or defectiveForms.participe.passe.state
 
   local headerRow = tableElement:tag("tr")
   headerRow:tag("th")
            :attr("scope", "col")
            :attr("style", "width: 8%; background-color: #ffddaa")
            :wikitext("[[mode#fr|Mode]]")
-  createTenseTableHeader(headerRow, "[[présent#fr|Présent]]", nil, "#ffeebb", 46)
-  createTenseTableHeader(headerRow, "[[passé#fr|Passé]]", participePasseState, "#ffeebb", 46)
+  headerRow:tag("th")
+           :attr("scope", "colgroup")
+           :attr("style", "width: 46%; background-color: #ffeebb")
+           :wikitext("[[présent#fr|Présent]]")
+  headerRow:tag("th")
+           :attr("scope", "colgroup")
+           :attr("style", "width: 46%; background-color: #ffeebb")
+           :wikitext("[[passé#fr|Passé]]")
+
+  local infinitifPresent = verb.modes["infinitif"].tenses["present"].forms[1]
+  local infinitifPasse = verb.modes["infinitif"].tenses["passe"].forms[1]
+  local gerondifPresent = verb.modes["gerondif"].tenses["present"].forms[1]
+  local gerondifPasse = verb.modes["gerondif"].tenses["passe"].forms[1]
+  local participePresent = verb.modes["participe"].tenses["present"].forms[1]
+  local participePasse = verb.modes["participe"].tenses["passe"].forms[1]
 
   local infinitiveRow = tableElement:tag("tr")
   infinitiveRow:tag("th")
@@ -206,33 +109,33 @@ local function generateImpersonalTable(verbTable, reflexive, aspiratedH, defecti
                :wikitext("[[infinitif#fr|Infinitif]]")
   infinitiveRow:tag("td")
                :attr("style", "width: 23%; text-align: right; padding-right: 0")
-               :wikitext(reflexive and getReflexivePronoun(3, requiresLiaison(verbTable.infinitif.present, aspiratedH)) or "")
+               :wikitext(infinitifPresent:getPronoun() or "")
   infinitiveRow:tag("td")
                :attr("style", "width: 23%; text-align: left; padding-left: 0")
-               :wikitext(formatFlexion(verbTable, { "infinitif", "present" }, true))
+               :wikitext(formatVerbForm(infinitifPresent:getForm(), true))
   infinitiveRow:tag("td")
-               :attr("style", "width: 23%; text-align: right; padding-right: 0;" .. (participePasseState ~= m_gen.EMPTY_OBJECT and grayStyle or ""))
-               :wikitext(reflexive and verbTable.participe.passe ~= m_gen.EMPTY_OBJECT and getReflexivePronoun(3, requiresLiaison(getFlexion(verbTable, { "infinitif", "passe" }), aspiratedH)) or "")
+               :attr("style", "width: 23%; text-align: right; padding-right: 0;" .. (infinitifPasse:isGray() and GRAY_STYLE or ""))
+               :wikitext(infinitifPasse:getPronoun() or "")
   infinitiveRow:tag("td")
-               :attr("style", "width: 23%; text-align: left; padding-left: 0;" .. (participePasseState ~= m_gen.EMPTY_OBJECT and grayStyle or ""))
-               :wikitext(formatFlexion(verbTable, { "infinitif", "passe" }))
+               :attr("style", "width: 23%; text-align: left; padding-left: 0;" .. (infinitifPasse:isGray() and GRAY_STYLE or ""))
+               :wikitext(formatVerbForm(infinitifPasse:getForm()))
 
   local gerundRow = tableElement:tag("tr")
   gerundRow:tag("th")
            :attr("scope", "row")
            :wikitext("[[gérondif#fr|Gérondif]]")
   gerundRow:tag("td")
-           :attr("style", "text-align: right; padding-right: 0;" .. (participePresentState ~= m_gen.EMPTY_OBJECT and grayStyle or ""))
-           :wikitext(verbTable.participe.present ~= m_gen.EMPTY_OBJECT and ("en&nbsp;" .. (reflexive and getReflexivePronoun(3, requiresLiaison(getFlexion(verbTable, { "gerondif", "present" }), aspiratedH)) or "")) or "")
+           :attr("style", "text-align: right; padding-right: 0;" .. (gerondifPresent:isGray() and GRAY_STYLE or ""))
+           :wikitext(gerondifPresent:getPronoun() or "")
   gerundRow:tag("td")
-           :attr("style", "text-align: left; padding-left: 0;" .. (participePresentState ~= m_gen.EMPTY_OBJECT and grayStyle or ""))
-           :wikitext(formatFlexion(verbTable, { "gerondif", "present" }, true))
+           :attr("style", "text-align: left; padding-left: 0;" .. (gerondifPresent:isGray() and GRAY_STYLE or ""))
+           :wikitext(formatVerbForm(gerondifPresent:getForm()))
   gerundRow:tag("td")
-           :attr("style", "text-align: right; padding-right: 0;" .. (participePasseState ~= m_gen.EMPTY_OBJECT and grayStyle or ""))
-           :wikitext(verbTable.participe.passe ~= m_gen.EMPTY_OBJECT and ("en&nbsp;" .. (reflexive and getReflexivePronoun(3, requiresLiaison(getFlexion(verbTable, { "gerondif", "passe" }), aspiratedH)) or "")) or "")
+           :attr("style", "text-align: right; padding-right: 0;" .. (gerondifPasse:isGray() and GRAY_STYLE or ""))
+           :wikitext(gerondifPasse:getPronoun() or "")
   gerundRow:tag("td")
-           :attr("style", "text-align: left; padding-left: 0;" .. (participePasseState ~= m_gen.EMPTY_OBJECT and grayStyle or ""))
-           :wikitext(formatFlexion(verbTable, { "gerondif", "passe" }))
+           :attr("style", "text-align: left; padding-left: 0;" .. (gerondifPasse:isGray() and GRAY_STYLE or ""))
+           :wikitext(formatVerbForm(gerondifPasse:getForm()))
 
   local participleRow = tableElement:tag("tr")
   participleRow:tag("th")
@@ -240,153 +143,112 @@ local function generateImpersonalTable(verbTable, reflexive, aspiratedH, defecti
                :wikitext("[[participe#fr|Participe]]")
   participleRow:tag("td")
   participleRow:tag("td")
-               :attr("style", "text-align: left;" .. (participePresentState ~= m_gen.EMPTY_OBJECT and grayStyle or ""))
-               :wikitext(formatFlexion(verbTable, { "participe", "present" }, true))
+               :attr("style", "text-align: left;" .. (participePresent:isGray() and GRAY_STYLE or ""))
+               :wikitext(formatVerbForm(participePresent:getForm(), true))
   participleRow:tag("td")
   participleRow:tag("td")
-               :attr("style", "text-align: left;" .. (participePasseState ~= m_gen.EMPTY_OBJECT and grayStyle or ""))
-               :wikitext(formatFlexion(verbTable, { "participe", "passe" }))
+               :attr("style", "text-align: left;" .. (participePasse:isGray() and GRAY_STYLE or ""))
+               :wikitext(formatVerbForm(participePasse:getForm(), true))
 
   return tostring(tableElement)
 end
 
---- Generate the rows for the given simple tense and its corresponding composed tense.
---- @param verbTable table An array containing the flexions of the verb.
---- @param defectiveForms table An array containing the state of each flexion.
---- @param mode string The key of the mode.
---- @param simpleTense string The key of the simple tense.
---- @param title1 string Title for the simple tense.
---- @param composedTense string The key of the composed tense.
---- @param title2 string Title for the composed tense.
---- @param reflexive boolean True if the verb is reflexive, false otherwise.
---- @param aspiratedH boolean True if the contracted pronoun forms should be used where relevant.
+--- Generate the rows for the given simple tense and its corresponding compound tense.
 --- @param tableElement html The table element to add the generated rows to.
---- @param useQue boolean Optional. If true, “que” will be appended before each pronoun.
-local function generateTensesRows(verbTable, defectiveForms, mode, simpleTense, title1, color1, composedTense, title2, color2, reflexive, aspiratedH, tableElement, useQue)
+--- @param verb Verb An array containing the flexions of the verb.
+--- @param mode string The key of the mode.
+--- @param simpleTenseName string The key of the simple tense.
+--- @param title1 string Title for the simple tense.
+--- @param compoundTenseName string The key of the compound tense.
+--- @param title2 string Title for the compound tense.
+local function generateTensesRows(tableElement, verb, mode, simpleTenseName, title1, color1, compoundTenseName, title2, color2)
   local headerRow = tableElement:tag("tr")
 
-  createTenseTableHeader(headerRow, title1, verbTable, defectiveForms, { mode, simpleTense }, color1, 50)
-  createTenseTableHeader(headerRow, title2, verbTable, defectiveForms, { mode, composedTense }, color2, 50)
+  local simpleTense = verb.modes[mode].tenses[simpleTenseName]
+  local compoundTense = verb.modes[mode].tenses[compoundTenseName]
 
-  --- Returns the pronoun sequence for the given person and verb form.
-  --- @param person number The index of the pronoun.
-  --- @param verb string The verb form.
-  --- @return string The pronoun sequence
-  local function pronounSequence(person, verb)
-    local liaison = verb ~= m_gen.EMPTY_OBJECT and requiresLiaison(verb, aspiratedH)
-    local ps
-    if reflexive then
-      ps = getPronoun(person, false) .. getReflexivePronoun(person, liaison)
-    else
-      ps = getPronoun(person, liaison)
-    end
-    if useQue then
-      ps = getPronounFrom({ que }, 1, requiresLiaison(ps, aspiratedH)) .. ps
-    end
-    return ps
-  end
+  local reversedPronouns = simpleTense.mode.reversedPronouns
+  local colsNb = reversedPronouns and not verb.spec.pronominal and 1 or 2
 
-  for i = 1, 6 do
+  createTenseTableHeader(headerRow, simpleTense, title1, color1, 50, colsNb)
+  createTenseTableHeader(headerRow, compoundTense, title2, color2, 50, colsNb)
+
+  for i = 1, #simpleTense.forms do
     local row = tableElement:tag("tr")
 
-    local simpleStyle = getFlexionStyle(verbTable, defectiveForms, { mode, simpleTense, i })
-    local simple = getFlexion(verbTable, defectiveForms, { mode, simpleTense, i }, true)
-    row:tag("td")
-       :attr("style", "width: 25%; text-align: right; padding-right: 0;" .. simpleStyle)
-       :wikitext(simpleTenseState ~= NON_EXISTENT and pronounSequence(i, simple) or "")
-    row:tag("td")
-       :attr("style", "width: 25%; text-align: left; padding-left: 0;" .. simpleStyle)
-       :wikitext(simple)
+    local simpleForm = simpleTense.forms[i]
+    local compoundForm = compoundTense.forms[i]
+    local simpleStyle = simpleForm:isGray() and GRAY_STYLE or ""
+    local compoundStyle = compoundForm:isGray() and GRAY_STYLE or ""
 
-    local composedStyle = getFlexionStyle(verbTable, defectiveForms, { mode, composedTense, i })
-    local composed = getFlexion(verbTable, defectiveForms, { mode, composedTense, i }, true)
-    row:tag("td")
-       :attr("style", "width: 25%; text-align: right; padding-right: 0;" .. composedStyle)
-       :wikitext(composedTenseState ~= NON_EXISTENT and pronounSequence(i, composed) or "")
-    row:tag("td")
-       :attr("style", "width: 25%; text-align: left; padding-left: 0;" .. composedStyle)
-       :wikitext(composed)
+    local formattedSimpleForm = formatVerbForm(simpleForm:getForm(), true)
+    local formattedCompoundForm = formatVerbForm(compoundForm:getForm())
+
+    if colsNb == 2 then
+      local simplePronoun = simpleForm:getPronoun() or ""
+      local compoundPronoun = compoundForm:getPronoun() or ""
+
+      row:tag("td")
+         :attr("style", "width: 25%; text-align: right; padding-right: 0;" .. simpleStyle)
+         :wikitext(reversedPronouns and formattedSimpleForm or simplePronoun)
+      row:tag("td")
+         :attr("style", "width: 25%; text-align: left; padding-left: 0;" .. simpleStyle)
+         :wikitext(reversedPronouns and simplePronoun and formattedSimpleForm)
+
+      row:tag("td")
+         :attr("style", "width: 25%; text-align: right; padding-right: 0;" .. compoundStyle)
+         :wikitext(reversedPronouns and formattedCompoundForm or compoundPronoun)
+      row:tag("td")
+         :attr("style", "width: 25%; text-align: left; padding-left: 0;" .. compoundStyle)
+         :wikitext(reversedPronouns and compoundPronoun or formattedCompoundForm)
+    else
+      row:tag("td")
+         :attr("style", simpleStyle)
+         :wikitext(formattedSimpleForm)
+      row:tag("td")
+         :attr("style", compoundStyle)
+         :wikitext(formattedCompoundForm)
+    end
   end
 end
 
 --- Generate the table for the indicative tenses of the given verb.
---- @param verbTable table A table containing the flexions of the verb.
----        for all indicative tenses: present/passé composé, imparfait/plus-que-parfait,
----        passé simple/passé antérieur, and futur simple/futur antérieur.
---- @param reflexive boolean True if the verb is reflexive, false otherwise.
---- @param aspiratedH boolean True if the contracted pronoun forms should be used where relevant.
---- @param defectiveForms table A table indicating for each mode/tense/person whether it is defective, grayed out or normal.
+--- @param verb Verb A Verb object.
 --- @return string The generated table.
-local function generateIndicativeTable(verbTable, reflexive, aspiratedH, defectiveForms)
+local function generateIndicativeTable(verb)
   local tableElement = createTable()
-  generateTensesRows(verbTable, defectiveForms, "indicatif", "present", "Présent", "#ddd", "passeCompose", "Passé composé", "#ececff", reflexive, aspiratedH, tableElement)
-  generateTensesRows(verbTable, defectiveForms, "indicatif", "imparfait", "Imparfait", "#ddd", "plusQueParfait", "Plus-que-parfait", "#ececff", reflexive, aspiratedH, tableElement)
-  generateTensesRows(verbTable, defectiveForms, "indicatif", "passeSimple", "Passé simple", "#ddd", "passeAnterieur", "Passé antérieur", "#ececff", reflexive, aspiratedH, tableElement)
-  generateTensesRows(verbTable, defectiveForms, "indicatif", "futur", "Futur simple", "#ddd", "futurAnterieur", "Futur antérieur", "#ececff", reflexive, aspiratedH, tableElement)
+  generateTensesRows(tableElement, verb, "indicatif", "present", "Présent", "#ddd", "passeCompose", "Passé composé", "#ececff")
+  generateTensesRows(tableElement, verb, "indicatif", "imparfait", "Imparfait", "#ddd", "plusQueParfait", "Plus-que-parfait", "#ececff")
+  generateTensesRows(tableElement, verb, "indicatif", "passeSimple", "Passé simple", "#ddd", "passeAnterieur", "Passé antérieur", "#ececff")
+  generateTensesRows(tableElement, verb, "indicatif", "futur", "Futur simple", "#ddd", "futurAnterieur", "Futur antérieur", "#ececff")
   return tostring(tableElement)
 end
 
 --- Generate the table for the subjunctive tenses of the given verb.
---- @param verbTable table A table containing the flexions of the verb.
----        for all subjunctive tenses: present/passé and imparfait/plus-que-parfait.
---- @param reflexive boolean True if the verb is reflexive, false otherwise.
---- @param aspiratedH boolean True if the contracted pronoun forms should be used where relevant.
---- @param defectiveForms table A table indicating for each mode/tense/person whether it is defective, grayed out or normal.
+--- @param verb Verb A Verb object.
 --- @return string The generated table.
-local function generateSubjunctiveTable(verbTable, reflexive, aspiratedH, defectiveForms)
+local function generateSubjunctiveTable(verb)
   local tableElement = createTable()
-  generateTensesRows(verbTable, defectiveForms, "subjonctif", "present", "Présent", "#ddd", "passe", "Passé", "#fec", reflexive, aspiratedH, tableElement, "que")
-  generateTensesRows(verbTable, defectiveForms, "subjonctif", "imparfait", "Imparfait", "#ddd", "plusQueParfait", "Plus-que-parfait", "#fec", reflexive, aspiratedH, tableElement, "que")
+  generateTensesRows(tableElement, verb, "subjonctif", "present", "Présent", "#ddd", "passe", "Passé", "#fec")
+  generateTensesRows(tableElement, verb, "subjonctif", "imparfait", "Imparfait", "#ddd", "plusQueParfait", "Plus-que-parfait", "#fec")
   return tostring(tableElement)
 end
 
 --- Generate the table for the conditional tenses of the given verb.
---- @param verbTable table A table containing the flexions of the verb.
----        for all conditional tenses: present/passé.
---- @param reflexive boolean True if the verb is reflexive, false otherwise.
---- @param aspiratedH boolean True if the contracted pronoun forms should be used where relevant.
---- @param defectiveForms table A table indicating for each mode/tense/person whether it is defective, grayed out or normal.
+--- @param verb Verb A Verb object.
 --- @return string The generated table.
-local function generateConditionalTable(verbTable, reflexive, aspiratedH, defectiveForms)
+local function generateConditionalTable(verb)
   local tableElement = createTable()
-  generateTensesRows(verbTable, defectiveForms, "conditionnel", "present", "Présent", "#ddd", "passe", "Passé", "#cfc", reflexive, aspiratedH, tableElement)
+  generateTensesRows(verb, "conditionnel", "present", "Présent", "#ddd", "passe", "Passé", "#cfc")
   return tostring(tableElement)
 end
 
 --- Generate the table for the imperative tenses of the given verb.
---- @param verbTable table A table containing the flexions of the verb.
----        for all imperative tenses: present/passé.
---- @param reflexive boolean True if the verb is reflexive, false otherwise.
---- @param defectiveForms table A table indicating for each mode/tense/person whether it is defective, grayed out or normal.
+--- @param verb Verb A Verb object.
 --- @return string The generated table.
-local function generateImperativeTable(verbTable, reflexive, defectiveForms)
+local function generateImperativeTable(verb)
   local tableElement = createTable()
-
-  local headerRow = tableElement:tag("tr")
-
-  local simpleTenseState = defectiveForms.imperatif.state or defectiveForms.imperatif.present.state
-  local composedTenseState = verbTable.participe.passe == m_gen.EMPTY_OBJECT and NON_EXISTENT or (defectiveForms.imperatif.state or defectiveForms.imperatif.passe.state)
-  createTenseTableHeader(headerRow, "Présent", simpleTenseState, "#ffe5e5", 50, reflexive and 2 or 1)
-  createTenseTableHeader(headerRow, "Passé", composedTenseState, "#ffe5e5", 50, 1)
-
-  local grayStyle = "color: gray; font-style: italic"
-  for i, present in ipairs(verbTable.imperatif.present) do
-    local row = tableElement:tag("tr")
-    local presentCell = row:tag("td")
-                           :wikitext(formatFlexion(present, {}, true))
-    if reflexive then
-      presentCell:attr("style", "width: 25%; text-align: right; padding-right: 0;" .. (simpleTenseState and grayStyle or ""))
-      row:tag("td")
-         :attr("style", "width: 25%; text-align: left; padding-left: 0;" .. (simpleTenseState and grayStyle or ""))
-         :wikitext(reflexive and simpleTenseState ~= NON_EXISTENT and ("-" .. imperativePronouns[i]) or "")
-    else
-      presentCell:attr("style", simpleTenseState and grayStyle or "")
-    end
-    row:tag("td")
-       :attr("style", composedTenseState and grayStyle or "")
-       :wikitext(reflexive and undefined or formatFlexion(verbTable, { "imperatif", "passe", i }))
-  end
-
+  generateTensesRows(verb, "imperatif", "present", "Présent", "#ffe5e5", "passe", "Passé", "#ffe5e5")
   return tostring(tableElement)
 end
 
@@ -409,65 +271,61 @@ local function formatGroup(group)
 end
 
 --- Render the full page for the given verb.
---- @param verbTable table A table containing all the flexions of the verb.
+--- @param verb Verb A Verb object.
 --- @param group number The verb’s group, either 1, 2 or 3.
---- @param reflexive boolean True if the verb is reflexive, false otherwise.
---- @param aspiratedH boolean True if the contracted pronoun forms should be used where relevant.
---- @param defectiveForms table A table indicating for each mode/tense/person whether it is defective, grayed out or normal.
 --- @return string The generated wikicode.
-local function renderPage(verbTable, group, reflexive, aspiratedH, defectiveForms)
+local function renderPage(verb, group)
   local page = mw.html.create()
 
-  local infinitive = verbTable.infinitif.present
-  if reflexive then
-    infinitive = getReflexivePronoun(3, requiresLiaison(infinitive, aspiratedH)) .. infinitive
-  end
+  local inf = verb.modes["infinitif"].tenses["present"].forms[1]
   page:wikitext(mw.ustring.format(
       "Conjugaison de '''%s''', ''verbe %s du %s, conjugé avec l’auxiliaire %s''.",
-      link(infinitive), reflexive and "pronominal" or "", formatGroup(group), link(verbTable.auxiliaire)
+      link((inf:getPronoun() or "") .. inf:getForm()),
+      verb.spec.pronominal and "pronominal" or "",
+      formatGroup(group), link(verb.spec.auxEtre and "être" or "avoir")
   ))
 
   page:tag("h3")
-      :wikitext("Modes impersonnels")
+      :wikitext(formatTitle("Modes impersonnels"))
   page:tag("div")
       :attr("style", "margin: 0.5em 2em")
-      :wikitext(generateImpersonalTable(verbTable, reflexive, aspiratedH, defectiveForms))
+      :wikitext(generateImpersonalTable(verb))
 
   page:tag("h3")
       :wikitext("Indicatif")
   page:tag("div")
       :attr("style", "margin: 0.5em 2em")
-      :wikitext(generateIndicativeTable(verbTable, reflexive, aspiratedH, defectiveForms))
+      :wikitext(generateIndicativeTable(verb))
 
   page:tag("h3")
       :wikitext("Subjonctif")
   page:tag("div")
       :attr("style", "margin: 0.5em 2em")
-      :wikitext(generateSubjunctiveTable(verbTable, reflexive, aspiratedH, defectiveForms))
+      :wikitext(generateSubjunctiveTable(verb))
 
   page:tag("h3")
       :wikitext("Conditionnel")
   page:tag("div")
       :attr("style", "margin: 0.5em 2em")
-      :wikitext(generateConditionalTable(verbTable, reflexive, aspiratedH, defectiveForms))
+      :wikitext(generateConditionalTable(verb))
 
   page:tag("h3")
       :wikitext("Impératif")
   page:tag("div")
       :attr("style", "margin: 0.5em 2em")
-      :wikitext(generateImperativeTable(verbTable, reflexive, defectiveForms))
+      :wikitext(generateImperativeTable(verb))
 
   return tostring(page)
 end
 
-local abbreviations = {
-  -- Modes
+local modeAbbreviations = {
   part = "participe",
   ind = "indicatif",
   subj = "subjonctif",
   cond = "conditionnel",
   imp = "imperatif",
-  -- Tenses
+}
+local tenseAbbreviations = {
   pr = "present",
   p = "passe",
   i = "imparfait",
@@ -479,12 +337,13 @@ local abbreviations = {
   fa = "futurAnterieur",
 }
 
---- Parse the given parsed frame arguments.
---- @param infinitive string The infinitive of the current verb.
+--- Parse the arguments of the form "<mode>.<tense>[.<person>]" and "<mode>[.<tense>[.<person>]].état".
+--- @param aspiratedH boolean Whether the initial "h" of the verb should prevent a liaison.
+--- @param pronominal boolean Whether the verb is pronominal.
+--- @param auxEtre boolean Whether the verb should use the verb "être" instead of "avoir" as its auxiliary.
 --- @param args table The parsed frame arguments.
---- @return (table, table) A table containing all arguments of the form "<mode>.<tense>[.<person>]"
----  and a second table containing all arguments of the form "<mode>[.<tense>[.<person>]].état".
-local function parseFlexions(infinitive, args)
+--- @return VerbSpec A VerbSpec object.
+local function parseSpecs(aspiratedH, pronominal, auxEtre, args)
   local function personToIndex(mode, person)
     if mode == "imp" then
       if person == "2s" then
@@ -499,58 +358,59 @@ local function parseFlexions(infinitive, args)
         + (mw.ustring.sub(person, 2, 2) == "s" and 0 or 3)
   end
 
-  local specifiedForms = m_gen.createEmptyTemplate()
-  local defectiveForms = m_gen.createEmptyTemplate()
-
-  specifiedForms.infinitif.present = infinitive
-
-  defectiveForms.indicatif.passeCompose = { m_gen.EMPTY_OBJECT, m_gen.EMPTY_OBJECT, m_gen.EMPTY_OBJECT, m_gen.EMPTY_OBJECT, m_gen.EMPTY_OBJECT, m_gen.EMPTY_OBJECT }
-  defectiveForms.indicatif.passeAnterieur = { m_gen.EMPTY_OBJECT, m_gen.EMPTY_OBJECT, m_gen.EMPTY_OBJECT, m_gen.EMPTY_OBJECT, m_gen.EMPTY_OBJECT, m_gen.EMPTY_OBJECT }
-  defectiveForms.indicatif.plusQueParfait = { m_gen.EMPTY_OBJECT, m_gen.EMPTY_OBJECT, m_gen.EMPTY_OBJECT, m_gen.EMPTY_OBJECT, m_gen.EMPTY_OBJECT, m_gen.EMPTY_OBJECT }
-  defectiveForms.indicatif.futurAnterieur = { m_gen.EMPTY_OBJECT, m_gen.EMPTY_OBJECT, m_gen.EMPTY_OBJECT, m_gen.EMPTY_OBJECT, m_gen.EMPTY_OBJECT, m_gen.EMPTY_OBJECT }
-  defectiveForms.subjonctif.passe = { m_gen.EMPTY_OBJECT, m_gen.EMPTY_OBJECT, m_gen.EMPTY_OBJECT, m_gen.EMPTY_OBJECT, m_gen.EMPTY_OBJECT, m_gen.EMPTY_OBJECT }
-  defectiveForms.subjonctif.plusQueParfait = { m_gen.EMPTY_OBJECT, m_gen.EMPTY_OBJECT, m_gen.EMPTY_OBJECT, m_gen.EMPTY_OBJECT, m_gen.EMPTY_OBJECT, m_gen.EMPTY_OBJECT }
-  defectiveForms.conditionnel.passe = { m_gen.EMPTY_OBJECT, m_gen.EMPTY_OBJECT, m_gen.EMPTY_OBJECT, m_gen.EMPTY_OBJECT, m_gen.EMPTY_OBJECT, m_gen.EMPTY_OBJECT }
-  defectiveForms.imperatif.passe = { m_gen.EMPTY_OBJECT, m_gen.EMPTY_OBJECT, m_gen.EMPTY_OBJECT }
+  --- @type VerbSpec
+  local spec = m_model.newVerbSpec(aspiratedH, pronominal, auxEtre)
 
   for k, v in pairs(args) do
-    if mw.ustring.find(k, "%.") then
+    if mw.ustring.find(k, ".", 1, true) then
       local parts = mw.text.split(k, ".", true)
       local nb = #parts
 
       if parts[nb] == "état" then
         table.remove(parts, nb)
         nb = nb - 1
-        local node = defectiveForms
+        local node = spec
         for i, part in ipairs(parts) do
           if i < nb then
-            node = node[abbreviations[part]]
+            if i == 1 then
+              node = node.modeSpecs[modeAbbreviations[part]]
+            else
+              node = node.tenseSpecs[tenseAbbreviations[part]]
+            end
           end
         end
         if mw.ustring.match(parts[nb], "[123][sp]") then
-          node[personToIndex(parts[1], parts[nb])] = v
+          node.formSpecs[personToIndex(parts[1], parts[nb])].status = v
         else
-          node[abbreviations[parts[nb]]].state = v
+          if modeAbbreviations[parts[nb]] then
+            node.modeSpecs[modeAbbreviations[parts[nb]]].status = v
+          else
+            node.tenseSpecs[tenseAbbreviations[parts[nb]]].status = v
+          end
         end
 
       else
-        local node = specifiedForms
+        local node = spec
         for i, part in ipairs(parts) do
           if i < nb then
-            node = node[abbreviations[part]]
+            if i == 1 then
+              node = node.modeSpecs[modeAbbreviations[part]]
+            else
+              node = node.tenseSpecs[tenseAbbreviations[part]]
+            end
           end
         end
         if mw.ustring.match(parts[nb], "[123][sp]") then
-          node[personToIndex(parts[1], parts[nb])] = v
+          node.formSpecs[personToIndex(parts[1], parts[nb])].form = v
         else
-          node[abbreviations[parts[nb]]] = v
+          node.tenseSpecs[tenseAbbreviations[parts[nb]]].formSpecs[1].form = v
         end
       end
 
     end
   end
 
-  return specifiedForms, defectiveForms
+  return spec
 end
 
 --- Render the conjugation tables for the given verb.
@@ -571,6 +431,8 @@ function p.conj(frame)
   -- * verbes doubles/triples (ex : [[moissonner-battre]], [[copier-coller-voler]]), pas de groupe pour ceux comportant plusieurs groupes différents
   local templates = m_table.keysToList(m_gen.group3Templates)
   table.insert(templates, "-")
+  local flexionStates = m_model.STATES
+
   -- TODO utiliser frame:getParent().args pour récupérer les arguments du modèle
   local args = m_params.process(frame.args, {
     [1] = { default = mw.title.getCurrentTitle().text }, -- TODO extraire le verbe du titre "<langue>/<verbe>"
@@ -593,7 +455,7 @@ function p.conj(frame)
     ["part.p.état"] = {},
 
     -- Indicatif
-    ["ind.état"] = { enum = FLEXION_STATES },
+    ["ind.état"] = { enum = flexionStates },
     -- Indicatif présent
     ["ind.pr.1s"] = {},
     ["ind.pr.2s"] = {},
@@ -601,13 +463,13 @@ function p.conj(frame)
     ["ind.pr.1p"] = {},
     ["ind.pr.2p"] = {},
     ["ind.pr.3p"] = {},
-    ["ind.pr.état"] = { enum = FLEXION_STATES },
-    ["ind.pr.1s.état"] = { enum = FLEXION_STATES },
-    ["ind.pr.2s.état"] = { enum = FLEXION_STATES },
-    ["ind.pr.3s.état"] = { enum = FLEXION_STATES },
-    ["ind.pr.1p.état"] = { enum = FLEXION_STATES },
-    ["ind.pr.2p.état"] = { enum = FLEXION_STATES },
-    ["ind.pr.3p.état"] = { enum = FLEXION_STATES },
+    ["ind.pr.état"] = { enum = flexionStates },
+    ["ind.pr.1s.état"] = { enum = flexionStates },
+    ["ind.pr.2s.état"] = { enum = flexionStates },
+    ["ind.pr.3s.état"] = { enum = flexionStates },
+    ["ind.pr.1p.état"] = { enum = flexionStates },
+    ["ind.pr.2p.état"] = { enum = flexionStates },
+    ["ind.pr.3p.état"] = { enum = flexionStates },
     -- Indicatif imparfait
     ["ind.i.1s"] = {},
     ["ind.i.2s"] = {},
@@ -615,13 +477,13 @@ function p.conj(frame)
     ["ind.i.1p"] = {},
     ["ind.i.2p"] = {},
     ["ind.i.3p"] = {},
-    ["ind.i.état"] = { enum = FLEXION_STATES },
-    ["ind.i.1s.état"] = { enum = FLEXION_STATES },
-    ["ind.i.2s.état"] = { enum = FLEXION_STATES },
-    ["ind.i.3s.état"] = { enum = FLEXION_STATES },
-    ["ind.i.1p.état"] = { enum = FLEXION_STATES },
-    ["ind.i.2p.état"] = { enum = FLEXION_STATES },
-    ["ind.i.3p.état"] = { enum = FLEXION_STATES },
+    ["ind.i.état"] = { enum = flexionStates },
+    ["ind.i.1s.état"] = { enum = flexionStates },
+    ["ind.i.2s.état"] = { enum = flexionStates },
+    ["ind.i.3s.état"] = { enum = flexionStates },
+    ["ind.i.1p.état"] = { enum = flexionStates },
+    ["ind.i.2p.état"] = { enum = flexionStates },
+    ["ind.i.3p.état"] = { enum = flexionStates },
     -- Indicatif passé simple
     ["ind.ps.1s"] = {},
     ["ind.ps.2s"] = {},
@@ -629,13 +491,13 @@ function p.conj(frame)
     ["ind.ps.1p"] = {},
     ["ind.ps.2p"] = {},
     ["ind.ps.3p"] = {},
-    ["ind.ps.état"] = { enum = FLEXION_STATES },
-    ["ind.ps.1s.état"] = { enum = FLEXION_STATES },
-    ["ind.ps.2s.état"] = { enum = FLEXION_STATES },
-    ["ind.ps.3s.état"] = { enum = FLEXION_STATES },
-    ["ind.ps.1p.état"] = { enum = FLEXION_STATES },
-    ["ind.ps.2p.état"] = { enum = FLEXION_STATES },
-    ["ind.ps.3p.état"] = { enum = FLEXION_STATES },
+    ["ind.ps.état"] = { enum = flexionStates },
+    ["ind.ps.1s.état"] = { enum = flexionStates },
+    ["ind.ps.2s.état"] = { enum = flexionStates },
+    ["ind.ps.3s.état"] = { enum = flexionStates },
+    ["ind.ps.1p.état"] = { enum = flexionStates },
+    ["ind.ps.2p.état"] = { enum = flexionStates },
+    ["ind.ps.3p.état"] = { enum = flexionStates },
     -- Indicatif futur
     ["ind.f.1s"] = {},
     ["ind.f.2s"] = {},
@@ -643,48 +505,24 @@ function p.conj(frame)
     ["ind.f.1p"] = {},
     ["ind.f.2p"] = {},
     ["ind.f.3p"] = {},
-    ["ind.f.état"] = { enum = FLEXION_STATES },
-    ["ind.f.1s.état"] = { enum = FLEXION_STATES },
-    ["ind.f.2s.état"] = { enum = FLEXION_STATES },
-    ["ind.f.3s.état"] = { enum = FLEXION_STATES },
-    ["ind.f.1p.état"] = { enum = FLEXION_STATES },
-    ["ind.f.2p.état"] = { enum = FLEXION_STATES },
-    ["ind.f.3p.état"] = { enum = FLEXION_STATES },
+    ["ind.f.état"] = { enum = flexionStates },
+    ["ind.f.1s.état"] = { enum = flexionStates },
+    ["ind.f.2s.état"] = { enum = flexionStates },
+    ["ind.f.3s.état"] = { enum = flexionStates },
+    ["ind.f.1p.état"] = { enum = flexionStates },
+    ["ind.f.2p.état"] = { enum = flexionStates },
+    ["ind.f.3p.état"] = { enum = flexionStates },
     -- Indicatif passé composé
-    ["ind.pc.état"] = { enum = FLEXION_STATES },
-    ["ind.pc.1s.état"] = { enum = FLEXION_STATES },
-    ["ind.pc.2s.état"] = { enum = FLEXION_STATES },
-    ["ind.pc.3s.état"] = { enum = FLEXION_STATES },
-    ["ind.pc.1p.état"] = { enum = FLEXION_STATES },
-    ["ind.pc.2p.état"] = { enum = FLEXION_STATES },
-    ["ind.pc.3p.état"] = { enum = FLEXION_STATES },
+    ["ind.pc.état"] = { enum = flexionStates },
     -- Indicatif passé antérieur
-    ["ind.pa.état"] = { enum = FLEXION_STATES },
-    ["ind.pa.1s.état"] = { enum = FLEXION_STATES },
-    ["ind.pa.2s.état"] = { enum = FLEXION_STATES },
-    ["ind.pa.3s.état"] = { enum = FLEXION_STATES },
-    ["ind.pa.1p.état"] = { enum = FLEXION_STATES },
-    ["ind.pa.2p.état"] = { enum = FLEXION_STATES },
-    ["ind.pa.3p.état"] = { enum = FLEXION_STATES },
+    ["ind.pa.état"] = { enum = flexionStates },
     -- Indicatif plus-que-parfait
-    ["ind.pqp.état"] = { enum = FLEXION_STATES },
-    ["ind.pqp.1s.état"] = { enum = FLEXION_STATES },
-    ["ind.pqp.2s.état"] = { enum = FLEXION_STATES },
-    ["ind.pqp.3s.état"] = { enum = FLEXION_STATES },
-    ["ind.pqp.1p.état"] = { enum = FLEXION_STATES },
-    ["ind.pqp.2p.état"] = { enum = FLEXION_STATES },
-    ["ind.pqp.3p.état"] = { enum = FLEXION_STATES },
+    ["ind.pqp.état"] = { enum = flexionStates },
     -- Indicatif futur antérieur
-    ["ind.fa.état"] = { enum = FLEXION_STATES },
-    ["ind.fa.1s.état"] = { enum = FLEXION_STATES },
-    ["ind.fa.2s.état"] = { enum = FLEXION_STATES },
-    ["ind.fa.3s.état"] = { enum = FLEXION_STATES },
-    ["ind.fa.1p.état"] = { enum = FLEXION_STATES },
-    ["ind.fa.2p.état"] = { enum = FLEXION_STATES },
-    ["ind.fa.3p.état"] = { enum = FLEXION_STATES },
+    ["ind.fa.état"] = { enum = flexionStates },
 
     -- Subjonctif
-    ["subj.état"] = { enum = FLEXION_STATES },
+    ["subj.état"] = { enum = flexionStates },
     -- Subjonctif présent
     ["subj.pr.1s"] = {},
     ["subj.pr.2s"] = {},
@@ -692,13 +530,13 @@ function p.conj(frame)
     ["subj.pr.1p"] = {},
     ["subj.pr.2p"] = {},
     ["subj.pr.3p"] = {},
-    ["subj.pr.état"] = { enum = FLEXION_STATES },
-    ["subj.pr.1s.état"] = { enum = FLEXION_STATES },
-    ["subj.pr.2s.état"] = { enum = FLEXION_STATES },
-    ["subj.pr.3s.état"] = { enum = FLEXION_STATES },
-    ["subj.pr.1p.état"] = { enum = FLEXION_STATES },
-    ["subj.pr.2p.état"] = { enum = FLEXION_STATES },
-    ["subj.pr.3p.état"] = { enum = FLEXION_STATES },
+    ["subj.pr.état"] = { enum = flexionStates },
+    ["subj.pr.1s.état"] = { enum = flexionStates },
+    ["subj.pr.2s.état"] = { enum = flexionStates },
+    ["subj.pr.3s.état"] = { enum = flexionStates },
+    ["subj.pr.1p.état"] = { enum = flexionStates },
+    ["subj.pr.2p.état"] = { enum = flexionStates },
+    ["subj.pr.3p.état"] = { enum = flexionStates },
     -- Subjonctif imparfait
     ["subj.imp.1s"] = {},
     ["subj.imp.2s"] = {},
@@ -706,32 +544,20 @@ function p.conj(frame)
     ["subj.imp.1p"] = {},
     ["subj.imp.2p"] = {},
     ["subj.imp.3p"] = {},
-    ["subj.imp.état"] = { enum = FLEXION_STATES },
-    ["subj.imp.1s.état"] = { enum = FLEXION_STATES },
-    ["subj.imp.2s.état"] = { enum = FLEXION_STATES },
-    ["subj.imp.3s.état"] = { enum = FLEXION_STATES },
-    ["subj.imp.1p.état"] = { enum = FLEXION_STATES },
-    ["subj.imp.2p.état"] = { enum = FLEXION_STATES },
-    ["subj.imp.3p.état"] = { enum = FLEXION_STATES },
+    ["subj.imp.état"] = { enum = flexionStates },
+    ["subj.imp.1s.état"] = { enum = flexionStates },
+    ["subj.imp.2s.état"] = { enum = flexionStates },
+    ["subj.imp.3s.état"] = { enum = flexionStates },
+    ["subj.imp.1p.état"] = { enum = flexionStates },
+    ["subj.imp.2p.état"] = { enum = flexionStates },
+    ["subj.imp.3p.état"] = { enum = flexionStates },
     -- Subjonctif passé
-    ["subj.p.état"] = { enum = FLEXION_STATES },
-    ["subj.p.1s.état"] = { enum = FLEXION_STATES },
-    ["subj.p.2s.état"] = { enum = FLEXION_STATES },
-    ["subj.p.3s.état"] = { enum = FLEXION_STATES },
-    ["subj.p.1p.état"] = { enum = FLEXION_STATES },
-    ["subj.p.2p.état"] = { enum = FLEXION_STATES },
-    ["subj.p.3p.état"] = { enum = FLEXION_STATES },
+    ["subj.p.état"] = { enum = flexionStates },
     -- Subjonctif plus-que-parfait
-    ["subj.pqp.état"] = { enum = FLEXION_STATES },
-    ["subj.pqp.1s.état"] = { enum = FLEXION_STATES },
-    ["subj.pqp.2s.état"] = { enum = FLEXION_STATES },
-    ["subj.pqp.3s.état"] = { enum = FLEXION_STATES },
-    ["subj.pqp.1p.état"] = { enum = FLEXION_STATES },
-    ["subj.pqp.2p.état"] = { enum = FLEXION_STATES },
-    ["subj.pqp.3p.état"] = { enum = FLEXION_STATES },
+    ["subj.pqp.état"] = { enum = flexionStates },
 
     -- Conditionnel
-    ["cond.état"] = { enum = FLEXION_STATES },
+    ["cond.état"] = { enum = flexionStates },
     -- Conditionnel présent
     ["cond.pr.1s"] = {},
     ["cond.pr.2s"] = {},
@@ -739,42 +565,33 @@ function p.conj(frame)
     ["cond.pr.1p"] = {},
     ["cond.pr.2p"] = {},
     ["cond.pr.3p"] = {},
-    ["cond.pr.état"] = { enum = FLEXION_STATES },
-    ["cond.pr.1s.état"] = { enum = FLEXION_STATES },
-    ["cond.pr.2s.état"] = { enum = FLEXION_STATES },
-    ["cond.pr.3s.état"] = { enum = FLEXION_STATES },
-    ["cond.pr.1p.état"] = { enum = FLEXION_STATES },
-    ["cond.pr.2p.état"] = { enum = FLEXION_STATES },
-    ["cond.pr.3p.état"] = { enum = FLEXION_STATES },
+    ["cond.pr.état"] = { enum = flexionStates },
+    ["cond.pr.1s.état"] = { enum = flexionStates },
+    ["cond.pr.2s.état"] = { enum = flexionStates },
+    ["cond.pr.3s.état"] = { enum = flexionStates },
+    ["cond.pr.1p.état"] = { enum = flexionStates },
+    ["cond.pr.2p.état"] = { enum = flexionStates },
+    ["cond.pr.3p.état"] = { enum = flexionStates },
     -- Conditionnel passé
-    ["cond.p.état"] = { enum = FLEXION_STATES },
-    ["cond.p.1s.état"] = { enum = FLEXION_STATES },
-    ["cond.p.2s.état"] = { enum = FLEXION_STATES },
-    ["cond.p.3s.état"] = { enum = FLEXION_STATES },
-    ["cond.p.1p.état"] = { enum = FLEXION_STATES },
-    ["cond.p.2p.état"] = { enum = FLEXION_STATES },
-    ["cond.p.3p.état"] = { enum = FLEXION_STATES },
+    ["cond.p.état"] = { enum = flexionStates },
 
     -- Impératif
-    ["imp.état"] = { enum = FLEXION_STATES },
+    ["imp.état"] = { enum = flexionStates },
     -- Impératif présent
     ["imp.pr.2s"] = {},
     ["imp.pr.1p"] = {},
     ["imp.pr.2p"] = {},
-    ["imp.pr.état"] = { enum = FLEXION_STATES },
-    ["imp.pr.2s.état"] = { enum = FLEXION_STATES },
-    ["imp.pr.1p.état"] = { enum = FLEXION_STATES },
-    ["imp.pr.2p.état"] = { enum = FLEXION_STATES },
+    ["imp.pr.état"] = { enum = flexionStates },
+    ["imp.pr.2s.état"] = { enum = flexionStates },
+    ["imp.pr.1p.état"] = { enum = flexionStates },
+    ["imp.pr.2p.état"] = { enum = flexionStates },
     -- Impératif passé
-    ["imp.p.état"] = { enum = FLEXION_STATES },
-    ["imp.p.2s.état"] = { enum = FLEXION_STATES },
-    ["imp.p.1p.état"] = { enum = FLEXION_STATES },
-    ["imp.p.2p.état"] = { enum = FLEXION_STATES },
+    ["imp.p.état"] = { enum = flexionStates },
   })
 
   local infinitive = args[1]
-  local reflexive = args["pronominal"]
-  local auxiliary = (reflexive or args["aux-être"]) and m_gen.etreConj or m_gen.avoirConj
+  local pronominal = args["pronominal"]
+  local auxEtre = args["aux-être"]
   local group3 = args["groupe3"]
   local mutationType = args["mutation"]
   local template = args["modèle"]
@@ -783,9 +600,9 @@ function p.conj(frame)
     error(mw.ustring.format('Le verbe "%s" ne commence pas par un "h"', infinitive))
   end
 
-  local specifiedForms, defectiveForms = parseFlexions(infinitive, args)
-  local simpleTenses, actualGroup = m_gen.generateFlexions(infinitive, group3, mutationType, template, specifiedForms)
-  return renderPage(completeTable(auxiliary, simpleTenses), actualGroup, reflexive, aspiratedH, defectiveForms)
+  local spec = parseSpecs(aspiratedH, pronominal, auxEtre, args)
+  local verb, group = m_gen.generateFlexions(infinitive, group3, mutationType, template, spec)
+  return renderPage(verb, group, spec)
 end
 
 return p

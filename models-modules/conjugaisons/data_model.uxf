@@ -1,0 +1,375 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<diagram program="umlet" version="14.3.0">
+  <zoom_level>10</zoom_level>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>930</x>
+      <y>60</y>
+      <w>360</w>
+      <h>60</h>
+    </coordinates>
+    <panel_attributes>Verb
+--
+--
+[C] new(spec: VerbSpec, modes: VerbMode[])</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>780</x>
+      <y>230</y>
+      <w>660</w>
+      <h>160</h>
+    </coordinates>
+    <panel_attributes>VerbMode
+--
+- isEmpty: boolean
++ prependQue: boolean
++ reversedPronouns: boolean
+--
+[C] new(spec: ModeSpec, tenses: VerbTense[], tenses: Tense[], prependQue: boolean, reversedPronouns: boolean)
+isGray(): boolean
+getStatus(): string?
+# onTenseUpdate()</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>940</x>
+      <y>470</y>
+      <w>330</w>
+      <h>130</h>
+    </coordinates>
+    <panel_attributes>VerbTense
+--
+- isEmpty: boolean
+--
+[C] new(spec: TenseSpec, forms: VerbForm[])
+isGray(): boolean
+getStatus(): string?
+# onFormUpdate()</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>1010</x>
+      <y>110</y>
+      <w>110</w>
+      <h>140</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;-[name]
+m1=*
+r1=+ modes</panel_attributes>
+    <additional_attributes>30.0;120.0;30.0;10.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>950</x>
+      <y>380</y>
+      <w>110</w>
+      <h>110</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;-[name]
+m1=*
+r1=+ tenses</panel_attributes>
+    <additional_attributes>30.0;90.0;30.0;10.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>1230</x>
+      <y>380</y>
+      <w>80</w>
+      <h>110</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;-
+m1=1
+r1=+ mode</panel_attributes>
+    <additional_attributes>10.0;10.0;10.0;90.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>1170</x>
+      <y>110</y>
+      <w>80</w>
+      <h>140</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;-
+m1=1
+r1=+ verb</panel_attributes>
+    <additional_attributes>10.0;10.0;10.0;120.0</additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>180</x>
+      <y>230</y>
+      <w>160</w>
+      <h>60</h>
+    </coordinates>
+    <panel_attributes>ModeSpec
+--
++ status: string?</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>150</x>
+      <y>470</y>
+      <w>230</w>
+      <h>60</h>
+    </coordinates>
+    <panel_attributes>TenseSpec
+--
++ status: string?</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>280</x>
+      <y>280</y>
+      <w>140</w>
+      <h>210</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;-[name]
+m1=*
+r1=+ tenseSpecs</panel_attributes>
+    <additional_attributes>30.0;190.0;30.0;10.0</additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>170</x>
+      <y>60</y>
+      <w>180</w>
+      <h>90</h>
+    </coordinates>
+    <panel_attributes>VerbSpec
+--
++ aspiratedH: boolean
++ pronominal: boolean
++ auxEtre: boolean</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>290</x>
+      <y>140</y>
+      <w>150</w>
+      <h>110</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;-[name]
+m1=*
+r1=+ modeSpecs</panel_attributes>
+    <additional_attributes>30.0;90.0;30.0;10.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>340</x>
+      <y>50</y>
+      <w>610</w>
+      <h>50</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;-
+m1=1
+r1=+ spec</panel_attributes>
+    <additional_attributes>10.0;20.0;590.0;20.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>330</x>
+      <y>220</y>
+      <w>470</w>
+      <h>50</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;-
+m1=1
+r1=+ spec</panel_attributes>
+    <additional_attributes>10.0;20.0;450.0;20.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>370</x>
+      <y>460</y>
+      <w>590</w>
+      <h>50</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;-
+m1=1
+r1=+ spec</panel_attributes>
+    <additional_attributes>10.0;20.0;570.0;20.0</additional_attributes>
+  </element>
+  <element>
+    <id>UMLInterface</id>
+    <coordinates>
+      <x>490</x>
+      <y>290</y>
+      <w>100</w>
+      <h>120</h>
+    </coordinates>
+    <panel_attributes>status
+--
+DISABLED
+RARE
+GRAY</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>180</x>
+      <y>680</y>
+      <w>170</w>
+      <h>60</h>
+    </coordinates>
+    <panel_attributes>FormSpec
+--
++ status: string?
++ form: string?</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>290</x>
+      <y>520</y>
+      <w>140</w>
+      <h>180</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;-[index]
+m1=*
+r1=+ formSpecs</panel_attributes>
+    <additional_attributes>30.0;160.0;30.0;10.0</additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>860</x>
+      <y>680</y>
+      <w>490</w>
+      <h>170</h>
+    </coordinates>
+    <panel_attributes>VerbForm
+--
+- pronounIndex: number
+- pronoun: string?
+- form: string?
+--
+[C] new(spec: FormSpec, tense: VerbTense, pronounIndex: number)
+isGray(): boolean
+getPronoun(): string?
+getForm(): string?
+setForm(s: string?)</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>1180</x>
+      <y>590</y>
+      <w>80</w>
+      <h>110</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;-
+m1=1
+r1=+ tense</panel_attributes>
+    <additional_attributes>10.0;10.0;10.0;90.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>990</x>
+      <y>590</y>
+      <w>100</w>
+      <h>110</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;-[index]
+m1=*
+r1=+ forms</panel_attributes>
+    <additional_attributes>30.0;90.0;30.0;10.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>340</x>
+      <y>670</y>
+      <w>540</w>
+      <h>50</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;-
+m1=1
+r1=+ spec</panel_attributes>
+    <additional_attributes>10.0;20.0;520.0;20.0</additional_attributes>
+  </element>
+  <element>
+    <id>UMLNote</id>
+    <coordinates>
+      <x>1440</x>
+      <y>10</y>
+      <w>130</w>
+      <h>160</h>
+    </coordinates>
+    <panel_attributes>Pronoun indices
+-1 = en
+0 = ø
+1 = je
+2 = tu
+3 = il/elle/on
+4 = nous
+5 = vous
+6 = ils/elles
+bg=yellow</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>200</x>
+      <y>520</y>
+      <w>120</w>
+      <h>180</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;-
+m1=1
+r1=+ tenseSpec</panel_attributes>
+    <additional_attributes>10.0;10.0;10.0;160.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>190</x>
+      <y>280</y>
+      <w>120</w>
+      <h>210</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;-
+m1=1
+r1=+ modeSpec</panel_attributes>
+    <additional_attributes>10.0;10.0;10.0;190.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>190</x>
+      <y>140</y>
+      <w>110</w>
+      <h>110</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;-
+m1=1
+r1=+ verbSpec</panel_attributes>
+    <additional_attributes>10.0;10.0;10.0;90.0</additional_attributes>
+  </element>
+</diagram>

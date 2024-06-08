@@ -300,9 +300,24 @@ end
 --- @param verb Verb A Verb object.
 --- @param group number The verb’s group, either 1, 2 or 3.
 --- @param templateVerb string|nil The verb the specified one is conjugated like.
+--- @param num number A number to append to section IDs.
 --- @return string The generated wikicode.
-local function renderPage(verb, group, templateVerb)
+local function renderPage(verb, group, templateVerb, num)
   local page = mw.html.create()
+
+  local idSuffix = num and ("-" .. tostring(num)) or ""
+  -- Links to modes sections
+  local small = page:tag("small")
+  small:wikitext(mw.ustring.format("[[#mode-impersonnel%s|Modes impersonnels]]", idSuffix))
+  small:wikitext(" – ")
+  small:wikitext(mw.ustring.format("[[#mode-indicatif%s|Indicatif]]", idSuffix))
+  small:wikitext(" – ")
+  small:wikitext(mw.ustring.format("[[#mode-subjonctif%s|Subjonctif]]", idSuffix))
+  small:wikitext(" – ")
+  small:wikitext(mw.ustring.format("[[#mode-conditionnel%s|Conditionnel]]", idSuffix))
+  small:wikitext(" – ")
+  small:wikitext(mw.ustring.format("[[#mode-impératif%s|Impératif]]", idSuffix))
+  small:wikitext("\n\n")
 
   local inf = verb.modes["infinitif"].tenses["present"].forms[1]
   local introText = mw.ustring.format(
@@ -330,6 +345,8 @@ local function renderPage(verb, group, templateVerb)
   page:wikitext(introText)
 
   page:tag("h3")
+      :tag("span")
+      :attr("id", "mode-impersonnel" .. idSuffix)
       :wikitext("Modes impersonnels")
   page:tag("div")
       :attr("style", "margin: 0.5em 2em")
@@ -337,6 +354,8 @@ local function renderPage(verb, group, templateVerb)
 
   local mode = verb.modes["indicatif"]
   page:tag("h3")
+      :tag("span")
+      :attr("id", "mode-indicatif" .. idSuffix)
       :attr("style", mode:isGray() and GRAY_STYLE or "")
       :wikitext(formatTitle("Indicatif", mode))
   page:tag("div")
@@ -345,6 +364,8 @@ local function renderPage(verb, group, templateVerb)
 
   mode = verb.modes["subjonctif"]
   page:tag("h3")
+      :tag("span")
+      :attr("id", "mode-subjonctif" .. idSuffix)
       :attr("style", mode:isGray() and GRAY_STYLE or "")
       :wikitext(formatTitle("Subjonctif", mode))
   page:tag("div")
@@ -353,6 +374,8 @@ local function renderPage(verb, group, templateVerb)
 
   mode = verb.modes["conditionnel"]
   page:tag("h3")
+      :tag("span")
+      :attr("id", "mode-conditionnel" .. idSuffix)
       :attr("style", mode:isGray() and GRAY_STYLE or "")
       :wikitext(formatTitle("Conditionnel", mode))
   page:tag("div")
@@ -361,6 +384,8 @@ local function renderPage(verb, group, templateVerb)
 
   mode = verb.modes["imperatif"]
   page:tag("h3")
+      :tag("span")
+      :attr("id", "mode-impératif" .. idSuffix)
       :attr("style", mode:isGray() and GRAY_STYLE or "")
       :wikitext(formatTitle("Impératif", mode))
   page:tag("div")
@@ -507,6 +532,9 @@ function p.conj(frame)
     ["modèle"] = { enum = templates },
     ["h-aspiré"] = { type = m_params.BOOLEAN, default = false },
     ["impersonnel"] = { enum = m_model.IMPERSONAL_STATES },
+    ["num"] = { type = m_params.INT, checker = function(num)
+      return num >= 1
+    end },
 
     -- Full forms and defective tenses
 
@@ -714,6 +742,7 @@ function p.conj(frame)
   local template = args["modèle"]
   local aspiratedH = args["h-aspiré"]
   local impersonal = args["impersonnel"]
+  local num = args["num"]
   if aspiratedH and mw.ustring.sub(infinitive, 1, 1) ~= "h" then
     error(mw.ustring.format('Le verbe "%s" ne commence pas par un "h"', infinitive))
   end
@@ -721,7 +750,7 @@ function p.conj(frame)
   -- TODO wrap errors
   local spec = parseSpecs(aspiratedH, pronominal, auxEtre, impersonal, args)
   local verb, group, templateVerb = m_gen.generateFlexions(infinitive, group3, mutationType, template, spec)
-  return renderPage(verb, group, templateVerb)
+  return renderPage(verb, group, templateVerb, num)
 end
 
 return p

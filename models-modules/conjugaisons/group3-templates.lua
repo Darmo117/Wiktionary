@@ -1,12 +1,13 @@
 local m_table = require("Module:table")
 
+-- TODO simplifier structure : mettre les formes des participes et gérondifs dans des tables à 1 élément plutot que des string directement
 local data = {
   ["absoudre"] = {
     ending = "soudre",
     endings = {
       participe = {
-        present = "solvant",
-        passe = "sous",
+        present = { "solvant" },
+        passe = { "sous" },
       },
       indicatif = {
         present = { "sous", "sous", "sout", "solvons", "solvez", "solvent" },
@@ -30,8 +31,8 @@ local data = {
     ending = "quérir",
     endings = {
       participe = {
-        present = "quérant",
-        passe = "quis",
+        present = { "quérant" },
+        passe = { "quis" },
       },
       indicatif = {
         present = { "quiers", "quiers", "quiert", "quérons", "quérez", "quièrent" },
@@ -55,8 +56,8 @@ local data = {
     ending = "aller",
     endings = {
       participe = {
-        present = "allant",
-        passe = "allé",
+        present = { "allant" },
+        passe = { "allé" },
       },
       indicatif = {
         present = { "vais", "vas", "va", "allons", "allez", "vont" },
@@ -80,8 +81,8 @@ local data = {
     ending = "asseoir",
     endings = {
       participe = {
-        present = "asseyant",
-        passe = "assis",
+        present = { "asseyant" },
+        passe = { "assis" },
       },
       indicatif = {
         present = { "assieds", "assieds", "assied", "asseyons", "asseyez", "asseyent" },
@@ -105,8 +106,8 @@ local data = {
     ending = "battre",
     endings = {
       participe = {
-        present = "battant",
-        passe = "battu",
+        present = { "battant" },
+        passe = { "battu" },
       },
       indicatif = {
         present = { "bats", "bats", "bat", "battons", "battez", "battent" },
@@ -130,8 +131,8 @@ local data = {
     ending = "boire",
     endings = {
       participe = {
-        present = "buvant",
-        passe = "bu",
+        present = { "buvant" },
+        passe = { "bu" },
       },
       indicatif = {
         present = { "bois", "bois", "boit", "buvons", "buvez", "boivent" },
@@ -155,8 +156,8 @@ local data = {
     ending = "bouillir",
     endings = {
       participe = {
-        present = "bouillant",
-        passe = "bouilli",
+        present = { "bouillant" },
+        passe = { "bouilli" },
       },
       indicatif = {
         present = { "bous", "bous", "bout", "bouillons", "bouillez", "bouillent" },
@@ -180,8 +181,8 @@ local data = {
     ending = "clore",
     endings = {
       participe = {
-        present = "closant",
-        passe = "clos",
+        present = { "closant" },
+        passe = { "clos" },
       },
       indicatif = {
         present = { "clos", "clos", "clôt", "closons", "closez", "closent" },
@@ -205,8 +206,8 @@ local data = {
     ending = "ire",
     endings = {
       participe = {
-        present = "isant",
-        passe = "it",
+        present = { "isant" },
+        passe = { "it" },
       },
       indicatif = {
         present = { "is", "is", "it", "isons", "isez", "isent" },
@@ -230,8 +231,8 @@ local data = {
     ending = "coudre",
     endings = {
       participe = {
-        present = "cousant",
-        passe = "cousu",
+        present = { "cousant" },
+        passe = { "cousu" },
       },
       indicatif = {
         present = { "couds", "couds", "coud", "cousons", "cousez", "cousent" },
@@ -253,8 +254,8 @@ local data = {
     ending = "courir",
     endings = {
       participe = {
-        present = "courant",
-        passe = "couru",
+        present = { "courant" },
+        passe = { "couru" },
       },
       indicatif = {
         present = { "cours", "cours", "court", "courons", "courez", "courent" },
@@ -278,8 +279,8 @@ local data = {
     ending = "croire",
     endings = {
       participe = {
-        present = "croyant",
-        passe = "cru",
+        present = { "croyant" },
+        passe = { "cru" },
       },
       indicatif = {
         present = { "crois", "crois", "croit", "croyons", "croyez", "croient" },
@@ -303,8 +304,8 @@ local data = {
     ending = "croître",
     endings = {
       participe = {
-        present = "croissant",
-        passe = "crû",
+        present = { "croissant" },
+        passe = { "crû" },
       },
       indicatif = {
         present = { "croîs", "croîs", "croît", "croissons", "croissez", "croissent" },
@@ -328,8 +329,8 @@ local data = {
     ending = "uire",
     endings = {
       participe = {
-        present = "uisant",
-        passe = "uit",
+        present = { "uisant" },
+        passe = { "uit" },
       },
       indicatif = {
         present = { "uis", "uis", "uit", "uisons", "uisez", "uisent" },
@@ -353,8 +354,8 @@ local data = {
     ending = "cueillir",
     endings = {
       participe = {
-        present = "cueillant",
-        passe = "cueilli",
+        present = { "cueillant" },
+        passe = { "cueilli" },
       },
       indicatif = {
         present = { "cueille", "cueilles", "cueille", "cueillons", "cueillez", "cueillent" },
@@ -378,8 +379,8 @@ local data = {
     ending = "aillir",
     endings = {
       participe = {
-        present = "aillant",
-        passe = "ailli",
+        present = { "aillant" },
+        passe = { "ailli" },
       },
       indicatif = {
         present = { "aille", "ailles", "aille", "aillons", "aillez", "aillent" },
@@ -403,8 +404,8 @@ local data = {
     ending = "devoir",
     endings = {
       participe = {
-        present = "devant",
-        passe = "dû",
+        present = { "devant" },
+        passe = { "dû" },
       },
       indicatif = {
         present = { "dois", "dois", "doit", "devons", "devez", "doivent" },
@@ -428,8 +429,8 @@ local data = {
     ending = "dormir",
     endings = {
       participe = {
-        present = "dormant",
-        passe = "dormi",
+        present = { "dormant" },
+        passe = { "dormi" },
       },
       indicatif = {
         present = { "dors", "dors", "dort", "dormons", "dormez", "dorment" },
@@ -453,8 +454,8 @@ local data = {
     ending = "éclore",
     endings = {
       participe = {
-        present = "éclosant",
-        passe = "éclos",
+        present = { "éclosant" },
+        passe = { "éclos" },
       },
       indicatif = {
         present = { "éclos", "éclos", "éclôt", "éclosons", "éclosez", "éclosent" },
@@ -478,8 +479,8 @@ local data = {
     ending = "crire",
     endings = {
       participe = {
-        present = "crivant",
-        passe = "crit",
+        present = { "crivant" },
+        passe = { "crit" },
       },
       indicatif = {
         present = { "cris", "cris", "crit", "crivons", "crivez", "crivent" },
@@ -503,8 +504,8 @@ local data = {
     ending = "faire",
     endings = {
       participe = {
-        present = "faisant",
-        passe = "fait",
+        present = { "faisant" },
+        passe = { "fait" },
       },
       indicatif = {
         present = { "fais", "fais", "fait", "faisons", "faites", "font" },
@@ -528,8 +529,8 @@ local data = {
     ending = "fuir",
     endings = {
       participe = {
-        present = "fuyant",
-        passe = "fui",
+        present = { "fuyant" },
+        passe = { "fui" },
       },
       indicatif = {
         present = { "fuis", "fuis", "fuit", "fuyons", "fuyez", "fuient" },
@@ -553,8 +554,8 @@ local data = {
     ending = "clure",
     endings = {
       participe = {
-        present = "cluant",
-        passe = "clus",
+        present = { "cluant" },
+        passe = { "clus" },
       },
       indicatif = {
         present = { "clus", "clus", "clut", "cluons", "cluez", "cluent" },
@@ -578,8 +579,8 @@ local data = {
     ending = "lire",
     endings = {
       participe = {
-        present = "lisant",
-        passe = "lu",
+        present = { "lisant" },
+        passe = { "lu" },
       },
       indicatif = {
         present = { "lis", "lis", "lit", "lisons", "lisez", "lisont" },
@@ -603,8 +604,8 @@ local data = {
     ending = "maudire",
     endings = {
       participe = {
-        present = "maudissant",
-        passe = "maudit",
+        present = { "maudissant" },
+        passe = { "maudit" },
       },
       indicatif = {
         present = { "maudis", "maudis", "maudit", "maudissons", "maudissez", "maudissent" },
@@ -628,8 +629,8 @@ local data = {
     ending = "mettre",
     endings = {
       participe = {
-        present = "mettant",
-        passe = "mis",
+        present = { "mettant" },
+        passe = { "mis" },
       },
       indicatif = {
         present = { "mets", "mets", "met", "mettons", "mettez", "mettent" },
@@ -653,8 +654,8 @@ local data = {
     ending = "moudre",
     endings = {
       participe = {
-        present = "moulant",
-        passe = "moulu",
+        present = { "moulant" },
+        passe = { "moulu" },
       },
       indicatif = {
         present = { "mouds", "mouds", "moud", "moulons", "moulez", "moulent" },
@@ -678,8 +679,8 @@ local data = {
     ending = "mourir",
     endings = {
       participe = {
-        present = "mourant",
-        passe = "mort",
+        present = { "mourant" },
+        passe = { "mort" },
       },
       indicatif = {
         present = { "meurs", "meurs", "meurt", "mourons", "mourez", "meurent" },
@@ -703,8 +704,8 @@ local data = {
     ending = "mouvoir",
     endings = {
       participe = {
-        present = "mouvant",
-        passe = "mû",
+        present = { "mouvant" },
+        passe = { "mû" },
       },
       indicatif = {
         present = { "meus", "meus", "meut", "mouvons", "mouvez", "meuvent" },
@@ -728,8 +729,8 @@ local data = {
     ending = "naître",
     endings = {
       participe = {
-        present = "naissant",
-        passe = "né",
+        present = { "naissant" },
+        passe = { "né" },
       },
       indicatif = {
         present = { "nais", "nais", "naît", "naissons", "naissez", "naissent" },
@@ -753,8 +754,8 @@ local data = {
     ending = "ouïr",
     endings = {
       participe = {
-        present = "ouïssant",
-        passe = "ouï",
+        present = { "ouïssant" },
+        passe = { "ouï" },
       },
       indicatif = {
         present = { "ouïs", "ouïs", "ouït", "ouïssons", "ouïssez", "ouïssent" },
@@ -778,12 +779,9 @@ local data = {
     ending = "ouïr",
     ignore_auto = true,
     endings = {
-      infinitif = {
-        present = "ouïr"
-      },
       participe = {
-        present = "oyant",
-        passe = "ouï",
+        present = { "oyant" },
+        passe = { "ouï" },
       },
       indicatif = {
         present = { "ois", "ois", "oit", "oyons", "oyez", "oient" },
@@ -807,8 +805,8 @@ local data = {
     ending = "ouvrir",
     endings = {
       participe = {
-        present = "ouvrant",
-        passe = "ouvert",
+        present = { "ouvrant" },
+        passe = { "ouvert" },
       },
       indicatif = {
         present = { "ouvre", "ouvres", "ouvre", "ouvrons", "ouvrez", "ouvrent" },
@@ -832,8 +830,8 @@ local data = {
     ending = "aître",
     endings = {
       participe = {
-        present = "aissant",
-        passe = "u",
+        present = { "aissant" },
+        passe = { "u" },
       },
       indicatif = {
         present = { "arais", "arais", "araît", "aissons", "aissez", "araissent" },
@@ -857,8 +855,8 @@ local data = {
     ending = "indre",
     endings = {
       participe = {
-        present = "ignant",
-        passe = "int",
+        present = { "ignant" },
+        passe = { "int" },
       },
       indicatif = {
         present = { "ins", "ins", "int", "ignons", "ignez", "ignent" },
@@ -882,8 +880,8 @@ local data = {
     ending = "aire",
     endings = {
       participe = {
-        present = "aisant",
-        passe = "u",
+        present = { "aisant" },
+        passe = { "u" },
       },
       indicatif = {
         present = { "ais", "ais", "aît", "aisons", "aisez", "aisent" },
@@ -907,8 +905,8 @@ local data = {
     ending = "pourvoir",
     endings = {
       participe = {
-        present = "pourvoyant",
-        passe = "pourvu",
+        present = { "pourvoyant" },
+        passe = { "pourvu" },
       },
       indicatif = {
         present = { "pourvois", "pourvois", "pourvoit", "pourvoyons", "pourvoyez", "pourvoient" },
@@ -932,8 +930,8 @@ local data = {
     ending = "pouvoir",
     endings = {
       participe = {
-        present = "pouvant",
-        passe = "pu",
+        present = { "pouvant" },
+        passe = { "pu" },
       },
       indicatif = {
         present = { "peux", "peux", "peut", "pouvons", "pouvez", "peuvent" },
@@ -954,8 +952,8 @@ local data = {
     ending = "dire",
     endings = {
       participe = {
-        present = "disant",
-        passe = "dit",
+        present = { "disant" },
+        passe = { "dit" },
       },
       indicatif = {
         present = { "dis", "dis", "dit", "disons", "disez", "disent" },
@@ -979,8 +977,8 @@ local data = {
     ending = "prendre",
     endings = {
       participe = {
-        present = "prenant",
-        passe = "pris",
+        present = { "prenant" },
+        passe = { "pris" },
       },
       indicatif = {
         present = { "prends", "prends", "prend", "prenons", "prenez", "prennent" },
@@ -1004,8 +1002,8 @@ local data = {
     ending = "prévaloir",
     endings = {
       participe = {
-        present = "prévalant",
-        passe = "prévalu",
+        present = { "prévalant" },
+        passe = { "prévalu" },
       },
       indicatif = {
         present = { "prévaux", "prévaux", "prévaut", "prévalons", "prévalez", "prévalent" },
@@ -1029,8 +1027,8 @@ local data = {
     ending = "prévoir",
     endings = {
       participe = {
-        present = "prévoyant",
-        passe = "prévu",
+        present = { "prévoyant" },
+        passe = { "prévu" },
       },
       indicatif = {
         present = { "prévois", "prévois", "prévoit", "prévoyons", "prévoyez", "prévoient" },
@@ -1054,8 +1052,8 @@ local data = {
     ending = "cevoir",
     endings = {
       participe = {
-        present = "cevant",
-        passe = "çu",
+        present = { "cevant" },
+        passe = { "çu" },
       },
       indicatif = {
         present = { "çois", "çois", "çoit", "cevons", "cevez", "çoivent" },
@@ -1079,8 +1077,8 @@ local data = {
     ending = "résoudre",
     endings = {
       participe = {
-        present = "résolvant",
-        passe = "résolu",
+        present = { "résolvant" },
+        passe = { "résolu" },
       },
       indicatif = {
         present = { "résous", "résous", "résout", "résolvons", "résolvez", "résolvent" },
@@ -1104,8 +1102,8 @@ local data = {
     ending = "rire",
     endings = {
       participe = {
-        present = "riant",
-        passe = "ri",
+        present = { "riant" },
+        passe = { "ri" },
       },
       indicatif = {
         present = { "ris", "ris", "rit", "rions", "riez", "rient" },
@@ -1129,8 +1127,8 @@ local data = {
     ending = "savoir",
     endings = {
       participe = {
-        present = "sachant",
-        passe = "su",
+        present = { "sachant" },
+        passe = { "su" },
       },
       indicatif = {
         present = { "sais", "sais", "sait", "savons", "savez", "savent" },
@@ -1154,8 +1152,8 @@ local data = {
     ending = "servir",
     endings = {
       participe = {
-        present = "servant",
-        passe = "servi",
+        present = { "servant" },
+        passe = { "servi" },
       },
       indicatif = {
         present = { "sers", "sers", "sert", "servons", "servez", "servent" },
@@ -1179,8 +1177,8 @@ local data = {
     ending = "tir",
     endings = {
       participe = {
-        present = "tant",
-        passe = "ti",
+        present = { "tant" },
+        passe = { "ti" },
       },
       indicatif = {
         present = { "s", "s", "t", "tons", "tez", "tent" },
@@ -1204,8 +1202,8 @@ local data = {
     ending = "suivre",
     endings = {
       participe = {
-        present = "suivant",
-        passe = "suivi",
+        present = { "suivant" },
+        passe = { "suivi" },
       },
       indicatif = {
         present = { "suis", "suis", "suit", "suivons", "suivez", "suivent" },
@@ -1229,8 +1227,8 @@ local data = {
     ending = "seoir",
     endings = {
       participe = {
-        present = "soyant",
-        passe = "sis",
+        present = { "soyant" },
+        passe = { "sis" },
       },
       indicatif = {
         present = { "sois", "sois", "soit", "soyons", "soyez", "soient" },
@@ -1254,8 +1252,8 @@ local data = {
     ending = "enir",
     endings = {
       participe = {
-        present = "enant",
-        passe = "enu",
+        present = { "enant" },
+        passe = { "enu" },
       },
       indicatif = {
         present = { "iens", "iens", "ient", "enons", "enez", "iennent" },
@@ -1279,8 +1277,8 @@ local data = {
     ending = "traire",
     endings = {
       participe = {
-        present = "trayant",
-        passe = "trait",
+        present = { "trayant" },
+        passe = { "trait" },
       },
       indicatif = {
         present = { "trais", "trais", "trait", "trayons", "trayez", "traient" },
@@ -1304,8 +1302,8 @@ local data = {
     ending = "vaincre",
     endings = {
       participe = {
-        present = "vaiquant",
-        passe = "vaincu",
+        present = { "vaiquant" },
+        passe = { "vaincu" },
       },
       indicatif = {
         present = { "vaincs", "vaincs", "vainc", "vainquons", "vainquez", "vainquent" },
@@ -1329,8 +1327,8 @@ local data = {
     ending = "valoir",
     endings = {
       participe = {
-        present = "valant",
-        passe = "valu",
+        present = { "valant" },
+        passe = { "valu" },
       },
       indicatif = {
         present = { "vaux", "vaux", "vaut", "valons", "valez", "valent" },
@@ -1354,8 +1352,8 @@ local data = {
     ending = "re",
     endings = {
       participe = {
-        present = "ant",
-        passe = "u",
+        present = { "ant" },
+        passe = { "u" },
       },
       indicatif = {
         present = { "s", "s", "", "ons", "ez", "ent" },
@@ -1379,8 +1377,8 @@ local data = {
     ending = "vivre",
     endings = {
       participe = {
-        present = "vivant",
-        passe = "vécu",
+        present = { "vivant" },
+        passe = { "vécu" },
       },
       indicatif = {
         present = { "vis", "vis", "vit", "vivons", "vivez", "vivent" },
@@ -1404,8 +1402,8 @@ local data = {
     ending = "voir",
     endings = {
       participe = {
-        present = "voyant",
-        passe = "vu",
+        present = { "voyant" },
+        passe = { "vu" },
       },
       indicatif = {
         present = { "vois", "vois", "voit", "voyons", "voyez", "voient" },
@@ -1429,8 +1427,8 @@ local data = {
     ending = "vouloir",
     endings = {
       participe = {
-        present = "voulant",
-        passe = "voulu",
+        present = { "voulant" },
+        passe = { "voulu" },
       },
       indicatif = {
         present = { "veux", "veux", "veut", "voulons", "voulez", "veulent" },
@@ -1460,7 +1458,7 @@ data["vêtir"].ending = "ir"
 
 -- Infinitive is always the same as the "ending" property, generate it
 for _, template in pairs(data) do
-  template.endings.infinitif = { present = template.ending }
+  template.endings.infinitif = { present = { template.ending } }
 end
 
 --- Replace all "î" with "i" in the given template table.
@@ -1493,21 +1491,21 @@ end
 
 data["absoudre-absout"] = m_table.deepcopy(data["absoudre"])
 data["absoudre-absout"].ignore_auto = true
-data["absoudre-absout"].endings.participe.passe = "sout"
+data["absoudre-absout"].endings.participe.passe = { "sout" }
 
 data["assoir-assois"] = m_table.deepcopy(data["surseoir"])
 data["assoir-assois"].ignore_auto = true
-data["assoir-assois"].endings.infinitif.present = "soir"
+data["assoir-assois"].endings.infinitif.present = { "soir" }
 
 data["croître-cru"] = m_table.deepcopy(data["croître"])
 data["croître-cru"].ignore_auto = true
-data["croître-cru"].endings.participe.passe = "cru"
+data["croître-cru"].endings.participe.passe = { "cru" }
 
 data["croitre"] = stripICirc(data["croître"])
 
 data["croitre-cru"] = m_table.deepcopy(data["croitre"])
 data["croitre-cru"].ignore_auto = true
-data["croitre-cru"].endings.participe.passe = "cru"
+data["croitre-cru"].endings.participe.passe = { "cru" }
 
 data["cuire-uîmes"] = m_table.deepcopy(data["cuire"])
 data["cuire-uîmes"].ignore_auto = true
@@ -1516,7 +1514,7 @@ data["cuire-uîmes"].endings.subjonctif.imparfait = { "uisse", "uisses", "uît",
 
 data["devoir-du"] = m_table.deepcopy(data["devoir"])
 data["devoir-du"].ignore_auto = true
-data["devoir-du"].endings.participe.passe = "du"
+data["devoir-du"].endings.participe.passe = { "du" }
 
 data["dire"] = m_table.deepcopy(data["prédire"])
 data["dire"].ignore_auto = true
@@ -1525,7 +1523,7 @@ data["dire"].endings.imperatif.present[3] = "dites"
 
 data["mouvoir-mu"] = m_table.deepcopy(data["mouvoir"])
 data["mouvoir-mu"].ignore_auto = true
-data["mouvoir-mu"].endings.participe.passe = "mu"
+data["mouvoir-mu"].endings.participe.passe = { "mu" }
 
 data["naitre"] = stripICirc(data["naître"])
 -- Correct forms that were incorrectly modified
@@ -1545,11 +1543,11 @@ data["plaire-plait"].ignore_auto = true
 
 data["résoudre-résous"] = m_table.deepcopy(data["résoudre"])
 data["résoudre-résous"].ignore_auto = true
-data["résoudre-résous"].endings.participe.passe = "résous"
+data["résoudre-résous"].endings.participe.passe = { "résous" }
 
 data["résoudre-résout"] = m_table.deepcopy(data["résoudre-résous"])
 data["résoudre-résout"].ignore_auto = true
-data["résoudre-résout"].endings.participe.passe = "résout"
+data["résoudre-résout"].endings.participe.passe = { "résout" }
 
 data["taire"] = m_table.deepcopy(data["plaire"])
 data["taire"].ignore_auto = true

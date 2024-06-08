@@ -4,10 +4,10 @@ local p = {}
 
 p.DISABLED = "-"
 p.RARE = "rare"
-p.GRAY = "gris"
+p.UNATTESTED = "?"
 
 p.STATES = {
-  p.DISABLED, p.RARE, p.GRAY
+  p.DISABLED, p.RARE, p.UNATTESTED
 }
 
 local PRONOUNS = {
@@ -116,15 +116,19 @@ p.FormSpec = {
   --- @type TenseSpec
   tenseSpec = nil,
 }
+p.FormSpec.__index = p.FormSpec
 
 --- @param status string|nil
 --- @return FormSpec
-function p.FormSpec:new(status)
-  local o = {}
-  setmetatable(o, self)
-  self.__index = self
+function p.FormSpec.new(status)
+  local self = setmetatable({}, p.FormSpec)
   self.status = status
-  return o
+  return self
+end
+
+--- @return boolean
+function p.FormSpec:isDisabled()
+  return self.status == p.DISABLED or self.tenseSpec:isDisabled()
 end
 
 --- @class TenseSpec
@@ -136,20 +140,24 @@ p.TenseSpec = {
   --- @type ModeSpec
   modeSpec = nil,
 }
+p.TenseSpec.__index = p.TenseSpec
 
 --- @param status string|nil
 --- @param formSpecs FormSpec[]
 --- @return TenseSpec
-function p.TenseSpec:new(status, formSpecs)
-  local o = {}
-  setmetatable(o, self)
-  self.__index = self
+function p.TenseSpec.new(status, formSpecs)
+  local self = setmetatable({}, p.TenseSpec)
   self.status = status
   self.formSpecs = formSpecs
   for _, formSpec in ipairs(formSpecs) do
     formSpec.tenseSpec = self
   end
-  return o
+  return self
+end
+
+--- @return boolean
+function p.TenseSpec:isDisabled()
+  return self.status == p.DISABLED or self.modeSpec:isDisabled()
 end
 
 --- @class ModeSpec
@@ -161,20 +169,24 @@ p.ModeSpec = {
   --- @type VerbSpec
   verbSpec = nil,
 }
+p.ModeSpec.__index = p.ModeSpec
 
 --- @param status string|nil
 --- @param tenseSpecs table<string, TenseSpec>
 --- @return ModeSpec
-function p.ModeSpec:new(status, tenseSpecs)
-  local o = {}
-  setmetatable(o, self)
-  self.__index = self
+function p.ModeSpec.new(status, tenseSpecs)
+  local self = setmetatable({}, p.ModeSpec)
   self.status = status
   self.tenseSpecs = tenseSpecs
   for _, tenseSpec in pairs(tenseSpecs) do
     tenseSpec.modeSpec = self
   end
-  return o
+  return self
+end
+
+--- @return boolean
+function p.ModeSpec:isDisabled()
+  return self.status == p.DISABLED
 end
 
 --- @class VerbSpec
@@ -188,16 +200,15 @@ p.VerbSpec = {
   --- @type table<string, ModeSpec>
   modeSpecs = {},
 }
+p.VerbSpec.__index = p.VerbSpec
 
 --- @param aspiratedH boolean
 --- @param pronominal boolean
 --- @param auxEtre boolean
 --- @param modeSpecs table<string, ModeSpec>
 --- @return VerbSpec
-function p.VerbSpec:new(aspiratedH, pronominal, auxEtre, modeSpecs)
-  local o = {}
-  setmetatable(o, self)
-  self.__index = self
+function p.VerbSpec.new(aspiratedH, pronominal, auxEtre, modeSpecs)
+  local self = setmetatable({}, p.VerbSpec)
   self.aspiratedH = aspiratedH
   self.pronominal = pronominal
   self.auxEtre = auxEtre
@@ -205,7 +216,7 @@ function p.VerbSpec:new(aspiratedH, pronominal, auxEtre, modeSpecs)
   for _, modeSpec in pairs(modeSpecs) do
     modeSpec.verbSpec = self
   end
-  return o
+  return self
 end
 
 -------------
@@ -225,18 +236,16 @@ p.VerbForm = {
   --- @type string|nil
   _form = nil,
 }
+p.VerbForm.__index = p.VerbForm
 
 --- @param spec FormSpec
 --- @param pronounIndex number
 --- @return VerbForm
-function p.VerbForm:new(spec, pronounIndex)
-  local o = {}
-  setmetatable(o, self)
-  self.__index = self
+function p.VerbForm.new(spec, pronounIndex)
+  local self = setmetatable({}, p.VerbForm)
   self.spec = spec
   self._pronounIndex = pronounIndex
-  self:setForm(nil)
-  return o
+  return self
 end
 
 --- @return boolean
@@ -256,9 +265,7 @@ end
 
 --- @param form string|nil
 function p.VerbForm:setForm(form)
-  if form and self.spec.status == p.DISABLED
-      or self.spec.tenseSpec.status == p.DISABLED
-      or self.spec.tenseSpec.modeSpec.status == p.DISABLED then
+  if form and self.spec:isDisabled() then
     error("Une flexion désactivée ne peut pas être renseignée")
   end
 
@@ -271,22 +278,28 @@ function p.VerbForm:setForm(form)
     if self.tense.mode.reversedPronouns then
       self._pronoun = "-" .. DEMONSTRATIVE_PRONOUNS[i]
     else
-      --- @param table string[]
+      --- @param table string[][]
       --- @param liaison boolean
       --- @return string
       local function getPronoun(table, liaison)
-        return liaison and table[i] and table[i][2] or (table[i] and (table[i][1] .. " ") or "")
+        if not table[i] then
+          return ""
+        end
+        if liaison and table[i][2] then
+          return table[i][2]
+        end
+        return table[i][1] .. "&nbsp;"
       end
 
       local liaison = requiresLiaison(form, self.spec.tenseSpec.modeSpec.verbSpec.aspiratedH)
 
       if self.spec.tenseSpec.modeSpec.verbSpec.pronominal then
-        self._pronoun = (PRONOUNS[i] and (PRONOUNS[i][1] .. " ") or "") .. getPronoun(REFLEXIVE_PRONOUNS, liaison)
+        self._pronoun = (PRONOUNS[i] and (PRONOUNS[i][1] .. "&nbsp;") or "") .. getPronoun(REFLEXIVE_PRONOUNS, liaison)
       else
         self._pronoun = getPronoun(PRONOUNS, liaison)
       end
       if self.tense.mode.prependQue then
-        self._pronoun = getPronoun(QUE, requiresLiaison(self._pronoun)) .. self._pronoun
+        self._pronoun = (requiresLiaison(self._pronoun) and QUE[2] or (QUE[1] .. " ")) .. self._pronoun
       end
     end
   end
@@ -300,25 +313,25 @@ p.VerbTense = {
   spec = nil,
   --- @type VerbMode
   mode = nil,
-  --- @type table<string, VerbForm>
+  --- @type VerbForm[]
   forms = {},
   --- @type boolean
   _isEmpty = true,
 }
+p.VerbTense.__index = p.VerbTense
 
 --- @param spec TenseSpec
---- @param forms table<string, VerbForm>
+--- @param forms VerbForm[]
 --- @return VerbTense
-function p.VerbTense:new(spec, forms)
-  local o = {}
-  setmetatable(o, self)
-  self.__index = self
+function p.VerbTense.new(spec, forms)
+  local self = setmetatable({}, p.VerbTense)
   self.spec = spec
   self.forms = forms
-  for _, form in pairs(forms) do
+  for _, form in ipairs(forms) do
     form.tense = self
   end
-  return o
+  self._isEmpty = true
+  return self
 end
 
 --- @return boolean
@@ -332,13 +345,13 @@ function p.VerbTense:getStatus()
 end
 
 function p.VerbTense:_onFormUpdate()
-  for _, form in pairs(self.forms) do
-    if form._form then
+  self._isEmpty = true
+  for _, form in ipairs(self.forms) do
+    if form:getForm() then
       self._isEmpty = false
-      return
+      break
     end
   end
-  self._isEmpty = true
   self.mode:_onTenseUpdate()
 end
 
@@ -357,16 +370,15 @@ p.VerbMode = {
   --- @type boolean
   _isEmpty = true,
 }
+p.VerbMode.__index = p.VerbMode
 
 --- @param spec ModeSpec
 --- @param tenses table<string, VerbTense>
 --- @param prependQue boolean
 --- @param reversedPronouns boolean
 --- @return VerbMode
-function p.VerbMode:new(spec, tenses, prependQue, reversedPronouns)
-  local o = {}
-  setmetatable(o, self)
-  self.__index = self
+function p.VerbMode.new(spec, tenses, prependQue, reversedPronouns)
+  local self = setmetatable({}, p.VerbMode)
   self.spec = spec
   self.tenses = tenses
   for _, tense in pairs(tenses) do
@@ -374,7 +386,8 @@ function p.VerbMode:new(spec, tenses, prependQue, reversedPronouns)
   end
   self.prependQue = prependQue
   self.reversedPronouns = reversedPronouns
-  return o
+  self._isEmpty = true
+  return self
 end
 
 --- @return boolean
@@ -388,13 +401,13 @@ function p.VerbMode:getStatus()
 end
 
 function p.VerbMode:_onTenseUpdate()
+  self._isEmpty = true
   for _, tense in pairs(self.tenses) do
-    if not tense._isEmpty then
+    if tense:getStatus() ~= p.DISABLED then
       self._isEmpty = false
-      return
+      break
     end
   end
-  self._isEmpty = true
 end
 
 --- @class Verb
@@ -404,27 +417,25 @@ p.Verb = {
   --- @type VerbMode[]
   modes = {},
 }
+p.Verb.__index = p.Verb
 
 --- @param spec VerbSpec
 --- @param modes VerbMode[]
 --- @return Verb
-function p.Verb:new(spec, modes)
-  local o = {}
-  setmetatable(o, self)
-  self.__index = self
+function p.Verb.new(spec, modes)
+  local self = setmetatable({}, p.Verb)
   self.spec = spec
   self.modes = modes
   for _, mode in pairs(modes) do
     mode.verb = self
   end
-  return o
+  return self
 end
 
 -----------------
 --- Functions ---
 -----------------
 
--- FIXME revoir constructeurs
 --- Create a new empty verb specification.
 --- @param aspiratedH boolean Whether the initial "h" of the verb should prevent a liaison.
 --- @param pronominal boolean Whether the verb is pronominal.
@@ -437,18 +448,13 @@ function p.newVerbSpec(aspiratedH, pronominal, auxEtre)
     for tenseName, indices in pairs(mode.tenses) do
       local formSpecs = {}
       for _ = 1, #indices do
-        table.insert(formSpecs, p.FormSpec:new(nil))
+        table.insert(formSpecs, p.FormSpec.new(nil))
       end
-      tenseSpecs[tenseName] = p.TenseSpec:new(nil, formSpecs)
+      tenseSpecs[tenseName] = p.TenseSpec.new(nil, formSpecs)
     end
-    mw.logObject(modeName) -- DEBUG
-    mw.logObject(tenseSpecs) -- DEBUG
-    modeSpecs[modeName] = p.ModeSpec:new(nil, tenseSpecs)
+    modeSpecs[modeName] = p.ModeSpec.new(nil, tenseSpecs)
   end
-  mw.logObject(modeSpecs["indicatif"].tenseSpecs) -- DEBUG
-  mw.logObject(modeSpecs["imperatif"].tenseSpecs) -- DEBUG
-  mw.logObject(modeSpecs["infinitif"].tenseSpecs == modeSpecs["imperatif"].tenseSpecs) -- DEBUG
-  return p.VerbSpec:new(aspiratedH, pronominal, auxEtre, modeSpecs)
+  return p.VerbSpec.new(aspiratedH, pronominal, auxEtre, modeSpecs)
 end
 
 --- Create a new unpopulated Verb object from the given spec.
@@ -458,27 +464,16 @@ function p.newVerb(spec)
   local modes = {}
   for modeName, mode in pairs(STRUCT) do
     local tenses = {}
-    -- DEBUG
-    mw.logObject(modeName)
-    mw.logObject(spec.modeSpecs[modeName].tenseSpecs)
     for tenseName, indices in pairs(mode.tenses) do
-      -- DEBUG
-      --mw.logObject(modeName .. " " .. tenseName)
-      --mw.logObject(spec.modeSpecs[modeName].tenseSpecs[tenseName])
       local forms = {}
       for i, j in ipairs(indices) do
-        --table.insert(forms, p.VerbForm:new(spec
-        --    .modeSpecs[modeName]
-        --    .tenseSpecs[tenseName] -- FIXME returns nil
-        --    .formSpecs
-        --[i],
-        --    j))
+        table.insert(forms, p.VerbForm.new(spec.modeSpecs[modeName].tenseSpecs[tenseName].formSpecs[i], j))
       end
-      tenses[tenseName] = p.VerbTense:new(spec.modeSpecs[modeName].tenseSpecs[tenseName], forms)
+      tenses[tenseName] = p.VerbTense.new(spec.modeSpecs[modeName].tenseSpecs[tenseName], forms)
     end
-    modes[modeName] = p.VerbMode:new(spec.modeSpecs[modeName], tenses, mode.usesQue, mode.reversedPronouns)
+    modes[modeName] = p.VerbMode.new(spec.modeSpecs[modeName], tenses, mode.usesQue, mode.reversedPronouns)
   end
-  return p.Verb:new(spec, modes)
+  return p.Verb.new(spec, modes)
 end
 
 return p

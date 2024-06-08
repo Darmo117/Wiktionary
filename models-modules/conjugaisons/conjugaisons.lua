@@ -23,20 +23,22 @@ end
 
 --- Format a title.
 --- @param base string The base title.
---- @param tense VerbTense|VerbMode The verb tense/mode this title represents.
+--- @param tenseOrMode VerbTense|VerbMode The verb tense/mode this title represents.
 --- @return string The formatted header.
-local function formatTitle(base, tense)
-  local state = tense:getStatus()
+local function formatTitle(base, tenseOrMode)
+  local state = tenseOrMode:getStatus()
   if state then
     local text
     if state == m_model.DISABLED then
       text = "défectif"
     elseif state == m_model.RARE then
       text = "rare"
+    elseif state == m_model.UNATTESTED then
+      text = "inattesté"
     else
-      error("État invalide : " .. state)
+      error("État invalide : " .. tostring(state))
     end
-    return base .. mw.ustring.format(" (%s)", state)
+    return base .. mw.ustring.format(" (%s)", text)
   end
   return base
 end
@@ -88,10 +90,12 @@ local function generateImpersonalTable(verb)
            :attr("style", "width: 8%; background-color: #ffddaa")
            :wikitext("[[mode#fr|Mode]]")
   headerRow:tag("th")
+           :attr("colspan", "2")
            :attr("scope", "colgroup")
            :attr("style", "width: 46%; background-color: #ffeebb")
            :wikitext("[[présent#fr|Présent]]")
   headerRow:tag("th")
+           :attr("colspan", "2")
            :attr("scope", "colgroup")
            :attr("style", "width: 46%; background-color: #ffeebb")
            :wikitext("[[passé#fr|Passé]]")
@@ -112,13 +116,13 @@ local function generateImpersonalTable(verb)
                :wikitext(infinitifPresent:getPronoun() or "")
   infinitiveRow:tag("td")
                :attr("style", "width: 23%; text-align: left; padding-left: 0")
-               :wikitext(formatVerbForm(infinitifPresent:getForm(), true))
+               :wikitext(formatVerbForm(infinitifPresent, true))
   infinitiveRow:tag("td")
                :attr("style", "width: 23%; text-align: right; padding-right: 0;" .. (infinitifPasse:isGray() and GRAY_STYLE or ""))
                :wikitext(infinitifPasse:getPronoun() or "")
   infinitiveRow:tag("td")
                :attr("style", "width: 23%; text-align: left; padding-left: 0;" .. (infinitifPasse:isGray() and GRAY_STYLE or ""))
-               :wikitext(formatVerbForm(infinitifPasse:getForm()))
+               :wikitext(formatVerbForm(infinitifPasse))
 
   local gerundRow = tableElement:tag("tr")
   gerundRow:tag("th")
@@ -129,13 +133,13 @@ local function generateImpersonalTable(verb)
            :wikitext(gerondifPresent:getPronoun() or "")
   gerundRow:tag("td")
            :attr("style", "text-align: left; padding-left: 0;" .. (gerondifPresent:isGray() and GRAY_STYLE or ""))
-           :wikitext(formatVerbForm(gerondifPresent:getForm()))
+           :wikitext(formatVerbForm(gerondifPresent))
   gerundRow:tag("td")
            :attr("style", "text-align: right; padding-right: 0;" .. (gerondifPasse:isGray() and GRAY_STYLE or ""))
            :wikitext(gerondifPasse:getPronoun() or "")
   gerundRow:tag("td")
            :attr("style", "text-align: left; padding-left: 0;" .. (gerondifPasse:isGray() and GRAY_STYLE or ""))
-           :wikitext(formatVerbForm(gerondifPasse:getForm()))
+           :wikitext(formatVerbForm(gerondifPasse))
 
   local participleRow = tableElement:tag("tr")
   participleRow:tag("th")
@@ -144,11 +148,11 @@ local function generateImpersonalTable(verb)
   participleRow:tag("td")
   participleRow:tag("td")
                :attr("style", "text-align: left;" .. (participePresent:isGray() and GRAY_STYLE or ""))
-               :wikitext(formatVerbForm(participePresent:getForm(), true))
+               :wikitext(formatVerbForm(participePresent, true))
   participleRow:tag("td")
   participleRow:tag("td")
                :attr("style", "text-align: left;" .. (participePasse:isGray() and GRAY_STYLE or ""))
-               :wikitext(formatVerbForm(participePasse:getForm(), true))
+               :wikitext(formatVerbForm(participePasse, true))
 
   return tostring(tableElement)
 end
@@ -173,7 +177,10 @@ local function generateTensesRows(tableElement, verb, mode, simpleTenseName, tit
   createTenseTableHeader(headerRow, simpleTense, title1, color1, 50, colsNb)
   createTenseTableHeader(headerRow, compoundTense, title2, color2, 50, colsNb)
 
-  for i = 1, #simpleTense.forms do
+  local simpleDef = simpleTense:getStatus() == m_model.DISABLED
+  local compoundDef = compoundTense:getStatus() == m_model.DISABLED
+
+  for i = 1, (simpleDef and compoundDef and 1 or #simpleTense.forms) do
     local row = tableElement:tag("tr")
 
     local simpleForm = simpleTense.forms[i]
@@ -181,8 +188,8 @@ local function generateTensesRows(tableElement, verb, mode, simpleTenseName, tit
     local simpleStyle = simpleForm:isGray() and GRAY_STYLE or ""
     local compoundStyle = compoundForm:isGray() and GRAY_STYLE or ""
 
-    local formattedSimpleForm = formatVerbForm(simpleForm:getForm(), true)
-    local formattedCompoundForm = formatVerbForm(compoundForm:getForm())
+    local formattedSimpleForm = simpleDef and i > 1 and "" or formatVerbForm(simpleForm, true)
+    local formattedCompoundForm = compoundDef and i > 1 and "" or formatVerbForm(compoundForm)
 
     if colsNb == 2 then
       local simplePronoun = simpleForm:getPronoun() or ""
@@ -193,7 +200,7 @@ local function generateTensesRows(tableElement, verb, mode, simpleTenseName, tit
          :wikitext(reversedPronouns and formattedSimpleForm or simplePronoun)
       row:tag("td")
          :attr("style", "width: 25%; text-align: left; padding-left: 0;" .. simpleStyle)
-         :wikitext(reversedPronouns and simplePronoun and formattedSimpleForm)
+         :wikitext(reversedPronouns and simplePronoun or formattedSimpleForm)
 
       row:tag("td")
          :attr("style", "width: 25%; text-align: right; padding-right: 0;" .. compoundStyle)
@@ -239,7 +246,7 @@ end
 --- @return string The generated table.
 local function generateConditionalTable(verb)
   local tableElement = createTable()
-  generateTensesRows(verb, "conditionnel", "present", "Présent", "#ddd", "passe", "Passé", "#cfc")
+  generateTensesRows(tableElement, verb, "conditionnel", "present", "Présent", "#ddd", "passe", "Passé", "#cfc")
   return tostring(tableElement)
 end
 
@@ -248,7 +255,7 @@ end
 --- @return string The generated table.
 local function generateImperativeTable(verb)
   local tableElement = createTable()
-  generateTensesRows(verb, "imperatif", "present", "Présent", "#ffe5e5", "passe", "Passé", "#ffe5e5")
+  generateTensesRows(tableElement, verb, "imperatif", "present", "Présent", "#ffe5e5", "passe", "Passé", "#ffe5e5")
   return tostring(tableElement)
 end
 
@@ -286,31 +293,39 @@ local function renderPage(verb, group)
   ))
 
   page:tag("h3")
-      :wikitext(formatTitle("Modes impersonnels"))
+      :wikitext("Modes impersonnels")
   page:tag("div")
       :attr("style", "margin: 0.5em 2em")
       :wikitext(generateImpersonalTable(verb))
 
+  local mode = verb.modes["indicatif"]
   page:tag("h3")
-      :wikitext("Indicatif")
+      :attr("style", mode:isGray() and GRAY_STYLE or "")
+      :wikitext(formatTitle("Indicatif", mode))
   page:tag("div")
       :attr("style", "margin: 0.5em 2em")
       :wikitext(generateIndicativeTable(verb))
 
+  mode = verb.modes["subjonctif"]
   page:tag("h3")
-      :wikitext("Subjonctif")
+      :attr("style", mode:isGray() and GRAY_STYLE or "")
+      :wikitext(formatTitle("Subjonctif", mode))
   page:tag("div")
       :attr("style", "margin: 0.5em 2em")
       :wikitext(generateSubjunctiveTable(verb))
 
+  mode = verb.modes["conditionnel"]
   page:tag("h3")
-      :wikitext("Conditionnel")
+      :attr("style", mode:isGray() and GRAY_STYLE or "")
+      :wikitext(formatTitle("Conditionnel", mode))
   page:tag("div")
       :attr("style", "margin: 0.5em 2em")
       :wikitext(generateConditionalTable(verb))
 
+  mode = verb.modes["imperatif"]
   page:tag("h3")
-      :wikitext("Impératif")
+      :attr("style", mode:isGray() and GRAY_STYLE or "")
+      :wikitext(formatTitle("Impératif", mode))
   page:tag("div")
       :attr("style", "margin: 0.5em 2em")
       :wikitext(generateImperativeTable(verb))
@@ -424,10 +439,9 @@ end
 ---  frame.args["h-aspiré"] (boolean): Optional. If true, contracted pronoun forms will be used where relevant.
 --- @return string The generated wikicode.
 function p.conj(frame)
-  -- TODO autres fonctionnalités :
-  -- * spécifier flexions entières
-  -- * modes/temps/personnes défectives/rares
-  -- * verbes impersonnels (singulier + pluriel et seulement singulier)
+  -- TODO fonctionnalités :
+  -- * verbes impersonnels (singulier + pluriel ou singulier uniquement)
+  -- * auto-détecter la forme pronominale à partir du verbe et retirer le paramètre
   -- * verbes doubles/triples (ex : [[moissonner-battre]], [[copier-coller-voler]]), pas de groupe pour ceux comportant plusieurs groupes différents
   local templates = m_table.keysToList(m_gen.group3Templates)
   table.insert(templates, "-")
@@ -446,13 +460,13 @@ function p.conj(frame)
     -- Full forms and defective tenses
 
     -- Participes
-    ["part.état"] = {},
+    ["part.état"] = { enum = flexionStates },
     -- Participe présent
     ["part.pr"] = {},
-    ["part.pr.état"] = {},
+    ["part.pr.état"] = { enum = flexionStates },
     -- Participe passé
     ["part.p"] = {},
-    ["part.p.état"] = {},
+    ["part.p.état"] = { enum = flexionStates },
 
     -- Indicatif
     ["ind.état"] = { enum = flexionStates },
@@ -514,12 +528,36 @@ function p.conj(frame)
     ["ind.f.3p.état"] = { enum = flexionStates },
     -- Indicatif passé composé
     ["ind.pc.état"] = { enum = flexionStates },
+    ["ind.pc.1s.état"] = { enum = flexionStates },
+    ["ind.pc.2s.état"] = { enum = flexionStates },
+    ["ind.pc.3s.état"] = { enum = flexionStates },
+    ["ind.pc.1p.état"] = { enum = flexionStates },
+    ["ind.pc.2p.état"] = { enum = flexionStates },
+    ["ind.pc.3p.état"] = { enum = flexionStates },
     -- Indicatif passé antérieur
     ["ind.pa.état"] = { enum = flexionStates },
+    ["ind.pa.1s.état"] = { enum = flexionStates },
+    ["ind.pa.2s.état"] = { enum = flexionStates },
+    ["ind.pa.3s.état"] = { enum = flexionStates },
+    ["ind.pa.1p.état"] = { enum = flexionStates },
+    ["ind.pa.2p.état"] = { enum = flexionStates },
+    ["ind.pa.3p.état"] = { enum = flexionStates },
     -- Indicatif plus-que-parfait
     ["ind.pqp.état"] = { enum = flexionStates },
+    ["ind.pqp.1s.état"] = { enum = flexionStates },
+    ["ind.pqp.2s.état"] = { enum = flexionStates },
+    ["ind.pqp.3s.état"] = { enum = flexionStates },
+    ["ind.pqp.1p.état"] = { enum = flexionStates },
+    ["ind.pqp.2p.état"] = { enum = flexionStates },
+    ["ind.pqp.3p.état"] = { enum = flexionStates },
     -- Indicatif futur antérieur
     ["ind.fa.état"] = { enum = flexionStates },
+    ["ind.fa.1s.état"] = { enum = flexionStates },
+    ["ind.fa.2s.état"] = { enum = flexionStates },
+    ["ind.fa.3s.état"] = { enum = flexionStates },
+    ["ind.fa.1p.état"] = { enum = flexionStates },
+    ["ind.fa.2p.état"] = { enum = flexionStates },
+    ["ind.fa.3p.état"] = { enum = flexionStates },
 
     -- Subjonctif
     ["subj.état"] = { enum = flexionStates },
@@ -553,8 +591,20 @@ function p.conj(frame)
     ["subj.imp.3p.état"] = { enum = flexionStates },
     -- Subjonctif passé
     ["subj.p.état"] = { enum = flexionStates },
+    ["subj.p.1s.état"] = { enum = flexionStates },
+    ["subj.p.2s.état"] = { enum = flexionStates },
+    ["subj.p.3s.état"] = { enum = flexionStates },
+    ["subj.p.1p.état"] = { enum = flexionStates },
+    ["subj.p.2p.état"] = { enum = flexionStates },
+    ["subj.p.3p.état"] = { enum = flexionStates },
     -- Subjonctif plus-que-parfait
     ["subj.pqp.état"] = { enum = flexionStates },
+    ["subj.pqp.1s.état"] = { enum = flexionStates },
+    ["subj.pqp.2s.état"] = { enum = flexionStates },
+    ["subj.pqp.3s.état"] = { enum = flexionStates },
+    ["subj.pqp.1p.état"] = { enum = flexionStates },
+    ["subj.pqp.2p.état"] = { enum = flexionStates },
+    ["subj.pqp.3p.état"] = { enum = flexionStates },
 
     -- Conditionnel
     ["cond.état"] = { enum = flexionStates },
@@ -574,6 +624,12 @@ function p.conj(frame)
     ["cond.pr.3p.état"] = { enum = flexionStates },
     -- Conditionnel passé
     ["cond.p.état"] = { enum = flexionStates },
+    ["cond.p.1s.état"] = { enum = flexionStates },
+    ["cond.p.2s.état"] = { enum = flexionStates },
+    ["cond.p.3s.état"] = { enum = flexionStates },
+    ["cond.p.1p.état"] = { enum = flexionStates },
+    ["cond.p.2p.état"] = { enum = flexionStates },
+    ["cond.p.3p.état"] = { enum = flexionStates },
 
     -- Impératif
     ["imp.état"] = { enum = flexionStates },
@@ -587,11 +643,14 @@ function p.conj(frame)
     ["imp.pr.2p.état"] = { enum = flexionStates },
     -- Impératif passé
     ["imp.p.état"] = { enum = flexionStates },
+    ["imp.p.2s.état"] = { enum = flexionStates },
+    ["imp.p.1p.état"] = { enum = flexionStates },
+    ["imp.p.2p.état"] = { enum = flexionStates },
   })
 
   local infinitive = args[1]
   local pronominal = args["pronominal"]
-  local auxEtre = args["aux-être"]
+  local auxEtre = pronominal or args["aux-être"]
   local group3 = args["groupe3"]
   local mutationType = args["mutation"]
   local template = args["modèle"]
@@ -600,6 +659,7 @@ function p.conj(frame)
     error(mw.ustring.format('Le verbe "%s" ne commence pas par un "h"', infinitive))
   end
 
+  -- TODO wrap errors?
   local spec = parseSpecs(aspiratedH, pronominal, auxEtre, args)
   local verb, group = m_gen.generateFlexions(infinitive, group3, mutationType, template, spec)
   return renderPage(verb, group, spec)

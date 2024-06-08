@@ -5,11 +5,11 @@ local p = {}
 --- Conjugation of the "avoir" auxiliary verb.
 local avoirConj = {
   infinitif = {
-    present = "avoir",
+    present = { "avoir" },
   },
   participe = {
-    present = "ayant",
-    passe = "eu",
+    present = { "ayant" },
+    passe = { "eu" },
   },
   indicatif = {
     present = { "ai", "as", "a", "avons", "avez", "ont" },
@@ -31,11 +31,11 @@ local avoirConj = {
 --- Conjugation of the "être" auxiliary verb.
 local etreConj = {
   infinitif = {
-    present = "être",
+    present = { "être" },
   },
   participe = {
-    present = "étant",
-    passe = "été",
+    present = { "étant" },
+    passe = { "été" },
   },
   indicatif = {
     present = { "suis", "es", "est", "sommes", "êtes", "sont" },
@@ -81,11 +81,11 @@ local NULL = {}
 local function createEmptyTemplate()
   return {
     infinitif = {
-      present = NULL,
+      present = { NULL },
     },
     participe = {
-      present = NULL,
-      passe = NULL,
+      present = { NULL },
+      passe = { NULL },
     },
     indicatif = {
       present = { NULL, NULL, NULL, NULL, NULL, NULL },
@@ -198,11 +198,11 @@ local function generateGroup1Forms_(infinitive, rootMapper, infinitiveMapper)
   local root = mw.ustring.sub(infinitive, 1, -3)
   return {
     infinitif = {
-      present = infinitive,
+      present = { infinitive },
     },
     participe = {
-      present = rootMapper(root, "ant"),
-      passe = rootMapper(root, "é"),
+      present = { rootMapper(root, "ant") },
+      passe = { rootMapper(root, "é") },
     },
     indicatif = {
       present = {
@@ -423,11 +423,11 @@ function p.generateGroup2Forms(infinitive, dropDiaeresis)
   local iCirc = hasDiaeresis and "ï" or "î"
   return {
     infinitif = {
-      present = infinitive,
+      present = { infinitive },
     },
     participe = {
-      present = root .. i .. "ssant",
-      passe = root .. i,
+      present = { root .. i .. "ssant" },
+      passe = { root .. i },
     },
     indicatif = {
       present = {
@@ -527,6 +527,7 @@ end
 --- @see [[Conjugaison:français/Troisième groupe]] for sub-types.
 function p.generateGroup3Forms(infinitive, templateVerb, spec)
   local template
+
   if templateVerb then
     if not p.group3Templates[templateVerb] then
       error(mw.ustring.format('Modèle de verbe inconnu : "%s"', templateVerb))
@@ -548,40 +549,33 @@ function p.generateGroup3Forms(infinitive, templateVerb, spec)
   local forms = {}
   for mode, tenses in pairs(template.endings) do
     forms[mode] = {}
-    -- TODO remove disabled forms
     for tense, tenseEndings in pairs(tenses) do
-      if type(tenseEndings) == "string" then
-        local formSpec = spec.modeSpecs[mode].tenseSpecs[tense].formSpecs[1]
-        if formSpec.status == m_model.DISABLED then
-          forms[mode][tense] = NULL
-        end
-        forms[mode][tense] = formSpec.form or (root .. tenseEndings)
-      else
-        forms[mode][tense] = {}
-        for i, ending in ipairs(tenseEndings) do
-          local formSpec = spec.modeSpecs[mode].tenseSpecs[tense].formSpecs[i]
-          if formSpec.status == m_model.DISABLED then
-            table.insert(forms[mode][tense], NULL)
-          end
+      forms[mode][tense] = {}
+      for i, ending in ipairs(tenseEndings) do
+        local formSpec = spec.modeSpecs[mode].tenseSpecs[tense].formSpecs[i]
+        if formSpec:isDisabled() then
+          table.insert(forms[mode][tense], NULL)
+        else
           table.insert(forms[mode][tense], formSpec.form or (root .. ending))
         end
       end
     end
   end
+
   return forms
 end
 
 --- Generate a compound tense using the given auxiliary verb table and past participle.
 --- @param auxTable table A table containing flexions of the auxiliary verb.
 --- @param pastParticiple string The past participle.
---- @param spec TenseSpec A VerbSpec object.
+--- @param spec VerbSpec A VerbSpec object.
+--- @param mode string The name of the mode.
+--- @param tense string The name of the tense.
 --- @return table A table containing the generated compound tense.
 local function generateCompoundTense(auxTable, pastParticiple, spec, mode, tense)
   local res = {}
   for i, t in ipairs(auxTable) do
-    if spec[mode].status == m_model.DISABLED
-        or spec[mode].tenses[tense].status == m_model.DISABLED
-        or spec.formSpecs[i].status == m_model.DISABLED then
+    if spec.modeSpecs[mode].tenseSpecs[tense].formSpecs[i]:isDisabled() then
       table.insert(res, NULL)
     else
       table.insert(res, t .. " " .. pastParticiple)
@@ -595,31 +589,34 @@ end
 --- @param spec VerbSpec A VerbSpec object.
 local function completeTable(verbTable, spec)
   local auxTable = spec.auxEtre and etreConj or avoirConj
-  verbTable.auxiliaire = auxTable.infinitif.present
 
-  if verbTable.participe.present ~= NULL then
-    verbTable.gerondif = {
-      present = verbTable.participe.present,
-    }
-    if verbTable.participe.passe ~= NULL then
-      verbTable.gerondif.passe = auxTable.participe.present .. " " .. verbTable.participe.passe
-    end
+  local ppr = verbTable.participe.present[1]
+  verbTable.gerondif = {}
+  if ppr ~= NULL then
+    verbTable.gerondif.present = { ppr }
   end
 
-  if verbTable.participe.passe ~= NULL then
-    verbTable.infinitif.passe = auxTable.infinitif.present .. " " .. verbTable.participe.passe
+  local pp = verbTable.participe.passe[1]
+  if pp ~= NULL then
+    verbTable.infinitif.passe = generateCompoundTense(auxTable.infinitif.present, pp, spec, "infinitif", "passe")
 
-    verbTable.indicatif.passeCompose = generateCompoundTense(auxTable.indicatif.present, verbTable.participe.passe, spec, "indicatif", "passeCompose")
-    verbTable.indicatif.plusQueParfait = generateCompoundTense(auxTable.indicatif.imparfait, verbTable.participe.passe, spec, "indicatif", "plusQueParfait")
-    verbTable.indicatif.passeAnterieur = generateCompoundTense(auxTable.indicatif.passeSimple, verbTable.participe.passe, spec, "indicatif", "passeAnterieur")
-    verbTable.indicatif.futurAnterieur = generateCompoundTense(auxTable.indicatif.futur, verbTable.participe.passe, spec, "indicatif", "futurAnterieur")
+    verbTable.gerondif.passe = generateCompoundTense(auxTable.participe.present, pp, spec, "gerondif", "passe")
 
-    verbTable.subjonctif.passe = generateCompoundTense(auxTable.subjonctif.present, verbTable.participe.passe, spec, "subjonctif", "passe")
-    verbTable.subjonctif.plusQueParfait = generateCompoundTense(auxTable.subjonctif.imparfait, verbTable.participe.passe, spec, "subjonctif", "plusQueParfait")
+    verbTable.indicatif.passeCompose = generateCompoundTense(auxTable.indicatif.present, pp, spec, "indicatif", "passeCompose")
+    verbTable.indicatif.plusQueParfait = generateCompoundTense(auxTable.indicatif.imparfait, pp, spec, "indicatif", "plusQueParfait")
+    verbTable.indicatif.passeAnterieur = generateCompoundTense(auxTable.indicatif.passeSimple, pp, spec, "indicatif", "passeAnterieur")
+    verbTable.indicatif.futurAnterieur = generateCompoundTense(auxTable.indicatif.futur, pp, spec, "indicatif", "futurAnterieur")
 
-    verbTable.conditionnel.passe = generateCompoundTense(auxTable.conditionnel.present, verbTable.participe.passe, spec, "conditionnel", "passe")
+    verbTable.subjonctif.passe = generateCompoundTense(auxTable.subjonctif.present, pp, spec, "subjonctif", "passe")
+    verbTable.subjonctif.plusQueParfait = generateCompoundTense(auxTable.subjonctif.imparfait, pp, spec, "subjonctif", "plusQueParfait")
 
-    verbTable.imperatif.passe = generateCompoundTense(auxTable.imperatif.present, verbTable.participe.passe, spec, "imperatif", "passe")
+    verbTable.conditionnel.passe = generateCompoundTense(auxTable.conditionnel.present, pp, spec, "conditionnel", "passe")
+
+    if not spec.pronominal then
+      verbTable.imperatif.passe = generateCompoundTense(auxTable.imperatif.present, pp, spec, "imperatif", "passe")
+    else
+      verbTable.imperatif.passe = { NULL, NULL, NULL }
+    end
   end
 end
 
@@ -629,8 +626,19 @@ end
 --- @return Verb The generated Verb object.
 local function populateVerb(template, spec)
   completeTable(template, spec)
+  --- @type Verb
   local verb = m_model.newVerb(spec)
-  -- TODO populate
+  for modeName, tenses in pairs(template) do
+    for tenseName, forms in pairs(tenses) do
+      for i, form in ipairs(forms) do
+        local f
+        if form ~= NULL then
+          f = form
+        end
+        verb.modes[modeName].tenses[tenseName].forms[i]:setForm(f)
+      end
+    end
+  end
   return verb
 end
 
@@ -638,7 +646,15 @@ end
 --- @param template table A table containing the forms for simple tenses.
 --- @param spec VerbSpec A VerbSpec object.
 local function applySpec(template, spec)
-  -- TODO
+  for modeName, tenses in pairs(template) do
+    for tenseName, forms in pairs(tenses) do
+      for i = 1, #forms do
+        if spec.modeSpecs[modeName].tenseSpecs[tenseName].formSpecs[i]:isDisabled() then
+          forms[i] = NULL
+        end
+      end
+    end
+  end
 end
 
 --- Generate the simple tense forms of the given verb.
@@ -691,8 +707,14 @@ function p.generateFlexions(infinitive, group3, mutationType, template, spec)
 
   if template == "-" then
     local template_ = createEmptyTemplate()
-    template_.infinitif.present = infinitive
-    -- TODO populate template
+    for modeName, tenses in pairs(template_) do
+      for tenseName, forms in pairs(tenses) do
+        for i = 1, #forms do
+          forms[i] = spec.modeSpecs[modeName].tenseSpecs[tenseName].formSpecs[i].form or NULL
+        end
+      end
+    end
+    template_.infinitif.present = { infinitive }
     return populateVerb(template_, spec), 3
   end
   return populateVerb(p.generateGroup3Forms(infinitive, template, spec), spec), 3

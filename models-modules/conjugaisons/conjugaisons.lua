@@ -469,10 +469,10 @@ end
 ---  frame.args[1] (string): The verb in its infinitive present form.
 ---  frame.args["aux-être"] (boolean): Optional. If true, use the “être” auxiliary instead of “avoir”.
 ---  frame.args["groupe3"] (boolean): Optional. If true, the verb will be classified as belonging to group 3.
----  frame.args["pronominal"] (boolean): Optional. Whether the verb is reflexive.
 ---  frame.args["mutation"] (string): Optional. The type of mutation to apply to the verb’s root instead of the default one.
 ---  frame.args["modèle"] (string): Optional. For group-3 verbs, the verb to use as a template instead of the detected one.
 ---  frame.args["h-aspiré"] (boolean): Optional. If true, contracted pronoun forms will be used where relevant.
+---  frame.args["impersonnel"] (string): Optional. If specified, the verb is considered impersonal.
 --- @return string The generated wikicode.
 function p.conj(frame)
   -- TODO fonctionnalités :

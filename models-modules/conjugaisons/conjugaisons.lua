@@ -157,6 +157,51 @@ local function generateImpersonalTable(verb)
   return tostring(tableElement)
 end
 
+--- Create a table row for a single person of simple and compound tenses.
+--- @param tableElement html The table to add the row to.
+--- @param simpleTense VerbTense The simple tense.
+--- @param compoundTense VerbTense The compound tense.
+--- @param colsNb number The number of columns for each tense.
+--- @param formIndex number The index of verb form to add.
+local function createRow(tableElement, simpleTense, compoundTense, colsNb, formIndex)
+  local row = tableElement:tag("tr")
+
+  local simpleForm = simpleTense.forms[formIndex]
+  local compoundForm = compoundTense.forms[formIndex]
+  local simpleStyle = simpleForm:isGray() and GRAY_STYLE or ""
+  local compoundStyle = compoundForm:isGray() and GRAY_STYLE or ""
+
+  local formattedSimpleForm = simpleTense:getStatus() == m_model.DISABLED and formIndex > 1 and "" or formatVerbForm(simpleForm, true)
+  local formattedCompoundForm = compoundTense:getStatus() == m_model.DISABLED and formIndex > 1 and "" or formatVerbForm(compoundForm)
+
+  if colsNb == 2 then
+    local simplePronoun = simpleForm:getPronoun() or ""
+    local compoundPronoun = compoundForm:getPronoun() or ""
+    local reversedPronouns = simpleTense.mode.reversedPronouns
+
+    row:tag("td")
+       :attr("style", "width: 25%; text-align: right; padding-right: 0;" .. simpleStyle)
+       :wikitext(reversedPronouns and formattedSimpleForm or simplePronoun)
+    row:tag("td")
+       :attr("style", "width: 25%; text-align: left; padding-left: 0;" .. simpleStyle)
+       :wikitext(reversedPronouns and simplePronoun or formattedSimpleForm)
+
+    row:tag("td")
+       :attr("style", "width: 25%; text-align: right; padding-right: 0;" .. compoundStyle)
+       :wikitext(reversedPronouns and formattedCompoundForm or compoundPronoun)
+    row:tag("td")
+       :attr("style", "width: 25%; text-align: left; padding-left: 0;" .. compoundStyle)
+       :wikitext(reversedPronouns and compoundPronoun or formattedCompoundForm)
+  else
+    row:tag("td")
+       :attr("style", simpleStyle)
+       :wikitext(formattedSimpleForm)
+    row:tag("td")
+       :attr("style", compoundStyle)
+       :wikitext(formattedCompoundForm)
+  end
+end
+
 --- Generate the rows for the given simple tense and its corresponding compound tense.
 --- @param tableElement html The table element to add the generated rows to.
 --- @param verb Verb An array containing the flexions of the verb.
@@ -181,40 +226,14 @@ local function generateTensesRows(tableElement, verb, mode, simpleTenseName, tit
   local compoundDef = compoundTense:getStatus() == m_model.DISABLED
 
   for i = 1, (simpleDef and compoundDef and 1 or #simpleTense.forms) do
-    local row = tableElement:tag("tr")
-
-    local simpleForm = simpleTense.forms[i]
-    local compoundForm = compoundTense.forms[i]
-    local simpleStyle = simpleForm:isGray() and GRAY_STYLE or ""
-    local compoundStyle = compoundForm:isGray() and GRAY_STYLE or ""
-
-    local formattedSimpleForm = simpleDef and i > 1 and "" or formatVerbForm(simpleForm, true)
-    local formattedCompoundForm = compoundDef and i > 1 and "" or formatVerbForm(compoundForm)
-
-    if colsNb == 2 then
-      local simplePronoun = simpleForm:getPronoun() or ""
-      local compoundPronoun = compoundForm:getPronoun() or ""
-
-      row:tag("td")
-         :attr("style", "width: 25%; text-align: right; padding-right: 0;" .. simpleStyle)
-         :wikitext(reversedPronouns and formattedSimpleForm or simplePronoun)
-      row:tag("td")
-         :attr("style", "width: 25%; text-align: left; padding-left: 0;" .. simpleStyle)
-         :wikitext(reversedPronouns and simplePronoun or formattedSimpleForm)
-
-      row:tag("td")
-         :attr("style", "width: 25%; text-align: right; padding-right: 0;" .. compoundStyle)
-         :wikitext(reversedPronouns and formattedCompoundForm or compoundPronoun)
-      row:tag("td")
-         :attr("style", "width: 25%; text-align: left; padding-left: 0;" .. compoundStyle)
-         :wikitext(reversedPronouns and compoundPronoun or formattedCompoundForm)
+    local impersonal = verb.spec.impersonal
+    if impersonal and #simpleTense.forms == 6 then
+      local j = m_model.STRUCT[mode].tenses[simpleTenseName][i]
+      if j == 3 or impersonal == m_model.IMPERS and j == 6 then
+        createRow(tableElement, simpleTense, compoundTense, colsNb, i)
+      end
     else
-      row:tag("td")
-         :attr("style", simpleStyle)
-         :wikitext(formattedSimpleForm)
-      row:tag("td")
-         :attr("style", compoundStyle)
-         :wikitext(formattedCompoundForm)
+      createRow(tableElement, simpleTense, compoundTense, colsNb, i)
     end
   end
 end
@@ -286,9 +305,10 @@ local function renderPage(verb, group)
 
   local inf = verb.modes["infinitif"].tenses["present"].forms[1]
   page:wikitext(mw.ustring.format(
-      "Conjugaison de '''%s''', ''verbe %s du %s, conjugé avec l’auxiliaire %s''.",
+      "Conjugaison de '''%s''', ''verbe %s %s du %s, conjugé avec l’auxiliaire %s''.",
       link((inf:getPronoun() or "") .. inf:getForm()),
       verb.spec.pronominal and "pronominal" or "",
+      verb.spec.impersonal and "impersonnel" or "",
       formatGroup(group), link(verb.spec.auxEtre and "être" or "avoir")
   ))
 
@@ -356,9 +376,10 @@ local tenseAbbreviations = {
 --- @param aspiratedH boolean Whether the initial "h" of the verb should prevent a liaison.
 --- @param pronominal boolean Whether the verb is pronominal.
 --- @param auxEtre boolean Whether the verb should use the verb "être" instead of "avoir" as its auxiliary.
+--- @param impersonal string Whether the verb is impersonal.
 --- @param args table The parsed frame arguments.
 --- @return VerbSpec A VerbSpec object.
-local function parseSpecs(aspiratedH, pronominal, auxEtre, args)
+local function parseSpecs(aspiratedH, pronominal, auxEtre, impersonal, args)
   local function personToIndex(mode, person)
     if mode == "imp" then
       if person == "2s" then
@@ -374,7 +395,7 @@ local function parseSpecs(aspiratedH, pronominal, auxEtre, args)
   end
 
   --- @type VerbSpec
-  local spec = m_model.newVerbSpec(aspiratedH, pronominal, auxEtre)
+  local spec = m_model.newVerbSpec(aspiratedH, pronominal, auxEtre, impersonal)
 
   for k, v in pairs(args) do
     if mw.ustring.find(k, ".", 1, true) then
@@ -425,6 +446,21 @@ local function parseSpecs(aspiratedH, pronominal, auxEtre, args)
     end
   end
 
+  if impersonal then
+    for modeName, mode in pairs(spec.modeSpecs) do
+      for tenseName, tense in pairs(mode.tenseSpecs) do
+        if #tense.formSpecs ~= 1 then
+          for i, form in ipairs(tense.formSpecs) do
+            local j = m_model.STRUCT[modeName].tenses[tenseName][i]
+            if j ~= 3 and (impersonal == m_model.IMPERS and j ~= 6 or impersonal == m_model.IMPERS_SING) then
+              form.status = m_model.DISABLED
+            end
+          end
+        end
+      end
+    end
+  end
+
   return spec
 end
 
@@ -440,7 +476,6 @@ end
 --- @return string The generated wikicode.
 function p.conj(frame)
   -- TODO fonctionnalités :
-  -- * verbes impersonnels (singulier + pluriel ou singulier uniquement)
   -- * verbes doubles/triples (ex : [[moissonner-battre]], [[copier-coller-voler]]), pas de groupe pour ceux comportant plusieurs groupes différents
   local templates = m_table.keysToList(m_gen.group3Templates)
   table.insert(templates, "-")
@@ -454,6 +489,7 @@ function p.conj(frame)
     ["mutation"] = { enum = m_gen.mutationTypes },
     ["modèle"] = { enum = templates },
     ["h-aspiré"] = { type = m_params.BOOLEAN, default = false },
+    ["impersonnel"] = { enum = m_model.IMPERSONAL_STATES },
 
     -- Full forms and defective tenses
 
@@ -660,12 +696,13 @@ function p.conj(frame)
   local mutationType = args["mutation"]
   local template = args["modèle"]
   local aspiratedH = args["h-aspiré"]
+  local impersonal = args["impersonnel"]
   if aspiratedH and mw.ustring.sub(infinitive, 1, 1) ~= "h" then
     error(mw.ustring.format('Le verbe "%s" ne commence pas par un "h"', infinitive))
   end
 
-  -- TODO wrap errors?
-  local spec = parseSpecs(aspiratedH, pronominal, auxEtre, args)
+  -- TODO wrap errors
+  local spec = parseSpecs(aspiratedH, pronominal, auxEtre, impersonal, args)
   local verb, group = m_gen.generateFlexions(infinitive, group3, mutationType, template, spec)
   return renderPage(verb, group, spec)
 end

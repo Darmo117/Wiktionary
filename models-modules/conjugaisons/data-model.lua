@@ -5,9 +5,14 @@ local p = {}
 p.DISABLED = "-"
 p.RARE = "rare"
 p.UNATTESTED = "?"
-
 p.STATES = {
   p.DISABLED, p.RARE, p.UNATTESTED
+}
+
+p.IMPERS = "sing-plur"
+p.IMPERS_SING = "sing"
+p.IMPERSONAL_STATES = {
+  p.IMPERS, p.IMPERS_SING
 }
 
 local PRONOUNS = {
@@ -18,6 +23,10 @@ local PRONOUNS = {
   { "nous" },
   { "vous" },
   { "ils/elles" },
+}
+local IMPERS_PRONOUNS = {
+  [3] = { "il" },
+  [6] = { "ils" },
 }
 local REFLEXIVE_PRONOUNS = {
   [-1] = { "se", "s’" },
@@ -35,7 +44,7 @@ local QUE = { "que", "qu’" }
 
 local LIAISON_LETTERS = { "a", "â", "e", "ê", "é", "è", "ë", "i", "î", "ï", "o", "ô", "u", "û", "y" }
 
-local STRUCT = {
+p.STRUCT = {
   infinitif = {
     tenses = {
       present = { 0 },
@@ -197,6 +206,8 @@ p.VerbSpec = {
   pronominal = false,
   --- @type boolean
   auxEtre = false,
+  --- @type string
+  impersonal = nil,
   --- @type table<string, ModeSpec>
   modeSpecs = {},
 }
@@ -207,11 +218,12 @@ p.VerbSpec.__index = p.VerbSpec
 --- @param auxEtre boolean
 --- @param modeSpecs table<string, ModeSpec>
 --- @return VerbSpec
-function p.VerbSpec.new(aspiratedH, pronominal, auxEtre, modeSpecs)
+function p.VerbSpec.new(aspiratedH, pronominal, auxEtre, impersonal, modeSpecs)
   local self = setmetatable({}, p.VerbSpec)
   self.aspiratedH = aspiratedH
   self.pronominal = pronominal
   self.auxEtre = auxEtre
+  self.impersonal = impersonal
   self.modeSpecs = modeSpecs
   for _, modeSpec in pairs(modeSpecs) do
     modeSpec.verbSpec = self
@@ -293,10 +305,15 @@ function p.VerbForm:setForm(form)
 
       local liaison = requiresLiaison(form, self.spec.tenseSpec.modeSpec.verbSpec.aspiratedH)
 
+      local pronouns = PRONOUNS
+      if self.spec.tenseSpec.modeSpec.verbSpec.impersonal and self._pronounIndex > 0 and self._pronounIndex % 3 == 0 then
+        pronouns = IMPERS_PRONOUNS
+      end
+
       if self.spec.tenseSpec.modeSpec.verbSpec.pronominal then
-        self._pronoun = (PRONOUNS[i] and (PRONOUNS[i][1] .. "&nbsp;") or "") .. getPronoun(REFLEXIVE_PRONOUNS, liaison)
+        self._pronoun = (pronouns[i] and (pronouns[i][1] .. "&nbsp;") or "") .. getPronoun(REFLEXIVE_PRONOUNS, liaison)
       else
-        self._pronoun = getPronoun(PRONOUNS, liaison)
+        self._pronoun = getPronoun(pronouns, liaison)
       end
       if self.tense.mode.prependQue then
         self._pronoun = (requiresLiaison(self._pronoun) and QUE[2] or (QUE[1] .. " ")) .. self._pronoun
@@ -440,10 +457,11 @@ end
 --- @param aspiratedH boolean Whether the initial "h" of the verb should prevent a liaison.
 --- @param pronominal boolean Whether the verb is pronominal.
 --- @param auxEtre boolean Whether the verb should use the verb "être" instead of "avoir" as its auxiliary.
+--- @param impersonal string Whether the verb is impersonal.
 --- @return VerbSpec A new empty VerbSpec object.
-function p.newVerbSpec(aspiratedH, pronominal, auxEtre)
+function p.newVerbSpec(aspiratedH, pronominal, auxEtre, impersonal)
   local modeSpecs = {}
-  for modeName, mode in pairs(STRUCT) do
+  for modeName, mode in pairs(p.STRUCT) do
     local tenseSpecs = {}
     for tenseName, indices in pairs(mode.tenses) do
       local formSpecs = {}
@@ -454,7 +472,7 @@ function p.newVerbSpec(aspiratedH, pronominal, auxEtre)
     end
     modeSpecs[modeName] = p.ModeSpec.new(nil, tenseSpecs)
   end
-  return p.VerbSpec.new(aspiratedH, pronominal, auxEtre, modeSpecs)
+  return p.VerbSpec.new(aspiratedH, pronominal, auxEtre, impersonal, modeSpecs)
 end
 
 --- Create a new unpopulated Verb object from the given spec.
@@ -462,7 +480,7 @@ end
 --- @return Verb A new Verb object.
 function p.newVerb(spec)
   local modes = {}
-  for modeName, mode in pairs(STRUCT) do
+  for modeName, mode in pairs(p.STRUCT) do
     local tenses = {}
     for tenseName, indices in pairs(mode.tenses) do
       local forms = {}

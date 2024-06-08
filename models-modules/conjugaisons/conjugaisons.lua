@@ -1,3 +1,4 @@
+local m_bases = require("Module:bases")
 local m_params = require("Module:paramètres")
 local m_table = require("Module:table")
 local m_model = require("Module:conjugaisons/data-model")
@@ -524,9 +525,22 @@ function p.conj(frame)
   table.insert(templates, "-")
   local flexionStates = m_model.STATES
 
+  -- Attempt to extract the verb from the page’s title if it is in the "Conjugaison" namespace
+  -- and use it as the default value for argument 1.
+  -- Otherwise, mark the argument as required.
+  local title = mw.title.getCurrentTitle()
+  local pageNamespace = title.namespace
+  local pageTitle = title.text
+  local verbParamConfig
+  if pageNamespace == m_bases.NS_CONJUGAISON.id and mw.ustring.find(pageTitle, "/", 1, true) then
+    verbParamConfig = { default = mw.text.split(pageTitle, "/", true)[2] }
+  else
+    verbParamConfig = { required = true }
+  end
+
   -- TODO utiliser frame:getParent().args pour récupérer les arguments du modèle
   local args = m_params.process(frame.args, {
-    [1] = { default = mw.title.getCurrentTitle().text }, -- TODO extraire le verbe du titre "<langue>/<verbe>"
+    [1] = verbParamConfig,
     ["aux-être"] = { type = m_params.BOOLEAN, default = false },
     ["groupe3"] = { type = m_params.BOOLEAN, default = false },
     ["mutation"] = { enum = m_gen.mutationTypes },

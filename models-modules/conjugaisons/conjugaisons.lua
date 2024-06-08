@@ -299,7 +299,7 @@ end
 
 --- Render the full page for the given verb.
 --- @param verb Verb A Verb object.
---- @param group number The verb’s group, either 1, 2 or 3.
+--- @param group number|nil The verb’s group, either 1, 2 or 3.
 --- @param templateVerb string|nil The verb the specified one is conjugated like.
 --- @param num number A number to append to section IDs.
 --- @return string The generated wikicode.
@@ -321,12 +321,21 @@ local function renderPage(verb, group, templateVerb, num)
   small:wikitext("\n\n")
 
   local inf = verb.modes["infinitif"].tenses["present"].forms[1]
-  local introText = mw.ustring.format(
-      "Conjugaison de '''%s''', ''verbe %s %s du %s, conjugé avec l’auxiliaire %s''.",
-      link((inf:getPronoun() or "") .. inf:getForm()),
-      verb.spec.pronominal and "pronominal" or "",
-      verb.spec.impersonal and "impersonnel" or "",
-      formatGroup(group), link(verb.spec.auxEtre and "être" or "avoir")
+  local introText = mw.ustring.format("Conjugaison de '''%s''', verbe ", link((inf:getPronoun() or "") .. inf:getForm()))
+  if verb.spec.pronominal then
+    introText = introText .. "pronominal "
+  end
+  if verb.spec.impersonal then
+    introText = introText .. "impersonnel "
+  end
+  if group then
+    introText = introText .. "du " .. formatGroup(group)
+  else
+    introText = introText .. "sans groupe"
+  end
+  introText = introText .. mw.ustring.format(
+      ", conjugé avec l’auxiliaire %s.",
+      link(verb.spec.auxEtre and "être" or "avoir")
   )
   if group == 3 then
     if templateVerb then
@@ -519,8 +528,6 @@ end
 ---  frame.args["num"] (integer): Optional. A number to append to modes sections’ IDs when this function is called multiple times on the same page.
 --- @return string The generated wikicode.
 function p.conj(frame)
-  -- TODO fonctionnalités :
-  -- * verbes doubles/triples (ex : [[moissonner-battre]], [[copier-coller-voler]]), pas de groupe pour ceux comportant plusieurs groupes différents
   local templates = m_table.keysToList(m_gen.group3Templates)
   table.insert(templates, "-")
   local flexionStates = m_model.STATES
@@ -543,10 +550,17 @@ function p.conj(frame)
     [1] = verbParamConfig,
     ["aux-être"] = { type = m_params.BOOLEAN, default = false },
     ["groupe3"] = { type = m_params.BOOLEAN, default = false },
+    ["groupe3-2"] = { type = m_params.BOOLEAN, default = false },
+    ["groupe3-3"] = { type = m_params.BOOLEAN, default = false },
     ["mutation"] = { enum = m_gen.mutationTypes },
+    ["mutation-2"] = { enum = m_gen.mutationTypes },
+    ["mutation-3"] = { enum = m_gen.mutationTypes },
     ["modèle"] = { enum = templates },
+    ["modèle-2"] = { enum = templates },
+    ["modèle-3"] = { enum = templates },
     ["h-aspiré"] = { type = m_params.BOOLEAN, default = false },
     ["impersonnel"] = { enum = m_model.IMPERSONAL_STATES },
+    ["composé"] = { type = m_model.BOOLEAN, default = false },
     ["num"] = { type = m_params.INT, checker = function(num)
       return num >= 1
     end },
@@ -752,11 +766,9 @@ function p.conj(frame)
     infinitive = mw.ustring.sub(infinitive, 3)
   end
   local auxEtre = pronominal or args["aux-être"]
-  local group3 = args["groupe3"]
-  local mutationType = args["mutation"]
-  local template = args["modèle"]
   local aspiratedH = args["h-aspiré"]
   local impersonal = args["impersonnel"]
+  local compound = args["composé"]
   local num = args["num"]
   if aspiratedH and mw.ustring.sub(infinitive, 1, 1) ~= "h" then
     error(mw.ustring.format('Le verbe "%s" ne commence pas par un "h"', infinitive))
@@ -764,7 +776,24 @@ function p.conj(frame)
 
   -- TODO wrap errors
   local spec = parseSpecs(aspiratedH, pronominal, auxEtre, impersonal, args)
-  local verb, group, templateVerb = m_gen.generateFlexions(infinitive, group3, mutationType, template, spec)
+  local verb, group, templateVerb
+  if compound then
+    local parts = mw.text.split(infinitive, "-", true)
+    local infinitives = {}
+    local group3s = {}
+    local mutationTypes = {}
+    local verbTemplates = {}
+    for i, part in ipairs(parts) do
+      local index = i > 1 and "-" .. tostring(i) or ""
+      table.insert(infinitives, part)
+      table.insert(group3s, args["groupe3" .. index] or m_gen.NULL)
+      table.insert(mutationTypes, args["mutation" .. index] or m_gen.NULL)
+      table.insert(verbTemplates, args["modèle" .. index] or m_gen.NULL)
+    end
+    verb, group, templateVerb = m_gen.generateFlexions(infinitives, group3s, mutationTypes, verbTemplates, spec)
+  else
+    verb, group, templateVerb = m_gen.generateFlexions({ infinitive }, { args["groupe3"] }, { args["mutation"] }, { args["modèle"] }, spec)
+  end
   return renderPage(verb, group, templateVerb, num)
 end
 

@@ -299,18 +299,35 @@ end
 --- Render the full page for the given verb.
 --- @param verb Verb A Verb object.
 --- @param group number The verb’s group, either 1, 2 or 3.
+--- @param templateVerb string|nil The verb the specified one is conjugated like.
 --- @return string The generated wikicode.
-local function renderPage(verb, group)
+local function renderPage(verb, group, templateVerb)
   local page = mw.html.create()
 
   local inf = verb.modes["infinitif"].tenses["present"].forms[1]
-  page:wikitext(mw.ustring.format(
+  local introText = mw.ustring.format(
       "Conjugaison de '''%s''', ''verbe %s %s du %s, conjugé avec l’auxiliaire %s''.",
       link((inf:getPronoun() or "") .. inf:getForm()),
       verb.spec.pronominal and "pronominal" or "",
       verb.spec.impersonal and "impersonnel" or "",
       formatGroup(group), link(verb.spec.auxEtre and "être" or "avoir")
-  ))
+  )
+  if group == 3 then
+    if templateVerb then
+      local templateInf = templateVerb
+      if mw.ustring.find(templateVerb, "-", 1, true) then
+        templateInf = mw.text.split(templateInf, "-", true)[1]
+        templateVerb = mw.ustring.gsub(templateVerb, "%-", " (", 1) .. ")"
+      end
+      if templateInf ~= verb.modes["infinitif"].tenses["present"].forms[1]:getForm() then
+        -- Don’t show anything if the template is the verb itself
+        introText = introText .. mw.ustring.format(" Conjugué comme [[%s#fr|%s]].", templateInf, templateVerb)
+      end
+    else
+      introText = introText .. " Conjugué comme aucun autre verbe."
+    end
+  end
+  page:wikitext(introText)
 
   page:tag("h3")
       :wikitext("Modes impersonnels")
@@ -703,8 +720,8 @@ function p.conj(frame)
 
   -- TODO wrap errors
   local spec = parseSpecs(aspiratedH, pronominal, auxEtre, impersonal, args)
-  local verb, group = m_gen.generateFlexions(infinitive, group3, mutationType, template, spec)
-  return renderPage(verb, group, spec)
+  local verb, group, templateVerb = m_gen.generateFlexions(infinitive, group3, mutationType, template, spec)
+  return renderPage(verb, group, templateVerb)
 end
 
 return p

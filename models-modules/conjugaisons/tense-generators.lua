@@ -503,43 +503,47 @@ end
 
 --- Looks for the group-3 template whose ending has the longest match with the given infinitive.
 --- @param infinitive string The infinitive form of the verb.
---- @return table|nil The group-3 template that matched the best, or nil if none matched.
+--- @return (table|nil, string|nil) The group-3 template that matched the best, or nil if none matched, and the name of the matched template.
 local function longestMatchingGroup3Template(infinitive)
+  local matchName
   local longestMatch
   local longestMatchLength = 0
-  for _, template in pairs(p.group3Templates) do
+  for templateName, template in pairs(p.group3Templates) do
     if not template.ignore_auto then
       local len = mw.ustring.len(template.ending)
       if mw.ustring.find(infinitive, template.ending .. "$") and (not longestMatch or longestMatchLength < len) then
         longestMatch = template
         longestMatchLength = len
+        matchName = templateName
       end
     end
   end
-  return longestMatch
+  return longestMatch, matchName
 end
 
 --- Generate the simple tense forms of the given group-3 verb.
 --- @param infinitive string The infinitive form of the verb.
 --- @param templateVerb string|nil The verb the given one should be conjugated like.
 --- @param spec VerbSpec A VerbSpec object.
---- @return table A table containing all simple tense forms of the verb.
+--- @return (table, string) A table containing all simple tense forms of the verb, and the verb it is conjugated like.
 --- @see [[Conjugaison:français/Troisième groupe]] for sub-types.
 function p.generateGroup3Forms(infinitive, templateVerb, spec)
-  local template
+  local template, templateName
 
   if templateVerb then
     if not p.group3Templates[templateVerb] then
       error(mw.ustring.format('Modèle de verbe inconnu : "%s"', templateVerb))
     end
     template = p.group3Templates[templateVerb]
+    templateName = templateVerb
     if mw.ustring.sub(infinitive, -mw.ustring.len(template.ending)) ~= template.ending then
       error(mw.ustring.format('Le verbe "%s" ne se termine pas par "%s"', infinitive, template.ending))
     end
   elseif p.group3Templates[infinitive] then
     template = p.group3Templates[infinitive]
+    templateName = infinitive
   else
-    template = longestMatchingGroup3Template(infinitive)
+    template, templateName = longestMatchingGroup3Template(infinitive)
   end
   if not template then
     error(mw.ustring.format('Aucun modèle de conjugaison trouvé pour le verbe "%s"', infinitive))
@@ -562,7 +566,7 @@ function p.generateGroup3Forms(infinitive, templateVerb, spec)
     end
   end
 
-  return forms
+  return forms, templateName
 end
 
 --- Generate a compound tense using the given auxiliary verb table and past participle.
@@ -661,11 +665,11 @@ end
 --- @param infinitive string The infinitive form of the verb.
 --- @param group3 boolean If true, the verb will be classified as belonging to group 3.
 --- @param mutationType string The type of mutation to apply to the verb’s root instead of the default one.
---- @param template string|nil For group-3 verbs, the verb the given one should be conjugated like.
+--- @param templateVerb string|nil For group-3 verbs, the verb the given one should be conjugated like.
 --- @param spec VerbSpec A VerbSpec object.
 --- @return (Verb, number|nil) A populated Verb object, and the verb’s group or nil if it could not be determined.
-function p.generateFlexions(infinitive, group3, mutationType, template, spec)
-  if mutationType and template then
+function p.generateFlexions(infinitive, group3, mutationType, templateVerb, spec)
+  if mutationType and templateVerb then
     error("Les paramètres « mutation » et « modèle » ne peuvent pas être spécifiés en même temps.")
   end
   if infinitive == "être" then
@@ -690,7 +694,7 @@ function p.generateFlexions(infinitive, group3, mutationType, template, spec)
     end
     local forms = p.generateGroup2Forms(infinitive, mutationType == MUTATION_I)
     applySpec(forms, spec)
-    return populateVerb(forms, spec), 2
+    return populateVerb(forms, spec), 2, nil
   end
   if mutationType and mutationType == MUTATION_I then
     invalidMutationType(mutationType)
@@ -699,25 +703,26 @@ function p.generateFlexions(infinitive, group3, mutationType, template, spec)
   if not group3 and ending == "er" then
     local forms = p.generateGroup1Forms(infinitive, mutationType)
     applySpec(forms, spec)
-    return populateVerb(forms, spec), 1
+    return populateVerb(forms, spec), 1, nil
   end
   if mutationType and mutationType == MUTATION_DOUBLE_CONS or mutationType == MUTATION_AYER_YE then
     invalidMutationType(mutationType)
   end
 
-  if template == "-" then
-    local template_ = createEmptyTemplate()
-    for modeName, tenses in pairs(template_) do
+  if templateVerb == "-" then
+    local template = createEmptyTemplate()
+    for modeName, tenses in pairs(template) do
       for tenseName, forms in pairs(tenses) do
         for i = 1, #forms do
           forms[i] = spec.modeSpecs[modeName].tenseSpecs[tenseName].formSpecs[i].form or NULL
         end
       end
     end
-    template_.infinitif.present = { infinitive }
-    return populateVerb(template_, spec), 3
+    template.infinitif.present = { infinitive }
+    return populateVerb(template, spec), 3, nil
   end
-  return populateVerb(p.generateGroup3Forms(infinitive, template, spec), spec), 3
+  local template, templateName = p.generateGroup3Forms(infinitive, templateVerb, spec)
+  return populateVerb(template, spec), 3, templateName
 end
 
 return p

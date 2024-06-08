@@ -247,7 +247,9 @@ local data = {
       conditionnel = {
         present = { "coudrais", "coudrais", "coudrait", "coudrions", "coudriez", "coudraient" },
       },
-      imperatif = { "couds", "cousons", "cousez" },
+      imperatif = {
+        present = { "couds", "cousons", "cousez" }
+      },
     },
   },
   ["courir"] = {
@@ -1233,7 +1235,7 @@ local data = {
       indicatif = {
         present = { "sois", "sois", "soit", "soyons", "soyez", "soient" },
         imparfait = { "soyais", "soyais", "soyait", "soyions", "soyiez", "soyaient" },
-        pseSimple = { "sis", "sis", "sit", "sîmes", "sîtes", "sirent" },
+        passeSimple = { "sis", "sis", "sit", "sîmes", "sîtes", "sirent" },
         futur = { "soirai", "soiras", "soira", "soirons", "soirez", "soiront" },
       },
       subjonctif = {
@@ -1453,6 +1455,13 @@ local data = {
 data["assoir"] = m_table.deepcopy(data["asseoir"])
 data["assoir"].ending = "assoir"
 
+data["asseoir-assois"] = m_table.deepcopy(data["surseoir"])
+data["asseoir-assois"].ignore_auto = true
+
+data["assoir-assois"] = m_table.deepcopy(data["surseoir"])
+data["assoir-assois"].ignore_auto = true
+data["assoir-assois"].ending = "soir"
+
 data["vêtir"] = m_table.deepcopy(data["vendre"])
 data["vêtir"].ending = "ir"
 
@@ -1492,10 +1501,6 @@ end
 data["absoudre-absout"] = m_table.deepcopy(data["absoudre"])
 data["absoudre-absout"].ignore_auto = true
 data["absoudre-absout"].endings.participe.passe = { "sout" }
-
-data["assoir-assois"] = m_table.deepcopy(data["surseoir"])
-data["assoir-assois"].ignore_auto = true
-data["assoir-assois"].endings.infinitif.present = { "soir" }
 
 data["croître-cru"] = m_table.deepcopy(data["croître"])
 data["croître-cru"].ignore_auto = true

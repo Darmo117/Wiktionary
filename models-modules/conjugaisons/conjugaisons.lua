@@ -515,6 +515,7 @@ end
 ---  frame.args["modèle"] (string): Optional. For group-3 verbs, the verb to use as a template instead of the detected one.
 ---  frame.args["h-aspiré"] (boolean): Optional. If true, contracted pronoun forms will be used where relevant.
 ---  frame.args["impersonnel"] (string): Optional. If specified, the verb is considered impersonal.
+---  frame.args["num"] (integer): Optional. A number to append to modes sections’ IDs when this function is called multiple times on the same page.
 --- @return string The generated wikicode.
 function p.conj(frame)
   -- TODO fonctionnalités :

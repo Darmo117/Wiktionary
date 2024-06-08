@@ -441,7 +441,6 @@ end
 function p.conj(frame)
   -- TODO fonctionnalités :
   -- * verbes impersonnels (singulier + pluriel ou singulier uniquement)
-  -- * auto-détecter la forme pronominale à partir du verbe et retirer le paramètre
   -- * verbes doubles/triples (ex : [[moissonner-battre]], [[copier-coller-voler]]), pas de groupe pour ceux comportant plusieurs groupes différents
   local templates = m_table.keysToList(m_gen.group3Templates)
   table.insert(templates, "-")
@@ -452,7 +451,6 @@ function p.conj(frame)
     [1] = { default = mw.title.getCurrentTitle().text }, -- TODO extraire le verbe du titre "<langue>/<verbe>"
     ["aux-être"] = { type = m_params.BOOLEAN, default = false },
     ["groupe3"] = { type = m_params.BOOLEAN, default = false },
-    ["pronominal"] = { type = m_params.BOOLEAN, default = false },
     ["mutation"] = { enum = m_gen.mutationTypes },
     ["modèle"] = { enum = templates },
     ["h-aspiré"] = { type = m_params.BOOLEAN, default = false },
@@ -649,7 +647,14 @@ function p.conj(frame)
   })
 
   local infinitive = args[1]
-  local pronominal = args["pronominal"]
+  local pronominal = false
+  if mw.ustring.match(infinitive, "^se ") then
+    pronominal = true
+    infinitive = mw.ustring.sub(infinitive, 4)
+  elseif mw.ustring.match(infinitive, "^s’") then
+    pronominal = true
+    infinitive = mw.ustring.sub(infinitive, 3)
+  end
   local auxEtre = pronominal or args["aux-être"]
   local group3 = args["groupe3"]
   local mutationType = args["mutation"]

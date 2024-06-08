@@ -143,6 +143,7 @@ local eacuteCONSer_verbs = generateGroup1Endings("é", {
   "d",
   "fl",
   "g",
+  "gl",
   "gn",
   "gr",
   "gu",

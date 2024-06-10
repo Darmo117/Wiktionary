@@ -528,6 +528,7 @@ end
 ---  frame.args["composé"] (boolean): Optional. Whether the verb is compound.
 ---  frame.args["num"] (integer): Optional. A number to append to modes sections’ IDs when this function is called multiple times on the same page.
 --- @return string The generated wikicode.
+--- @see [[Modèle:fr-conjugaison/Documentation]] For a detailled explanation of frame arguments.
 function p.conj(frame)
   local templates = m_table.keysToList(m_gen.group3Templates)
   table.insert(templates, "-")

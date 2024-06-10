@@ -525,6 +525,7 @@ end
 ---  frame.args["modèle"] (string): Optional. For group-3 verbs, the verb to use as a template instead of the detected one.
 ---  frame.args["h-aspiré"] (boolean): Optional. If true, contracted pronoun forms will be used where relevant.
 ---  frame.args["impersonnel"] (string): Optional. If specified, the verb is considered impersonal.
+---  frame.args["composé"] (boolean): Optional. Whether the verb is compound.
 ---  frame.args["num"] (integer): Optional. A number to append to modes sections’ IDs when this function is called multiple times on the same page.
 --- @return string The generated wikicode.
 function p.conj(frame)
@@ -545,8 +546,7 @@ function p.conj(frame)
     verbParamConfig = { required = true }
   end
 
-  -- TODO utiliser frame:getParent().args pour récupérer les arguments du modèle
-  local args = m_params.process(frame.args, {
+  local args = m_params.process(frame:getParent().args, {
     [1] = verbParamConfig,
     ["aux-être"] = { type = m_params.BOOLEAN, default = false },
     ["groupe3"] = { type = m_params.BOOLEAN, default = false },

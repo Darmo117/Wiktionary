@@ -1,6 +1,5 @@
 local m_table = require("Module:table")
 
--- TODO simplifier structure : mettre les formes des participes et gérondifs dans des tables à 1 élément plutot que des string directement
 local data = {
   ["absoudre"] = {
     ending = "soudre",

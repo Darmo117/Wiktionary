@@ -39,7 +39,7 @@ mw.loader.using(['mediawiki.util', 'user'], function () {
       return;
     }
 
-    $('h2, h3, h4, h5, h6').each(function () {
+    $('#bodyContent h2, #bodyContent h3, #bodyContent h4, #bodyContent h5, #bodyContent h6').each(function () {
       var $this = $(this);
       var anchor = $this.attr("id")
 

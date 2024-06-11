@@ -7,7 +7,7 @@ local p = {}
 
 --- Formats an example.
 --- @param text string The quoted text.
---- @param transcription string The text’s transcription if it uses another script than Latin.
+--- @param transcription string The text’s transcription if it uses another script than Latin or is uses an archaic orthography.
 --- @param meaning string The translation in French.
 --- @param source string The quote’s source (without {{source}} template).
 --- @param link string The link to the source (requires source parameter).
@@ -26,8 +26,18 @@ local function _formatExample(text, transcription, meaning, source, link, headin
   end
 
   local italics = m_unicode.shouldItalicize(text) and "''" or ""
-  local quoteTagOpen = link and mw.ustring.format('<q cite="%s">', mw.ustring.replace(link, '"', '%22')) or '<q>'
-  local wikicode = quoteTagOpen .. m_bases.balise_langue(italics .. m_unicode.setWritingDirection(text) .. italics, scriptLang) .. '</q>'
+  local quoteTagOpen = link and mw.ustring.format('<q cite="%s">', mw.ustring.gsub(link, '"', '%%22')) or '<q>'
+  text = m_unicode.setWritingDirection(text)
+  -- Insert spaces if text starts or ends with “'” to correctly format the text
+  if italics then
+    if mw.ustring.sub(text, 1, 1) == "'" then
+      text = " " .. text
+    end
+    if mw.ustring.sub(text, -1) == "'" then
+      text = text .. " "
+    end
+  end
+  local wikicode = quoteTagOpen .. m_bases.balise_langue(italics .. text .. italics, scriptLang) .. '</q>'
 
   if source then
     wikicode = wikicode .. " " .. frame:expandTemplate { title = "source", args = { source, lien = link } }
@@ -35,10 +45,8 @@ local function _formatExample(text, transcription, meaning, source, link, headin
 
   wikicode = mw.ustring.format('<span class="example">%s</span>', wikicode)
 
-  if lang ~= "fr" then
-    if transcription then
-      wikicode = wikicode .. "<br>" .. m_bases.balise_langue("''" .. transcription .. "''", scriptLang .. "-Latn")
-    end
+  if transcription then
+    wikicode = wikicode .. "<br>" .. m_bases.balise_langue("''" .. transcription .. "''", scriptLang .. "-Latn")
   end
 
   if disableTranslation then
@@ -49,7 +57,9 @@ local function _formatExample(text, transcription, meaning, source, link, headin
     if meaning then
       translation = meaning
     elseif lang ~= "fr" then
-      translation = frame:expandTemplate { title = "trad-exe", args = { lang } }
+      translation = "''La traduction en français de l’[[Aide:Exemples|exemple]] manque.'' "
+      translation = translation .. mw.ustring.format("<span class=\"plainlinks stubedit\">([%s%s Ajouter])</span>", mw.site.server, mw.title.getCurrentTitle():localUrl("action=edit"))
+      translation = translation .. mw.ustring.format("[[Catégorie:Exemples en %s à traduire]]", m_langs.get_nom(lang))
     end
     if translation then
       wikicode = wikicode .. mw.ustring.format("\n%s: ", heading) .. translation

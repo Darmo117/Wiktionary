@@ -39,14 +39,9 @@ mw.loader.using(['mediawiki.util', 'user'], function () {
       return;
     }
 
-    $('span.mw-headline').each(function (_, headline) {
-      var anchor;
-      if ($.inArray($(this).children().first().attr('class'), ['sectionlangue', 'titredef']) !== -1) {
-        anchor = $(this).children().first().attr('id');
-      }
-      else {
-        anchor = headline.getAttribute('id');
-      }
+    $('h2, h3, h4, h5, h6').each(function () {
+      var $this = $(this);
+      var anchor = $this.attr("id")
 
       var $span = $('<span class="noprint ancretitres" style="' +
           'font-size: ' + _option.fontSize + '; ' +
@@ -77,10 +72,10 @@ mw.loader.using(['mediawiki.util', 'user'], function () {
                   .replace(/>/g, '&#gt;')
                   // escaping caractères spéciaux MediaWiki
                   .replace(/\[/g, '&#91;')
-                  .replace(/\]/g, '&#93;')
+                  .replace(/]/g, '&#93;')
                   .replace(/\{/g, '&#123;')
                   .replace(/\|/g, '&#124;')
-                  .replace(/\}/g, '&#125;');
+                  .replace(/}/g, '&#125;');
           window.prompt(
               'Lien :',
               '[[' + (mw.config.get('wgPageName') + '#' + escapedAnchor).replace(/_/g, ' ') + ']]'
@@ -89,7 +84,7 @@ mw.loader.using(['mediawiki.util', 'user'], function () {
         }).appendTo($span);
       }
 
-      $(headline).parent().append($span);
+      $this.append($span);
     });
 
   });

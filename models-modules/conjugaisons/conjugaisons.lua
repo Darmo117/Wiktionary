@@ -430,7 +430,7 @@ local tenseAbbreviations = {
 --- @param auxEtre boolean Whether the verb should use the verb "être" instead of "avoir" as its auxiliary.
 --- @param impersonal string Whether the verb is impersonal.
 --- @param args table The parsed frame arguments.
---- @return VerbSpec A VerbSpec object.
+--- @return (VerbSpec, boolean) A VerbSpec object and a boolean indicating whether any form has been specified manually or any form/tense/mode has been marked as non-existent.
 local function parseSpecs(aspiratedH, pronominal, auxEtre, impersonal, args)
   local function personToIndex(mode, person)
     if mode == "imp" then
@@ -448,6 +448,7 @@ local function parseSpecs(aspiratedH, pronominal, auxEtre, impersonal, args)
 
   --- @type VerbSpec
   local spec = m_model.newVerbSpec(aspiratedH, pronominal, auxEtre, impersonal)
+  local manuallySpecified = false
 
   for k, v in pairs(args) do
     if mw.ustring.find(k, ".", 1, true) then
@@ -475,6 +476,7 @@ local function parseSpecs(aspiratedH, pronominal, auxEtre, impersonal, args)
           else
             node.tenseSpecs[tenseAbbreviations[parts[nb]]].status = v
           end
+          manuallySpecified = true
         end
 
       else
@@ -493,12 +495,14 @@ local function parseSpecs(aspiratedH, pronominal, auxEtre, impersonal, args)
         else
           node.tenseSpecs[tenseAbbreviations[parts[nb]]].formSpecs[1].form = v
         end
+        manuallySpecified = true
       end
 
     end
   end
 
   if impersonal then
+    manuallySpecified = true
     for modeName, mode in pairs(spec.modeSpecs) do
       for tenseName, tense in pairs(mode.tenseSpecs) do
         if #tense.formSpecs ~= 1 then
@@ -513,7 +517,7 @@ local function parseSpecs(aspiratedH, pronominal, auxEtre, impersonal, args)
     end
   end
 
-  return spec
+  return spec, manuallySpecified
 end
 
 --- Render the conjugation tables for the given verb.
@@ -776,7 +780,7 @@ function p.conj(frame)
   end
 
   -- TODO wrap errors
-  local spec = parseSpecs(aspiratedH, pronominal, auxEtre, impersonal, args)
+  local spec, manuallySpecified = parseSpecs(aspiratedH, pronominal, auxEtre, impersonal, args)
   local verb, group, templateVerb
   if compound then
     local parts = mw.text.split(infinitive, "-", true)
@@ -794,6 +798,9 @@ function p.conj(frame)
     verb, group, templateVerb = m_gen.generateFlexions(infinitives, group3s, mutationTypes, verbTemplates, spec)
   else
     verb, group, templateVerb = m_gen.generateFlexions({ infinitive }, { args["groupe3"] }, { args["mutation"] }, { args["modèle"] }, spec)
+  end
+  if manuallySpecified then
+    templateVerb = nil
   end
   return renderPage(verb, group, templateVerb, num)
 end

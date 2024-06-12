@@ -691,19 +691,19 @@ function p.conj(frame)
     ["subj.pr.2p.état"] = { enum = flexionStates },
     ["subj.pr.3p.état"] = { enum = flexionStates },
     -- Subjonctif imparfait
-    ["subj.imp.1s"] = {},
-    ["subj.imp.2s"] = {},
-    ["subj.imp.3s"] = {},
-    ["subj.imp.1p"] = {},
-    ["subj.imp.2p"] = {},
-    ["subj.imp.3p"] = {},
-    ["subj.imp.état"] = { enum = flexionStates },
-    ["subj.imp.1s.état"] = { enum = flexionStates },
-    ["subj.imp.2s.état"] = { enum = flexionStates },
-    ["subj.imp.3s.état"] = { enum = flexionStates },
-    ["subj.imp.1p.état"] = { enum = flexionStates },
-    ["subj.imp.2p.état"] = { enum = flexionStates },
-    ["subj.imp.3p.état"] = { enum = flexionStates },
+    ["subj.i.1s"] = {},
+    ["subj.i.2s"] = {},
+    ["subj.i.3s"] = {},
+    ["subj.i.1p"] = {},
+    ["subj.i.2p"] = {},
+    ["subj.i.3p"] = {},
+    ["subj.i.état"] = { enum = flexionStates },
+    ["subj.i.1s.état"] = { enum = flexionStates },
+    ["subj.i.2s.état"] = { enum = flexionStates },
+    ["subj.i.3s.état"] = { enum = flexionStates },
+    ["subj.i.1p.état"] = { enum = flexionStates },
+    ["subj.i.2p.état"] = { enum = flexionStates },
+    ["subj.i.3p.état"] = { enum = flexionStates },
     -- Subjonctif passé
     ["subj.p.état"] = { enum = flexionStates },
     ["subj.p.1s.état"] = { enum = flexionStates },
@@ -777,6 +777,9 @@ function p.conj(frame)
   local impersonal = args["impersonnel"]
   local compound = args["composé"]
   local splitChar = args["caractère-comp"]
+  if compound and not mw.ustring.find(infinitive, splitChar, 1, true) then
+    error(mw.ustring.format('Le caractère "%s" n’est pas dans "%s"', splitChar, infinitive))
+  end
   local num = args["num"]
   if aspiratedH and mw.ustring.sub(infinitive, 1, 1) ~= "h" then
     error(mw.ustring.format('Le verbe "%s" ne commence pas par un "h"', infinitive))

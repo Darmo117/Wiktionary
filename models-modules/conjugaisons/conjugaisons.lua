@@ -530,6 +530,7 @@ end
 ---  frame.args["h-aspiré"] (boolean): Optional. If true, contracted pronoun forms will be used where relevant.
 ---  frame.args["impersonnel"] (string): Optional. If specified, the verb is considered impersonal.
 ---  frame.args["composé"] (boolean): Optional. Whether the verb is compound.
+---  frame.args["caractère-comp"] (string): Optional. If "composé" is specified, the character to split the verb with. Defaults to "-".
 ---  frame.args["num"] (integer): Optional. A number to append to modes sections’ IDs when this function is called multiple times on the same page.
 --- @return string The generated wikicode.
 --- @see [[Modèle:fr-conjugaison/Documentation]] For a detailled explanation of frame arguments.
@@ -566,6 +567,7 @@ function p.conj(frame)
     ["h-aspiré"] = { type = m_params.BOOLEAN, default = false },
     ["impersonnel"] = { enum = m_model.IMPERSONAL_STATES },
     ["composé"] = { type = m_model.BOOLEAN, default = false },
+    ["caractère-comp"] = { default = "-" },
     ["num"] = { type = m_params.INT, checker = function(num)
       return num >= 1
     end },
@@ -774,6 +776,7 @@ function p.conj(frame)
   local aspiratedH = args["h-aspiré"]
   local impersonal = args["impersonnel"]
   local compound = args["composé"]
+  local splitChar = args["caractère-comp"]
   local num = args["num"]
   if aspiratedH and mw.ustring.sub(infinitive, 1, 1) ~= "h" then
     error(mw.ustring.format('Le verbe "%s" ne commence pas par un "h"', infinitive))
@@ -783,7 +786,7 @@ function p.conj(frame)
   local spec, manuallySpecified = parseSpecs(aspiratedH, pronominal, auxEtre, impersonal, args)
   local verb, group, templateVerb
   if compound then
-    local parts = mw.text.split(infinitive, "-", true)
+    local parts = mw.text.split(infinitive, splitChar, true)
     local infinitives = {}
     local group3s = {}
     local mutationTypes = {}
@@ -795,7 +798,7 @@ function p.conj(frame)
       table.insert(mutationTypes, args["mutation" .. index] or m_gen.NULL)
       table.insert(verbTemplates, args["modèle" .. index] or m_gen.NULL)
     end
-    verb, group, templateVerb = m_gen.generateFlexions(infinitives, group3s, mutationTypes, verbTemplates, spec)
+    verb, group, templateVerb = m_gen.generateFlexions(infinitives, group3s, mutationTypes, verbTemplates, spec, splitChar)
   else
     verb, group, templateVerb = m_gen.generateFlexions({ infinitive }, { args["groupe3"] }, { args["mutation"] }, { args["modèle"] }, spec)
   end

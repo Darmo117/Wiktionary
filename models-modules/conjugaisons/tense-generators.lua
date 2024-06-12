@@ -732,8 +732,9 @@ end
 --- @param mutationTypes string[] The type of mutation to apply to the verb part’s root instead of the default one.
 --- @param templateVerbs (string|nil)[] For group-3 verb parts, the verb the given one should be conjugated like.
 --- @param spec VerbSpec A VerbSpec object.
+--- @param splitChar string Optional. If the verb is compound, the character to use to join the sub-verbs with.
 --- @return (Verb, number|nil, string|nil) A populated Verb object, the whole verb’s group or nil if it could not be determined, and the verb the given one is conjugated like.
-function p.generateFlexions(infinitives, group3s, mutationTypes, templateVerbs, spec)
+function p.generateFlexions(infinitives, group3s, mutationTypes, templateVerbs, spec, splitChar)
   local template = createEmptyTemplate()
   local group, templateName
   for i = 1, #infinitives do
@@ -761,7 +762,7 @@ function p.generateFlexions(infinitives, group3s, mutationTypes, templateVerbs, 
           if form == p.NULL then
             template[modeName][tenseName][j] = f
           else
-            template[modeName][tenseName][j] = template[modeName][tenseName][j] .. "-" .. f
+            template[modeName][tenseName][j] = template[modeName][tenseName][j] .. splitChar .. f
           end
         end
       end

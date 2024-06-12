@@ -601,8 +601,11 @@ local function applySpec(template, spec)
   for modeName, tenses in pairs(template) do
     for tenseName, forms in pairs(tenses) do
       for i = 1, #forms do
-        if spec.modeSpecs[modeName].tenseSpecs[tenseName].formSpecs[i]:isDisabled() then
+        local formSpec = spec.modeSpecs[modeName].tenseSpecs[tenseName].formSpecs[i]
+        if formSpec:isDisabled() then
           forms[i] = p.NULL
+        elseif formSpec.form then
+          forms[i] = formSpec.form
         end
       end
     end

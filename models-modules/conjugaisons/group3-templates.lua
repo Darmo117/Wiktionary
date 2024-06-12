@@ -1556,6 +1556,11 @@ data["croître-cru"].ignore_auto = true
 data["croître-cru"].endings.participe.passe = { "cru" }
 
 data["croitre"] = stripICirc(data["croître"])
+-- Correct forms that were incorrectly modified
+data["croitre"].endings.indicatif.present[1] = "croîs"
+data["croitre"].endings.indicatif.present[2] = "croîs"
+data["croitre"].endings.indicatif.present[3] = "croît"
+data["croitre"].endings.imperatif.present[1] = "croîs"
 
 data["croitre-cru"] = m_table.deepcopy(data["croitre"])
 data["croitre-cru"].ignore_auto = true

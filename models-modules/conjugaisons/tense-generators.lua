@@ -2,59 +2,6 @@ local m_model = require("Module:conjugaisons/data-model")
 
 local p = {}
 
---- Conjugation of the "avoir" auxiliary verb.
-local avoirConj = {
-  infinitif = {
-    present = { "avoir" },
-  },
-  participe = {
-    present = { "ayant" },
-    passe = { "eu" },
-  },
-  indicatif = {
-    present = { "ai", "as", "a", "avons", "avez", "ont" },
-    imparfait = { "avais", "avais", "avait", "avions", "aviez", "avaient" },
-    passeSimple = { "eus", "eus", "eut", "eûmes", "eûtes", "eurent" },
-    futur = { "aurai", "auras", "aura", "aurons", "aurez", "auront" },
-  },
-  subjonctif = {
-    present = { "aie", "aies", "ait", "ayons", "ayez", "aient" },
-    imparfait = { "eusse", "eusses", "eût", "eussions", "eussiez", "eussent" }
-  },
-  conditionnel = {
-    present = { "aurais", "aurais", "aurait", "aurions", "auriez", "auraient" }
-  },
-  imperatif = {
-    present = { "aie", "ayons", "ayez" }
-  },
-}
---- Conjugation of the "être" auxiliary verb.
-local etreConj = {
-  infinitif = {
-    present = { "être" },
-  },
-  participe = {
-    present = { "étant" },
-    passe = { "été" },
-  },
-  indicatif = {
-    present = { "suis", "es", "est", "sommes", "êtes", "sont" },
-    imparfait = { "étais", "étais", "était", "étions", "étiez", "étaient" },
-    passeSimple = { "fus", "fus", "fut", "fûmes", "fûtes", "furent" },
-    futur = { "serai", "seras", "sera", "serons", "serez", "seront" },
-  },
-  subjonctif = {
-    present = { "sois", "sois", "soit", "soyons", "soyez", "soient" },
-    imparfait = { "fusse", "fusses", "fût", "fussions", "fussiez", "fussent" }
-  },
-  conditionnel = {
-    present = { "serais", "serais", "serait", "serions", "seriez", "seraient" }
-  },
-  imperatif = {
-    present = { "sois", "soyons", "soyez" }
-  },
-}
-
 --- For group-1 verbs ending in "-eler/-eter", mutate the root in "-ell-/-ett-" instead of "-èl-/-èt-".
 local MUTATION_DOUBLE_CONS = "double consonne"
 --- For group-1 verbs ending in "-ayer", keep the "y" instead of mutating it to "i" before silent endings.
@@ -593,7 +540,7 @@ end
 --- @param verbTable table A table containing flexions of the verb for all simple tenses.
 --- @param spec VerbSpec A VerbSpec object.
 local function completeTable(verbTable, spec)
-  local auxTable = spec.auxEtre and etreConj or avoirConj
+  local auxTable = spec.auxEtre and p.group3Templates["être"].endings or p.group3Templates["avoir"].endings
 
   local ppr = verbTable.participe.present[1]
   verbTable.gerondif = {}
@@ -678,14 +625,14 @@ local function generateFlexions(infinitive, group3, mutationType, templateVerb, 
       invalidMutationType(mutationType)
     end
     -- Special case to avoid unnecessary checks
-    return etreConj, 3, nil
+    return p.group3Templates["être"].endings, 3, nil
   end
   if infinitive == "avoir" then
     if mutationType then
       invalidMutationType(mutationType)
     end
     -- Special case to avoid unnecessary checks
-    return avoirConj, 3, nil
+    return p.group3Templates["avoir"].endings, 3, nil
   end
 
   local ending = mw.ustring.sub(infinitive, -2)

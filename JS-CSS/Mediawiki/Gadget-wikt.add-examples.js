@@ -16,6 +16,7 @@
  * v1.2 2022-11-29 Better handling of multiline examples. Added checkbox to disable
  *                 the translation. Link instead of button to show the form.
  * v1.3 2024-03-04 Add buttons to format text (bold and italic).
+ * v1.3.1 2024-05-18 Add counter to avoid adding "Add Example" button when there are too many examples.
  * ------------------------------------------------------------------------------------
  * [[Catégorie:JavaScript du Wiktionnaire|add-examples.js]]
  * <nowiki>
@@ -37,6 +38,12 @@ $(function () {
   var COOKIE_KEY_SOURCE_URL = "add_examples_source_url";
   var COOKIE_KEY_TRANSLATION = "add_examples_translation";
   var COOKIE_KEY_TRANSCRIPTION = "add_examples_transcription";
+
+  var MAX_NUMBER_OF_EXAMPLES = 5;
+  if (typeof max_number_of_examples !== "undefined" && max_number_of_examples instanceof Number) {
+    MAX_NUMBER_OF_EXAMPLES = max_number_of_examples;
+    console.log("Using preferred maximum number of examples: " + MAX_NUMBER_OF_EXAMPLES);
+  }
 
   var api = new mw.Api();
   var languages = {};
@@ -126,12 +133,17 @@ $(function () {
       }
     }
   });
-
+  var exampleCounter = 0;
   $("ul > li > .example").each(function () {
     var $element = $(this);
     var $item = $element.parent();
+    exampleCounter++;
 
     if (!$item.next().length) {
+      if (exampleCounter >= MAX_NUMBER_OF_EXAMPLES) {
+        exampleCounter = 0;
+        return;
+      }
       // Get example’s language
       var language = $item.find("bdi[lang]")[0].lang;
 
@@ -144,7 +156,8 @@ $(function () {
         $topItem = $definitionItem;
         $definitionItem = $definitionItem.parent().parent();
       } while ($definitionItem.prop("tagName") === "LI");
-      var $section = $($topItem.parent().prevAll("h3").get(0)).find(".titredef");
+      // Keep h3 for skins that do not yet use the new Mediawiki headings structure
+      var $section = $($topItem.parent().prevAll(".mw-heading3, h3").get(0)).find(".titredef");
       definitionLevel.splice(0, 0, $section.attr("id"));
 
       // Remove default edit link if present
@@ -164,6 +177,7 @@ $(function () {
         return false;
       });
       $item.after($formItem.append($button));
+      exampleCounter = 0;
     }
   });
 
@@ -473,7 +487,7 @@ $(function () {
 
       code += "\n|lang={0}}}".format(this._language);
 
-      var escapedLangCode = this._language.replace(" ", "_"); // Language codes may contain spaces
+      var escapedLangCode = this._language.replaceAll(" ", "_"); // Language codes may contain spaces
       var sectionIDPattern = new RegExp("^" + escapedLangCode + "-(?:(flex)-)?([\\w-]+)-(\\d+)$");
       var match = sectionIDPattern.exec(this._definitionLevel[0]);
       var isInflection = match[1] === "flex";
@@ -515,10 +529,10 @@ $(function () {
           var line = lines[targetLineIndex];
           var match = sectionRegex.exec(line);
           if (match && sectionNames[sectionType].includes(match[1])
-            // Parameter "num" is absent if there is only one section for this type
-            && (line.includes("|num=" + sectionNum) || sectionNum === 1)
-            // Check whether the section is an inflection if required
-            && (isInflection === line.includes("|flexion"))) {
+              // Parameter "num" is absent if there is only one section for this type
+              && (line.includes("|num=" + sectionNum) || sectionNum === 1)
+              // Check whether the section is an inflection if required
+              && (isInflection === line.includes("|flexion"))) {
             break;
           }
         }
@@ -625,7 +639,7 @@ $(function () {
 
       function error() {
         alert("L’exemple n’a pas pu être publié car la page a probablement été modifiée entre temps. " +
-          "Veuillez recharger la page et réessayer.");
+            "Veuillez recharger la page et réessayer.");
         $.cookie(COOKIE_KEY_TEXT, self._textInput.getValue());
         $.cookie(COOKIE_KEY_SOURCE, self._sourceInput.getValue());
         $.cookie(COOKIE_KEY_SOURCE_URL, self._sourceURLInput.getValue());

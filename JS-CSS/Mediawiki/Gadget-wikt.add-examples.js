@@ -327,10 +327,12 @@ $(function () {
 
     var textToolbar = createToolbar(this._textInput.$element.find("textarea"));
     var sourceToolbar = createToolbar(this._sourceInput.$element.find("textarea"));
+    var translationToolbar = createToolbar(this._translationInput.$element.find("textarea"));
+    var transcriptionToolbar = createToolbar(this._transcriptionInput.$element.find("textarea"));
 
     var content = [textToolbar, textInputLayout, sourceToolbar, sourceInputLayout, sourceURLInputLayout];
     if (language !== "fr") {
-      content.push(translationInputLayout, transcriptionInputLayout, disableTranslationChkLayout);
+      content.push(translationToolbar, translationInputLayout, transcriptionToolbar, transcriptionInputLayout, disableTranslationChkLayout);
     }
     var fieldsLayout = new OO.ui.FieldsetLayout({
       label: "Ajout d’un exemple en " + (languages[this._language] || "langue inconnue"),

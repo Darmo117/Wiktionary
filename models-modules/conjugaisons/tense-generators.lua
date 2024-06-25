@@ -108,6 +108,14 @@ local eacuteCONSer_verbs = generateGroup1Endings("é", {
   "vr",
 })
 
+--- Indicate whether the given past participle has a plural form different from its singular.
+--- @param pastParticiple string The singular past participle form.
+--- @returns True if the plural is different, false otherwise.
+local function isPluralDifferent(pastParticiple)
+  local lastLetter = mw.ustring.sub(pastParticiple, -1)
+  return lastLetter ~= 's' and lastLetter ~= 'x' and lastLetter ~= 'z'
+end
+
 --- Raise an error for the given mutation type.
 --- @param mutationType string The mutation type.
 local function invalidMutationType(mutationType)
@@ -530,6 +538,9 @@ local function generateCompoundTense(auxTable, pastParticiple, spec, mode, tense
     if spec.modeSpecs[mode].tenseSpecs[tense].formSpecs[i]:isDisabled() then
       table.insert(res, p.NULL)
     else
+      if spec.auxEtre and i > 3 and isPluralDifferent(pastParticiple) then
+        pastParticiple = pastParticiple .. "s"
+      end
       table.insert(res, t .. " " .. pastParticiple)
     end
   end

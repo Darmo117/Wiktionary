@@ -1,25 +1,32 @@
-// Cet outil remplace les modèles dans les résumés d'édition par un id de section non ambigu
-// (ou un titre, quand il n'y a pas d'id qui soit non ambigu).
+/**
+ * Cet outil remplace les modèles dans les résumés d'édition par un nom lisible,
+ * en listant le fil d’Ariane de la section modifiée.
+ */
 $(function () {
-  // On ajoute &summary=/* summary */ à chaque lien de modification.
+  // Add `&summary=/* <summary> */` to each “Edit” link.
   if (mw.config.get("wgAction") === "view") {
+    console.log("Chargement de Gadget-clearer-edit-summary.js…");
     $(".mw-editsection").each(function () {
-      // noinspection JSUnresolvedFunction
-      var firstChild = $(this).prev(".mw-headline").children().first();
-      if (!firstChild.length) {
+      var $this = $(this);
+      var $title = $this.prev(); // H* tag that precedes the current element
+      if (!$title.length)
         return;
-      }
-      var sectionClass = firstChild.attr("class");
-      var langSectionNb = $(".mw-parser-output > h2").length;
-      var summary;
-      if (langSectionNb === 1 || sectionClass !== "titredef") {
-        summary = "/* " + $(this).prev(".mw-headline").attr("id").replace(/_/g, " ") + " */%20";
-      } else {
-        summary = "/* " + firstChild.attr("id") + " */%20";
+      // Build breadcrumb
+      var titleLevel = +$title.prop("tagName").charAt(1);
+      var titles = [];
+      for (var level = titleLevel; level > 1; level--) {
+        titles.unshift($title.attr("id").replaceAll("_", "%20"));
+        if (level > 2) { // Look for the containing section header
+          $title = $title.parent()
+              .prevAll(".mw-heading" + (level - 1)) // All previous headers of directly higher level
+              .first() // Closest previous header of directly higher level
+              .children() // H* tags
+              .first(); // First (and only) H* tag
+        }
       }
       // When "Show me both editor tabs" enabled, there will be two links: visual and wikitext.
-      $(this).find("a").attr("href", function (i, href) {
-        return href + "&summary=" + summary;
+      $this.find("a").attr("href", function (_, href) {
+        return href + "&summary=/*%20" + titles.join("/") + "%20*/";
       });
     });
   }

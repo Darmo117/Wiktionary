@@ -40,7 +40,8 @@
  * v5.4 2022-11-26 Separate fields for each definition and their associated examples.
  * v5.4.1 2022-11-28 Convert to ES6.
  * v5.4.2 2024-03-09 Add buttons to format text in some fields (bold and italic).
- * ------------------------------------------------------------------------------------
+ * v5.4.3 2024-08-30 Add option to hide additional sections fields from a user’s [[Special:MyPage/common.js]].
+ * -----------------------------------------------------------------------------------------------------------
  * [[Catégorie:JavaScript du Wiktionnaire|CreerNouveauMot.js]]
  * <nowiki>
  */
@@ -517,7 +518,7 @@ $(function () {
      */
     class GadgetCreerNouveauMot {
       static NAME = "Créer nouveau mot";
-      static VERSION = "5.4.2";
+      static VERSION = "5.4.3";
 
       static #COOKIE_NAME = "cnm_last_lang";
       /** Cookie duration in days. */
@@ -1605,9 +1606,16 @@ $(function () {
                 rows: 4,
               });
 
+              // noinspection JSUnresolvedReference
+              /**
+               * `cnmFilter` may be defined in a user’s [[Special:MyPage/common.js]] page
+               * and should contain the IDs of the sections they wish to keep.
+               * @type {string[]}
+               */
+              const filter = typeof cnmFilter !== "undefined" && cnmFilter instanceof Array ? cnmFilter : [];
               const fields = [];
               for (const section of sections) {
-                if (!section.hidden) {
+                if (!section.hidden && (filter.length === 0 || filter.includes(section.code))) {
                   const field = new OO.ui.MultilineTextInputWidget({
                     rows: 4,
                     columns: 20,

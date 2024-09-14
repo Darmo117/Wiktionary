@@ -2091,7 +2091,7 @@ $(function () {
        * @return {string} The section’s contents.
        */
       getSectionContent(sectionCode) {
-        return this.#otherSectionFields[sectionCode].getValue().trim();
+        return this.#otherSectionFields[sectionCode] ? this.#otherSectionFields[sectionCode].getValue().trim() : "";
       }
 
       /**

@@ -12,7 +12,7 @@ SUBSTITUTIONS = [
     (re.compile('([^oO])ù'), r'\1ŭ'),
 ]
 
-site = pwb.Site(code='fr', fam='wikisource', user='Darmo117')
+site = pwb.Site(code='fr', fam='wikisource', user='Danÿa')
 
 indices = range(1, PAGE_NB + 1)
 for i, p in enumerate(indices):

@@ -450,7 +450,7 @@ function p.inflectionRegular(frame)
   local tableTitle = parentArgs["titre"]
 
   -- Inflections detection
-  local inflections = mw.loadData("Module:bac à sable/Darmo117/fr-flexion/data")[inflectionType] -- TEMP nom data
+  local inflections = mw.loadData("Module:bac à sable/Danÿa/fr-flexion/data")[inflectionType] -- TEMP nom data
   local alternateF = parentArgs[otherParamName]
   local fIndex = alternateF and otherParamName or 1
 

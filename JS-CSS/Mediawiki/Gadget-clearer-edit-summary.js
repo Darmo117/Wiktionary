@@ -15,18 +15,19 @@ $(function () {
       var titleLevel = +$title.prop("tagName").charAt(1);
       var titles = [];
       for (var level = titleLevel; level > 1; level--) {
-        titles.unshift($title.attr("id").replaceAll("_", "%20"));
+        titles.unshift($title.attr("id").replace(/_/g, "%20"));
         if (level > 2) { // Look for the containing section header
           $title = $title.parent()
               .prevAll(".mw-heading" + (level - 1)) // All previous headers of directly higher level
               .first() // Closest previous header of directly higher level
               .children() // H* tags
               .first(); // First (and only) H* tag
+          if (!$title.length) break;
         }
       }
       // When "Show me both editor tabs" enabled, there will be two links: visual and wikitext.
       $this.find("a").attr("href", function (_, href) {
-        return href + "&summary=/*%20" + titles.join("/") + "%20*/";
+        return href + "&summary=/*%20" + titles.join("/") + "%20*/%20";
       });
     });
   }

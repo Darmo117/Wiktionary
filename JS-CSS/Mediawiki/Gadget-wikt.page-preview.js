@@ -178,6 +178,9 @@ function init(langNamesMapping) {
     popupTimer = setTimeout(closePopup, 300);
   });
 
+  /**
+   * @param link {HTMLAnchorElement}
+   */
   function processLink(link) {
     let linkTitle = decodeURIComponent(link.pathname.split("/wiki/")[1]);
     let titlePrefix = linkTitle.includes(":") ? linkTitle.toLowerCase().split(":")[0] : "";
@@ -188,7 +191,8 @@ function init(langNamesMapping) {
     let isPreviewLink = Boolean(link.closest(".page-preview"));
 
     // Start with various checks to determine whether a link should be processed.
-    if (link.matches(`nav a, .mw-widget-titleOptionWidget a, .new, .preview-headerlink, .external, [href$="#"]`))
+    if (link.matches(`nav a, .mw-widget-titleOptionWidget a, .new, .preview-headerlink, .external, [href$="#"]`) ||
+        link.pathname === location.pathname)
       return;
     if (linkAnchor && !isWPlink && !LANGUAGES.has(linkAnchor))
       linkAnchor = ""; // Ignore anchor if it’s not a language code

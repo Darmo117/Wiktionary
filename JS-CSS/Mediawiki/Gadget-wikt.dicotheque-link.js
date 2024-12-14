@@ -15,13 +15,26 @@ $(function () {
   }
 
   const entry = mw.config.get("wgTitle");
-  const element = mw.util.addPortletLink(
-      "p-tb",
-      "https://dicotheque.org/search/" + encodeURIComponent(entry),
-      "Dicothèque",
-      "t-dicotheque",
-      "Voir dans la Dicothèque (s’ouvre dans un nouvel onglet)"
+  $.get(
+      "https://api.dicotheque.org/v1/entries/" + encodeURIComponent(entry),
+      null,
+      onResponse,
+      "json"
   );
-  if (element)
-    $(element).find("a").attr("target", "_blank");
+
+  function onResponse(data) {
+    if (!data.length) {
+      console.log("[Gadget-wikt.dicotheque-link.js] Aucune entrée dans la dicothèque.");
+      return;
+    }
+    const element = mw.util.addPortletLink(
+        "p-tb",
+        "https://dicotheque.org/search/" + encodeURIComponent(entry),
+        "Dicothèque",
+        "t-dicotheque",
+        "Voir dans la Dicothèque (s’ouvre dans un nouvel onglet)"
+    );
+    if (element)
+      $(element).find("a").attr("target", "_blank");
+  }
 });

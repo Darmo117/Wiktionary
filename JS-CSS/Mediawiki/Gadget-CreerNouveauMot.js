@@ -1241,6 +1241,15 @@ $(function () {
       this._linkFld = new OO.ui.TextInputWidget();
       this._disableTranslationChk = new OO.ui.CheckboxInputWidget();
 
+      this._translationFieldLayout = new OO.ui.FieldLayout(this._translationFld, {
+        label: createLinks(SPECIAL_CHARS, this._translationFld, null, "Traduction en français", true),
+        align: "inline",
+      });
+      this._transcriptionFieldLayout = new OO.ui.FieldLayout(this._transcriptionFld, {
+        label: createLinks(SPECIAL_CHARS, this._transcriptionFld, null, "Transcription latine", true),
+        align: "inline",
+      });
+
       OO.ui.FieldsetLayout.call(this, {
         label: "Exemple n°" + exampleID,
         items: [
@@ -1249,14 +1258,8 @@ $(function () {
             align: "inline",
             help: getPageLink("Aide:Exemples"),
           }),
-          new OO.ui.FieldLayout(this._translationFld, {
-            label: createLinks(SPECIAL_CHARS, this._translationFld, null, "Traduction en français", true),
-            align: "inline",
-          }),
-          new OO.ui.FieldLayout(this._transcriptionFld, {
-            label: createLinks(SPECIAL_CHARS, this._transcriptionFld, null, "Transcription latine", true),
-            align: "inline",
-          }),
+          this._translationFieldLayout,
+          this._transcriptionFieldLayout,
           new OO.ui.FieldLayout(this._sourceFld, {
             label: createLinks(SPECIAL_CHARS, this._sourceFld, null, "Source", true),
             align: "inline",
@@ -1284,7 +1287,10 @@ $(function () {
      * @param langCode The new language code.
      */
     ExampleForm.prototype.onLanguageUpdate = function (langCode) {
-      this._disableTranslationChk.setDisabled(langCode === "fr");
+      var isFrench = langCode === "fr";
+      this._translationFieldLayout.toggle(!isFrench);
+      this._transcriptionFieldLayout.toggle(!isFrench);
+      this._disableTranslationChk.setDisabled(isFrench);
     };
 
     /**

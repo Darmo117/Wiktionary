@@ -803,31 +803,6 @@ local data = {
   },
   ["ouïr"] = {
     ending = "ouïr",
-    endings = {
-      participe = {
-        present = { "ouïssant" },
-        passe = { "ouï" },
-      },
-      indicatif = {
-        present = { "ouïs", "ouïs", "ouït", "ouïssons", "ouïssez", "ouïssent" },
-        imparfait = { "ouïssais", "ouïssais", "ouïssait", "ouïssions", "ouïssiez", "ouïssaient" },
-        passeSimple = { "ouïs", "ouïs", "ouït", "ouïmes", "ouïtes", "ouïrent" },
-        futur = { "ouïrais", "ouïras", "ouïra", "ouïrons", "ouïrez", "ouïront" },
-      },
-      subjonctif = {
-        present = { "ouïsse", "ouïsses", "ouïsse", "ouïssions", "ouïssiez", "ouïssent" },
-        imparfait = { "ouïsse", "ouïsses", "ouït", "ouïssions", "ouïssiez", "ouïssent" },
-      },
-      conditionnel = {
-        present = { "ouïrais", "ouïrais", "ouïrait", "ouïrions", "ouïriez", "ouïraient" },
-      },
-      imperatif = {
-        present = { "ouïs", "ouïssons", "ouïssez" },
-      },
-    },
-  },
-  ["ouïr-oirai"] = {
-    ending = "ouïr",
     ignore_auto = true,
     endings = {
       participe = {
@@ -842,7 +817,7 @@ local data = {
       },
       subjonctif = {
         present = { "oie", "oies", "oie", "oyions", "oyiez", "oient" },
-        imparfait = { "ouïsse", "ouïsses", "ouït", "ouïssions", "ouïssiez", "ouïssent" },
+        imparfait = { "oye", "oyes", "ouït", "oyions", "oyiez", "oient" },
       },
       conditionnel = {
         present = { "oirais", "oirais", "oirait", "oirions", "oiriez", "oiraient" },
@@ -1590,7 +1565,7 @@ data["naitre"].endings.indicatif.passeSimple[4] = "naquîmes"
 data["naitre"].endings.indicatif.passeSimple[5] = "naquîtes"
 data["naitre"].endings.subjonctif.imparfait[3] = "naquît"
 
-data["ouïr-orrai"] = m_table.deepcopy(data["ouïr-oirai"])
+data["ouïr-orrai"] = m_table.deepcopy(data["ouïr"])
 data["ouïr-orrai"].ignore_auto = true
 data["ouïr-orrai"].endings.indicatif.futur = { "orrai", "orras", "orra", "orrons", "orrez", "orront" }
 data["ouïr-orrai"].endings.conditionnel.present = { "orrais", "orrais", "orrait", "orrions", "orriez", "orraient" }

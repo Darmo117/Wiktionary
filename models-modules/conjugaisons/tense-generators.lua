@@ -6,6 +6,8 @@ local p = {}
 local MUTATION_DOUBLE_CONS = "double consonne"
 --- For group-1 verbs ending in "-ayer", keep the "y" instead of mutating it to "i" before silent endings.
 local MUTATION_AYER_YE = "ayer-ye"
+--- For group-1 verbs ending in "-uër", put the diaeresis on the "i" and "è" also.
+local MUTATION_UER_UIONS = "uër-uïons"
 --- For group-2 verbs ending in "-ïr", replace the "ï" by a "i" for the 3 singular persons of indicative
 --- and the singular imperative present.
 local MUTATION_I = "ï-i"
@@ -14,6 +16,7 @@ local MUTATION_I = "ï-i"
 p.mutationTypes = {
   MUTATION_DOUBLE_CONS,
   MUTATION_AYER_YE,
+  MUTATION_UER_UIONS,
   MUTATION_I,
 }
 
@@ -309,13 +312,37 @@ local function generateGroup1Forms_envoyer(infinitive)
   end)
 end
 
+--- Generate the simple tense forms of the given group-1 verb ending in "uër".
+--- @param infinitive string The infinitive form of the verb.
+--- @param mutate boolean If the verb ends in "-uër" and this argument is true the "i" and "è"
+---     of endings will get the diaeresis instead of the "u".
+--- @return table A table containing all simple tense forms of the verb.
+local function generateGroup1Forms_ue_diaeresis_r(infinitive, mutate)
+  local mutatedRoot = mw.ustring.sub(infinitive, 1, -4) .. "ü"
+  return generateGroup1Forms_(infinitive, function(root, ending)
+    local letter = mw.ustring.sub(ending, 1, 1)
+    if letter == "e" then
+      return root .. "ë" .. mw.ustring.sub(ending, 2)
+    elseif mutate then
+      if letter == "i" then
+        return root .. "ï" .. mw.ustring.sub(ending, 2)
+      elseif letter == "è" then
+        return root .. "ë" .. mw.ustring.sub(ending, 2)
+      end
+    end
+    return mutatedRoot .. ending
+  end)
+end
+
 --- Generate the simple tense forms of the given group-1 verb.
 --- @param infinitive string The infinitive form of the verb.
 --- @param mutationType string The type of mutation to apply to the verb’s root instead of the default one.
 --- @return table A table containing all simple tense forms of the verb.
 --- @see [[Conjugaison:français/Premier groupe]] for exceptions.
 function p.generateGroup1Forms(infinitive, mutationType)
-  if mutationType and mutationType ~= MUTATION_DOUBLE_CONS and mutationType ~= MUTATION_AYER_YE then
+  if mutationType and mutationType ~= MUTATION_DOUBLE_CONS
+      and mutationType ~= MUTATION_AYER_YE
+      and mutationType ~= MUTATION_UER_UIONS then
     invalidMutationType(mutationType)
   end
 
@@ -346,6 +373,13 @@ function p.generateGroup1Forms(infinitive, mutationType)
       invalidMutationType(mutationType)
     end
     return generateGroup1Forms_yer(infinitive, mutationType == MUTATION_AYER_YE)
+  end
+  if mutationType and mutationType == MUTATION_AYER_YE then
+    invalidMutationType(mutationType)
+  end
+
+  if last3 == "uër" then
+    return generateGroup1Forms_ue_diaeresis_r(infinitive, mutationType == MUTATION_UER_UIONS)
   end
   if mutationType then
     invalidMutationType(mutationType)
@@ -662,12 +696,14 @@ local function generateFlexions(infinitive, group3, mutationType, templateVerb, 
     invalidMutationType(mutationType)
   end
 
-  if not group3 and ending == "er" then
+  if not group3 and (ending == "er" or ending == "ër") then
     local forms = p.generateGroup1Forms(infinitive, mutationType)
     applySpec(forms, spec)
     return forms, 1, nil
   end
-  if mutationType and mutationType == MUTATION_DOUBLE_CONS or mutationType == MUTATION_AYER_YE then
+  if mutationType and mutationType == MUTATION_DOUBLE_CONS
+      or mutationType == MUTATION_AYER_YE
+      or mutationType == MUTATION_UER_UIONS then
     invalidMutationType(mutationType)
   end
 
